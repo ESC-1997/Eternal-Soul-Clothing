@@ -82,8 +82,4 @@ export default function ContactPage() {
       </div>
     </div>
   );
-<<<<<<< HEAD
-} 
-=======
-} 
->>>>>>> 477b11a9ef7f849fd867a3337d2496961fb5ebdb
+}
