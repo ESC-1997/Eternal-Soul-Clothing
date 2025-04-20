@@ -3,11 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import dynamic from 'next/dynamic';
-
-const ProfilePopup = dynamic(() => import('./ProfilePopup'), {
-  ssr: false
-});
+import ProfilePopup from './ProfilePopup';
 
 interface NavigationProps {
   onProfileClick?: () => void;
@@ -128,12 +124,10 @@ export default function Navigation({ onProfileClick }: NavigationProps) {
       </div>
 
       {/* Profile Popup */}
-      {isProfileOpen && (
-        <ProfilePopup 
-          isOpen={isProfileOpen} 
-          onClose={() => setIsProfileOpen(false)} 
-        />
-      )}
+      <ProfilePopup 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)} 
+      />
     </>
   );
 }

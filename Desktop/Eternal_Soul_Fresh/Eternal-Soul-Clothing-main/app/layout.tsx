@@ -1,7 +1,7 @@
 import './globals.css'
 import { Corben, Playfair_Display, Inter, Bebas_Neue } from 'next/font/google'
 import { Metadata } from 'next'
-import Providers from './providers'
+import { Providers } from './providers'
 
 const corben = Corben({
   weight: ['400', '700'],
