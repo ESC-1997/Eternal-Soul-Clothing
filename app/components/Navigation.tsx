@@ -133,8 +133,4 @@ export default function Navigation({ onProfileClick }: NavigationProps) {
       <ProfilePopup isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
     </>
   );
-<<<<<<< HEAD
-} 
-=======
-} 
->>>>>>> 477b11a9ef7f849fd867a3337d2496961fb5ebdb
+}
