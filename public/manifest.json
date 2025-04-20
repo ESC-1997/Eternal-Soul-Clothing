@@ -1,0 +1,20 @@
+{
+  "name": "Eternal Soul Clothing",
+  "short_name": "Eternal Soul",
+  "icons": [
+    {
+      "src": "https://eternalsoul.co/images/ES%20Slide%20Grey.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://eternalsoul.co/images/ES%20Slide%20Grey.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "https://eternalsoul.co",
+  "theme_color": "#6B21A8",
+  "background_color": "#000000",
+  "display": "standalone"
+} 
