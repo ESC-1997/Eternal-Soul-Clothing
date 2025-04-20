@@ -129,7 +129,10 @@ export default function Navigation({ onProfileClick }: NavigationProps) {
 
       {/* Profile Popup */}
       {isProfileOpen && (
-        <ProfilePopup onClose={() => setIsProfileOpen(false)} />
+        <ProfilePopup 
+          isOpen={isProfileOpen} 
+          onClose={() => setIsProfileOpen(false)} 
+        />
       )}
     </>
   );

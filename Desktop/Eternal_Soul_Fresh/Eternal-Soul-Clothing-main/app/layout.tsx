@@ -1,7 +1,7 @@
 import './globals.css'
 import { Corben, Playfair_Display, Inter, Bebas_Neue } from 'next/font/google'
 import { Metadata } from 'next'
-import ClientProviders from './ClientProviders'
+import Providers from './providers'
 
 const corben = Corben({
   weight: ['400', '700'],
@@ -79,7 +79,9 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className={`${corben.variable} ${playfair.variable} ${inter.variable} ${bebas.variable} font-sans`}>
-        <ClientProviders>{children}</ClientProviders>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   )
