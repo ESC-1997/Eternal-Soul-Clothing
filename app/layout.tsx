@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Eternal Soul Clothing',
   description: 'Customizable clothing with unique designs',
+  icons: {
+    icon: '/images/facebook_profile.png',
+  },
 };
 
 export default function RootLayout({
