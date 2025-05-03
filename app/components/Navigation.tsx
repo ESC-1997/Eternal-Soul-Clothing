@@ -7,9 +7,8 @@ import { useCart } from '../context/CartContext';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const pathname = usePathname();
-  const { items: cartItems, subtotal, removeItem, updateQuantity, clearCart } = useCart();
+  const { items: cartItems, subtotal, removeItem, updateQuantity, clearCart, isCartOpen, setIsCartOpen } = useCart();
 
   // Close menu when route changes
   useEffect(() => {
@@ -173,19 +172,46 @@ export default function Navigation() {
                     <div className="flex-1">
                       <div className="font-semibold text-gray-900">{item.name}</div>
                       <div className="text-xs text-gray-600">{item.size} | {item.color} | {item.logo}</div>
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateQuantity(
+                              item.id,
+                              item.size,
+                              item.color,
+                              item.logo,
+                              Math.max(1, item.quantity - 1)
+                            )
+                          }
+                          className="px-2 py-1 rounded bg-gray-200 text-[#1B1F3B] font-bold"
+                          aria-label="Decrease quantity"
+                        >
+                          −
+                        </button>
                         <input
                           type="number"
                           min={1}
                           value={item.quantity}
-                          onChange={e => updateQuantity(item.id, item.size, item.color, item.logo, Number(e.target.value))}
-                          className="w-14 border rounded p-1 text-center text-sm"
+                          readOnly
+                          className="w-10 border rounded p-1 text-center text-sm"
+                          style={{ color: '#1B1F3B' }}
                         />
                         <button
-                          onClick={() => removeItem(item.id, item.size, item.color, item.logo)}
-                          className="text-red-500 hover:text-red-700 text-xs"
+                          type="button"
+                          onClick={() =>
+                            updateQuantity(
+                              item.id,
+                              item.size,
+                              item.color,
+                              item.logo,
+                              item.quantity + 1
+                            )
+                          }
+                          className="px-2 py-1 rounded bg-gray-200 text-[#1B1F3B] font-bold"
+                          aria-label="Increase quantity"
                         >
-                          Remove
+                          +
                         </button>
                       </div>
                     </div>
