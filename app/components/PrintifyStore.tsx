@@ -52,9 +52,14 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
         }
         const data = await response.json();
         
+        // Remove the product with ID 681449c6b03bb3ed0c01a685 from the main shop list
+        const filteredProducts = data.filter(
+          (product: Product) => product.id !== "681449c6b03bb3ed0c01a685"
+        );
+
         // Filter out customizable products and create a single combined product
-        const customizableProducts = data.filter((product: Product) => product.customizable);
-        const regularProducts = data.filter((product: Product) => !product.customizable);
+        const customizableProducts = filteredProducts.filter((product: Product) => product.customizable);
+        const regularProducts = filteredProducts.filter((product: Product) => !product.customizable);
         
         // Create a single combined customizable product
         const combinedCustomizableProduct: Product = {
