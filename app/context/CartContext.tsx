@@ -13,7 +13,7 @@ export interface CartItem {
   variantId?: number;
 }
 
-interface CartContextType {
+export interface CartContextType {
   items: CartItem[];
   addItem: (item: CartItem) => void;
   removeItem: (id: string, size: string, color: string, logo: string) => void;
