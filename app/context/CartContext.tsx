@@ -20,12 +20,15 @@ interface CartContextType {
   updateQuantity: (id: string, size: string, color: string, logo: string, quantity: number) => void;
   clearCart: () => void;
   subtotal: number;
+  isCartOpen: boolean;
+  setIsCartOpen: (open: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const addItem = (item: CartItem) => {
     setItems(prev => {
@@ -64,7 +67,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, subtotal }}>
+    <CartContext.Provider value={{
+      items, addItem, removeItem, updateQuantity, clearCart, subtotal,
+      isCartOpen, setIsCartOpen
+    }}>
       {children}
     </CartContext.Provider>
   );
