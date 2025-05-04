@@ -1,460 +1,591 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { useCart, CartContextType } from '../context/CartContext';
-import { productVariants } from './productVariants';
-import Image from 'next/image';
-import { eternalEleganceImages } from './eternalEleganceImages';
-import { eternalEleganceVariants } from './eternalEleganceVariants';
+import { useEffect, useState } from 'react';
+import ProductCustomizer from './ProductCustomizer';
+import ProductViewer from './ProductViewer';
 
-// Add type for productVariants with index signature
-interface ProductVariantsType {
-  [productId: string]: {
-    [colorName: string]: {
-      [size: string]: {
-        variant_id: number;
-        price: number;
-        stock_status: string;
-      };
-    };
-  };
-}
-
-interface ColorOption {
-  name: string;
-  value: string;
-  hex: string;
-}
-
-interface ProductCustomizerProps {
-  product: {
+interface Product {
+  id: string;
+  title: string;
+  images: {
+    src: string;
+  }[];
+  variants: {
     id: string;
     title: string;
-    images: {
-      src: string;
-    }[];
-    variants: {
-      id: string;
-      title: string;
-      price: string;
-    }[];
-    colorMappings?: {
-      shirtColor: string;
-      logoColor: string;
-      printifyProductId: string;
-      images: string[];
-    }[];
-  };
+    price: string;
+  }[];
+  customizable?: boolean;
+  colorMappings?: {
+    shirtColor: string;
+    logoColor: string;
+    printifyProductId: string;
+    images: string[];
+  }[];
 }
 
-// Eternal Elegance color options
-const EE_SHIRT_COLORS: ColorOption[] = [
-  { name: 'Black', value: 'black', hex: '#000000' },
-  { name: 'Charcoal', value: 'charcoal', hex: '#36454F' },
-  { name: 'Forest Green', value: 'fgreen', hex: '#228B22' },
-  { name: 'Light Blue', value: 'lblue', hex: '#ADD8E6' },
-  { name: 'Sand', value: 'sand', hex: '#C2B280' },
-  { name: 'White', value: 'white', hex: '#FFFFFF' },
-];
+interface PrintifyStoreProps {
+  onCustomizationModeChange: (isCustomizing: boolean) => void;
+  onViewModeChange: (isViewing: boolean) => void;
+}
 
-const EE_LOGO_COLORS: ColorOption[] = [
-  { name: 'Grey', value: 'grey', hex: '#808080' },
-  { name: 'Violet', value: 'violet', hex: '#8F00FF' },
-  { name: 'White', value: 'white', hex: '#FFFFFF' },
-  { name: 'Black', value: 'black', hex: '#000000' },
-  { name: 'Red', value: 'red', hex: '#FF0000' },
-  { name: 'Blue', value: 'blue', hex: '#0000FF' },
-];
-
-const SHIRT_COLORS: ColorOption[] = [
-  { name: 'Black', value: 'black', hex: '#000000' },
-  { name: 'Charcoal', value: 'charcoal', hex: '#36454F' },
-  { name: 'Forest Green', value: 'fgreen', hex: '#228B22' },
-  { name: 'Light Blue', value: 'lblue', hex: '#ADD8E6' },
-  { name: 'Sand', value: 'sand', hex: '#C2B280' },
-  { name: 'White', value: 'white', hex: '#FFFFFF' },
-];
-
-const defaultShirtColor = SHIRT_COLORS.find(c => c.value === 'charcoal') || SHIRT_COLORS[0];
-
-const LOGO_COLORS: ColorOption[] = [
-  { name: 'Grey', value: 'grey', hex: '#808080' },
-  { name: 'Violet', value: 'violet', hex: '#8F00FF' },
-  { name: 'White', value: 'white', hex: '#FFFFFF' },
-  { name: 'Black', value: 'black', hex: '#000000' },
-  { name: 'Red', value: 'red', hex: '#FF0000' },
-];
-
-const defaultLogoColor = LOGO_COLORS[0];
-
-// Mapping from shirt color short code to full color name for productVariants lookup
-const SHIRT_COLOR_CODE_TO_NAME: Record<string, string> = {
-  black: 'Black',
-  charcoal: 'Charcoal',
-  fgreen: 'Forest Green',
-  lblue: 'Light Blue',
-  sand: 'Sand',
-  white: 'White',
-};
-
-// Mapping from logo color value to product ID for productVariants lookup
-const LOGO_COLOR_TO_PRODUCT_ID: Record<string, string> = {
-  red: '6814491964bdd1b0c60875d0',
-  violet: '681446b7b03bb3ed0c01a5c7',
-  black: '681445f7b03bb3ed0c01a591',
-  grey: '681449c6b03bb3ed0c01a685',
-  white: '6814469c5057e72cc20d67c7',
-};
-
-// Eternal Elegance logo color to product ID mapping
-const EE_LOGO_COLOR_TO_PRODUCT_ID: Record<string, string> = {
-  red: '68163f2a42fcdb2640010975',
-  blue: '6816397864bdd1b0c608ecf7',
-  white: '681637d444c4abfbc303ec25',
-  violet: '6816351f960c7decc0099524',
-  grey: '68163317960c7decc0099499',
-  black: '6814c6d00ed813d9e5087aea',
-};
-
-// Replace productVariants import type with ProductVariantsType
-const productVariantsTyped: ProductVariantsType = productVariants;
-
-// List of invalid shirt/logo color combinations
-const INVALID_COMBOS: Array<{ shirt: string; logo: string }> = [
-  { shirt: 'black', logo: 'red' },
-  { shirt: 'black', logo: 'black' },
-  { shirt: 'white', logo: 'white' },
-];
-
-export default function ProductCustomizer({ product }: ProductCustomizerProps) {
-  const isEternalElegance = product.title.toLowerCase().includes('eternal elegance');
-  // Use correct color options
-  const shirtColors = isEternalElegance ? EE_SHIRT_COLORS : SHIRT_COLORS;
-  const logoColors = isEternalElegance ? EE_LOGO_COLORS : LOGO_COLORS;
-  const [selectedShirtColor, setSelectedShirtColor] = useState<ColorOption>(shirtColors[0]);
-  const [selectedLogoColor, setSelectedLogoColor] = useState<ColorOption>(logoColors[0]);
-  const [selectedSize, setSelectedSize] = useState<string>('M');
-  const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
+export default function PrintifyStore({ onCustomizationModeChange, onViewModeChange }: PrintifyStoreProps) {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
-  const { addItem, setIsCartOpen } = useCart();
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
-  // Use correct variant mapping
-  const productVariantsTyped: ProductVariantsType = isEternalElegance ? eternalEleganceVariants : productVariants;
+  // Notify parent when customization mode changes
+  useEffect(() => {
+    if (onCustomizationModeChange) {
+      onCustomizationModeChange(!!selectedProduct?.customizable);
+    }
+  }, [selectedProduct, onCustomizationModeChange]);
 
-  const logoKey = selectedLogoColor.value;
-  // Use the mapped product ID for productVariants lookup
-  const productId = isEternalElegance
-    ? EE_LOGO_COLOR_TO_PRODUCT_ID[logoKey]
-    : LOGO_COLOR_TO_PRODUCT_ID[logoKey] || Object.keys(productVariantsTyped)[0];
-  const colorKey = selectedShirtColor.value;
-  // Use the full color name for productVariants lookup
-  const colorName = SHIRT_COLOR_CODE_TO_NAME[colorKey] || colorKey;
-  const sizeKey = selectedSize;
-  const variant = productVariantsTyped[productId]?.[colorName]?.[sizeKey];
-  const availableSizes = Object.keys(productVariantsTyped[productId]?.[colorName] || {});
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/printify/products');
+        if (!response.ok) {
+          throw new Error('Failed to fetch products');
+        }
+        const data = await response.json();
+        
+        // Debug: Log all product titles
+        console.log('All products:', data.map((p: Product) => p.title));
+        
+        const filteredProducts = data.filter(
+          (product: Product) => {
+            const shouldInclude = 
+              product.id !== "681449c6b03bb3ed0c01a685" && // Remove the original Phoenix Logo
+              (product.title === "Eternal Lotus (Black & Grey)" || 
+               product.title === "Eternal Lotus - Purple Floral Graphic Tee ");
+            
+            // Debug: Log each product's title and whether it's included
+            console.log(`Product: ${product.title}, Included: ${shouldInclude}`);
+            return shouldInclude;
+          }
+        );
 
-  // Build image paths
-  let images: string[] = [];
-  if (isEternalElegance) {
-    const colorName = SHIRT_COLOR_CODE_TO_NAME[selectedShirtColor.value] || selectedShirtColor.value;
-    const logoKey = selectedLogoColor.value;
-    images = eternalEleganceImages[colorName]?.[logoKey] || [];
-  } else {
-    const imageBase = `/images/phoenixES/${selectedShirtColor.value}_${selectedLogoColor.value}`;
-    images = [
-      `${imageBase}.jpg`,
-      `${imageBase}1.jpg`,
-    ];
+        // Debug: Log filtered products
+        console.log('Filtered products:', filteredProducts.map((p: Product) => p.title));
+
+        // Filter out customizable products and create a single combined product
+        const customizableProducts = filteredProducts.filter((product: Product) => product.customizable);
+        const regularProducts = filteredProducts.filter((product: Product) => !product.customizable);
+        
+        // Create a single combined customizable product
+        const combinedCustomizableProduct: Product = {
+          id: 'customizable-tshirt',
+          title: 'ES Phoenix Logo',
+          images: [
+            { src: '/images/phoenixES/black_grey.jpg' }, // Default image
+            { src: '/images/phoenixES/black_grey1.jpg' } // Default back view
+          ],
+          variants: [{
+            id: 'default',
+            title: 'Starting at',
+            price: '3500' // $35.00 in cents
+          }],
+          customizable: true,
+          colorMappings: [
+            // Black shirt combinations
+            {
+              shirtColor: 'black',
+              logoColor: 'grey',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('black grey'))?.id || '',
+              images: [
+                '/images/phoenixES/black_grey.jpg',
+                '/images/phoenixES/black_grey1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'black',
+              logoColor: 'violet',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('black violet'))?.id || '',
+              images: [
+                '/images/phoenixES/black_violet.jpg',
+                '/images/phoenixES/black_violet1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'black',
+              logoColor: 'white',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('black white'))?.id || '',
+              images: [
+                '/images/phoenixES/black_white.jpg',
+                '/images/phoenixES/black_white1.jpg'
+              ]
+            },
+            // Charcoal shirt combinations
+            {
+              shirtColor: 'charcoal',
+              logoColor: 'black',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('charcoal black'))?.id || '',
+              images: [
+                '/images/phoenixES/charcoal_black.jpg',
+                '/images/phoenixES/charcoal_black1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'charcoal',
+              logoColor: 'grey',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('charcoal grey'))?.id || '',
+              images: [
+                '/images/phoenixES/charcoal_grey.jpg',
+                '/images/phoenixES/charcoal_grey1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'charcoal',
+              logoColor: 'red',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('charcoal red'))?.id || '',
+              images: [
+                '/images/phoenixES/charcoal_red.jpg',
+                '/images/phoenixES/charcoal_red1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'charcoal',
+              logoColor: 'violet',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('charcoal violet'))?.id || '',
+              images: [
+                '/images/phoenixES/charcoal_violet.jpg',
+                '/images/phoenixES/charcoal_violet1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'charcoal',
+              logoColor: 'white',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('charcoal white'))?.id || '',
+              images: [
+                '/images/phoenixES/charcoal_white.jpg',
+                '/images/phoenixES/charcoal_white1.jpg'
+              ]
+            },
+            // Forest Green shirt combinations
+            {
+              shirtColor: 'fgreen',
+              logoColor: 'black',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('fgreen black'))?.id || '',
+              images: [
+                '/images/phoenixES/fgreen_black.jpg',
+                '/images/phoenixES/fgreen_black1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'fgreen',
+              logoColor: 'grey',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('fgreen grey'))?.id || '',
+              images: [
+                '/images/phoenixES/fgreen_grey.jpg',
+                '/images/phoenixES/fgreen_grey1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'fgreen',
+              logoColor: 'red',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('fgreen red'))?.id || '',
+              images: [
+                '/images/phoenixES/fgreen_red.jpg',
+                '/images/phoenixES/fgreen_red1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'fgreen',
+              logoColor: 'violet',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('fgreen violet'))?.id || '',
+              images: [
+                '/images/phoenixES/fgreen_violet.jpg',
+                '/images/phoenixES/fgreen_violet1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'fgreen',
+              logoColor: 'white',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('fgreen white'))?.id || '',
+              images: [
+                '/images/phoenixES/fgreen_white.jpg',
+                '/images/phoenixES/fgreen_white1.jpg'
+              ]
+            },
+            // Light Blue shirt combinations
+            {
+              shirtColor: 'lblue',
+              logoColor: 'black',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('lblue black'))?.id || '',
+              images: [
+                '/images/phoenixES/lblue_black.jpg',
+                '/images/phoenixES/lblue_black1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'lblue',
+              logoColor: 'grey',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('lblue grey'))?.id || '',
+              images: [
+                '/images/phoenixES/lblue_grey.jpg',
+                '/images/phoenixES/lblue_grey1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'lblue',
+              logoColor: 'red',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('lblue red'))?.id || '',
+              images: [
+                '/images/phoenixES/lblue_red.jpg',
+                '/images/phoenixES/lblue_red1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'lblue',
+              logoColor: 'violet',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('lblue violet'))?.id || '',
+              images: [
+                '/images/phoenixES/lblue_violet.jpg',
+                '/images/phoenixES/lblue_violet1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'lblue',
+              logoColor: 'white',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('lblue white'))?.id || '',
+              images: [
+                '/images/phoenixES/lblue_white.jpg',
+                '/images/phoenixES/lblue_white1.jpg'
+              ]
+            },
+            // Sand shirt combinations
+            {
+              shirtColor: 'sand',
+              logoColor: 'black',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('sand black'))?.id || '',
+              images: [
+                '/images/phoenixES/sand_black.jpg',
+                '/images/phoenixES/sand_black1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'sand',
+              logoColor: 'grey',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('sand grey'))?.id || '',
+              images: [
+                '/images/phoenixES/sand_grey.jpg',
+                '/images/phoenixES/sand_grey1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'sand',
+              logoColor: 'red',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('sand red'))?.id || '',
+              images: [
+                '/images/phoenixES/sand_red.jpg',
+                '/images/phoenixES/sand_red1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'sand',
+              logoColor: 'violet',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('sand violet'))?.id || '',
+              images: [
+                '/images/phoenixES/sand_violet.jpg',
+                '/images/phoenixES/sand_violet1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'sand',
+              logoColor: 'white',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('sand white'))?.id || '',
+              images: [
+                '/images/phoenixES/sand_white.jpg',
+                '/images/phoenixES/sand_white1.jpg'
+              ]
+            },
+            // White shirt combinations
+            {
+              shirtColor: 'white',
+              logoColor: 'black',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('white black'))?.id || '',
+              images: [
+                '/images/phoenixES/white_black.jpg',
+                '/images/phoenixES/white_black1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'white',
+              logoColor: 'grey',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('white grey'))?.id || '',
+              images: [
+                '/images/phoenixES/white_grey.jpg',
+                '/images/phoenixES/white_grey1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'white',
+              logoColor: 'red',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('white red'))?.id || '',
+              images: [
+                '/images/phoenixES/white_red.jpg',
+                '/images/phoenixES/white_red1.jpg'
+              ]
+            },
+            {
+              shirtColor: 'white',
+              logoColor: 'violet',
+              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('white violet'))?.id || '',
+              images: [
+                '/images/phoenixES/white_violet.jpg',
+                '/images/phoenixES/white_violet1.jpg'
+              ]
+            }
+          ]
+        };
+
+        // Create Eternal Elegance product
+        const newCombinedProduct: Product = {
+          id: 'new-customizable-tshirt',
+          title: 'Eternal Elegance',
+          images: [
+            { src: '/images/eternal_elegance/elegance_white_red.jpg' }, // Default display image
+            { src: '/images/eternal_elegance/elegance_white_red1.jpg' } // Hover image
+          ],
+          variants: [{
+            id: 'default',
+            title: 'Starting at',
+            price: '3500' // $35.00 in cents - will be updated
+          }],
+          customizable: true,
+          colorMappings: [
+            // Will be populated with the provided details
+            {
+              shirtColor: '', // To be provided
+              logoColor: '', // To be provided
+              printifyProductId: '6814c6d00ed813d9e5087aea',
+              images: [] // To be provided
+            },
+            {
+              shirtColor: '', // To be provided
+              logoColor: '', // To be provided
+              printifyProductId: '68163317960c7decc0099499',
+              images: [] // To be provided
+            },
+            {
+              shirtColor: '', // To be provided
+              logoColor: '', // To be provided
+              printifyProductId: '6816351f960c7decc0099524',
+              images: [] // To be provided
+            },
+            {
+              shirtColor: '', // To be provided
+              logoColor: '', // To be provided
+              printifyProductId: '681637d444c4abfbc303ec25',
+              images: [] // To be provided
+            },
+            {
+              shirtColor: '', // To be provided
+              logoColor: '', // To be provided
+              printifyProductId: '6816397864bdd1b0c608ecf7',
+              images: [] // To be provided
+            },
+            {
+              shirtColor: '', // To be provided
+              logoColor: '', // To be provided
+              printifyProductId: '68163f2a42fcdb2640010975',
+              images: [] // To be provided
+            }
+          ]
+        };
+
+        // Combine only the four specified products
+        setProducts([
+          combinedCustomizableProduct, // ES Phoenix Logo
+          newCombinedProduct, // Eternal Elegance
+          ...regularProducts // Eternal Lotus (Black & Grey) and Eternal Lotus - Purple Floral Graphic Tee
+        ]);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const formatPrice = (price: string) => {
+    // Convert price to number and format with 2 decimal places
+    const numericPrice = parseFloat(price) / 100; // Convert cents to dollars
+    return numericPrice.toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
   }
 
-  // Filter logo colors based on selected shirt color
-  const validLogoColors = logoColors.filter(
-    (color) =>
-      !INVALID_COMBOS.some(
-        combo =>
-          combo.shirt === selectedShirtColor.value &&
-          combo.logo === color.value
-      )
-  );
+  if (error) {
+    return (
+      <div className="text-center text-red-600 p-4">
+        Error: {error}
+      </div>
+    );
+  }
 
-  // Auto-select a valid logo color if the current one becomes invalid
-  useEffect(() => {
-    if (!validLogoColors.some(c => c.value === selectedLogoColor.value)) {
-      setSelectedLogoColor(validLogoColors[0]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedShirtColor]);
-
-  const handleAddToCart = async () => {
-    if (!variant) return;
-    try {
-      setIsAddingToCart(true);
-      setError(null);
-      addItem({
-        id: productId,
-        variantId: variant.variant_id,
-        name: product.title,
-        color: colorKey,
-        logo: logoKey,
-        size: sizeKey,
-        price: variant.price / 100,
-        quantity: 1,
-        image: images[0],
-      });
-      setIsCartOpen(true);
-      setSuccessMessage('Product added to cart!');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsAddingToCart(false);
-    }
-  };
-
-  const handleCustomize = async (shirtColor: string, logoColor: string, size: string) => {
-    try {
-      setIsAddingToCart(true);
-      setError(null);
-
-      // Get the product ID directly from your mapping
-      const productId = LOGO_COLOR_TO_PRODUCT_ID[logoColor];
-      if (!productId) {
-        setError('No product ID found for selected logo color');
-        return;
-      }
-
-      // Get the full color name for lookup
-      const colorName = SHIRT_COLOR_CODE_TO_NAME[shirtColor] || shirtColor;
-
-      // Check if the variant exists for the selected shirt color and size
-      const variant = productVariantsTyped[productId]?.[colorName]?.[size];
-      if (!variant) {
-        setError('No variant found for selected options');
-        return;
-      }
-
-      // Add the item to the cart
-      addItem({
-        id: productId,
-        variantId: variant.variant_id,
-        name: product.title,
-        color: shirtColor,
-        logo: logoColor,
-        size,
-        price: variant.price / 100,
-        quantity: 1,
-        image: `/images/phoenixES/${shirtColor}_${logoColor}.jpg`,
-      });
-      setIsCartOpen(true);
-      setSuccessMessage('Product added to cart!');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
-    } finally {
-      setIsAddingToCart(false);
-    }
-  };
-
-  const handleImageClick = (index: number) => {
-    setCurrentImageIndex(index);
-  };
-
-  const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedSize(e.target.value);
-  };
+  if (selectedProduct) {
+    return (
+      <div className="max-w-4xl mx-auto p-8">
+        <button
+          onClick={() => setSelectedProduct(null)}
+          className="mb-8 text-gray-600 hover:text-gray-900 flex items-center"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Products
+        </button>
+        {selectedProduct.customizable ? (
+          <ProductCustomizer product={selectedProduct} />
+        ) : (
+          <ProductViewer product={selectedProduct} />
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Mobile Layout */}
-      <div className="lg:hidden space-y-6">
-        <div className="relative h-[350px] rounded-lg overflow-hidden">
-          <Image
-            src={images[currentImageIndex]}
-            alt={`${product.title} - ${selectedShirtColor.name} shirt with ${selectedLogoColor.name} logo`}
-            fill
-            className="object-contain"
-            priority
-          />
-        </div>
-        {/* Price and Stock Status */}
-        {product.variants[0] && (
-          <div className="mb-4 flex items-center gap-4">
-            <div className="inline-block px-4 py-2 rounded" style={{ background: '#15803D' }}>
-              <span className="text-white font-semibold">
-                Price: ${(parseInt(product.variants[0].price) / 100).toFixed(2)}
-              </span>
-            </div>
-            <div className="text-green-700 font-medium">
-              In Stock
-            </div>
-          </div>
-        )}
-
-        {/* Shirt Color Selection */}
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2 text-gray-900">Shirt Color</h3>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {shirtColors.map((color) => (
-              <button
-                key={color.value}
-                className={`w-10 h-10 rounded-full border-2 flex-shrink-0 ${
-                  selectedShirtColor.value === color.value
-                    ? 'border-gray-900'
-                    : 'border-transparent'
-                }`}
-                style={{ backgroundColor: color.hex }}
-                onClick={() => setSelectedShirtColor(color)}
-                title={color.name}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Logo Color Selection */}
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2 text-gray-900">Logo Color</h3>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {validLogoColors.map((color) => (
-              <button
-                key={color.value}
-                className={`w-10 h-10 rounded-full border-2 flex-shrink-0 ${
-                  selectedLogoColor.value === color.value
-                    ? 'border-gray-900'
-                    : 'border-transparent'
-                }`}
-                style={{ backgroundColor: color.hex }}
-                onClick={() => setSelectedLogoColor(color)}
-                title={color.name}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Size Selection */}
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2 text-gray-900">Size</h3>
-          <select
-            value={selectedSize}
-            onChange={handleSizeChange}
-            className="w-full p-2 border rounded text-gray-900"
-          >
-            {availableSizes.map((size) => (
-              <option key={size} value={size}>{size}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Add to Cart Button */}
-        <button
-          disabled={isAddingToCart}
-          onClick={() => handleCustomize(selectedShirtColor.value, selectedLogoColor.value, selectedSize)}
-          className="w-full py-3 rounded text-white text-lg font-semibold transition-colors duration-200"
-          style={{ background: '#15803D' }}
-        >
-          {isAddingToCart ? 'Adding...' : 'Add to Cart'}
-        </button>
-      </div>
-
-      {/* Desktop Layout - Hidden on mobile */}
-      <div className="hidden md:block">
-        <div className="grid grid-cols-[minmax(0,1.5fr),minmax(0,0.5fr)] gap-16 -ml-4">
-          {/* Left Column - Product Image */}
-          <div className="space-y-4">
-            <div 
-              className="relative w-full h-[600px] cursor-pointer bg-white rounded-lg p-4" 
-              onClick={() => handleImageClick(currentImageIndex === 0 ? 1 : 0)}
-            >
-              <img
-                src={images[currentImageIndex]}
-                alt={`${selectedShirtColor.name} shirt with ${selectedLogoColor.name} logo`}
-                className="w-full h-full object-contain"
-              />
-            </div>
-            {product.variants[0] && (
-              <div className="flex items-center gap-4">
-                <div className="px-4 py-2 rounded" style={{ background: '#15803D' }}>
-                  <span className="text-white font-semibold">
-                    Price: ${(parseInt(product.variants[0].price) / 100).toFixed(2)}
-                  </span>
-                </div>
-                <div className="text-green-700 font-medium">
-                  In Stock
-                </div>
+    <>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-2 lg:gap-3 p-2 md:p-4">
+        {products.map((product) => (
+          <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[200px] md:max-w-[240px] mx-auto h-[280px] md:h-[320px] flex flex-col">
+            {product.images[0] && (
+              <div 
+                className="cursor-pointer h-[160px] md:h-[200px] flex items-center justify-center bg-gray-50 relative group"
+                onClick={() => {
+                  if (product.customizable) {
+                    setSelectedProduct(product);
+                    onCustomizationModeChange(true);
+                    onViewModeChange(false);
+                  } else {
+                    setSelectedImageIndex(0);
+                    setIsGalleryOpen(true);
+                    setSelectedProduct({ ...product, customizable: false });
+                  }
+                }}
+              >
+                {/* Main Image */}
+                <img
+                  src={product.images[0].src}
+                  alt={product.title}
+                  className="w-full h-full object-contain p-2 transition-opacity duration-300 group-hover:opacity-0"
+                />
+                {/* Hover Image */}
+                {product.images[1] && (
+                  <img
+                    src={product.images[1].src}
+                    alt={`${product.title} - Back View`}
+                    className="absolute inset-0 w-full h-full object-contain p-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  />
+                )}
               </div>
             )}
-          </div>
-
-          {/* Right Column - Customization Options */}
-          <div className="space-y-6 mt-24">
-            {/* Shirt Color Selection */}
-            <div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900">Shirt Color</h3>
-              <div className="flex flex-wrap gap-3">
-                {shirtColors.map((color) => (
-                  <button
-                    key={color.value}
-                    className={`w-12 h-12 rounded-full border-2 ${
-                      selectedShirtColor.value === color.value
-                        ? 'border-gray-900'
-                        : 'border-transparent'
-                    }`}
-                    style={{ backgroundColor: color.hex }}
-                    onClick={() => setSelectedShirtColor(color)}
-                    title={color.name}
-                  />
-                ))}
-              </div>
+            <div className="p-2 flex flex-col flex-grow">
+              <h3 className="text-xs md:text-sm font-semibold text-gray-900 mb-1 line-clamp-2 flex-grow">{product.title}</h3>
+              <p className="text-xs md:text-sm text-gray-600 mb-2">{formatPrice(product.variants[0]?.price || '0')}</p>
             </div>
-
-            {/* Logo Color Selection */}
-            <div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900">Logo Color</h3>
-              <div className="flex flex-wrap gap-3">
-                {validLogoColors.map((color) => (
-                  <button
-                    key={color.value}
-                    className={`w-12 h-12 rounded-full border-2 ${
-                      selectedLogoColor.value === color.value
-                        ? 'border-gray-900'
-                        : 'border-transparent'
-                    }`}
-                    style={{ backgroundColor: color.hex }}
-                    onClick={() => setSelectedLogoColor(color)}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Size Selection */}
-            <div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900">Size</h3>
-              <select
-                value={selectedSize}
-                onChange={handleSizeChange}
-                className="w-full p-2 border rounded text-gray-900"
-              >
-                {availableSizes.map((size) => (
-                  <option key={size} value={size}>{size}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Add to Cart Button */}
             <button
-              disabled={isAddingToCart}
-              onClick={() => handleCustomize(selectedShirtColor.value, selectedLogoColor.value, selectedSize)}
-              className="w-full py-4 rounded text-white text-xl font-semibold transition-colors duration-200"
-              style={{ background: '#15803D' }}
+              className="w-full bg-gray-900 text-white py-2 px-3 rounded-none text-xs md:text-sm hover:bg-gray-800 transition-colors"
+              onClick={() => {
+                setSelectedProduct(product);
+                if (product.customizable) {
+                  onCustomizationModeChange(true);
+                  onViewModeChange(false);
+                } else {
+                  onViewModeChange(true);
+                  onCustomizationModeChange(false);
+                }
+              }}
             >
-              {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+              {product.customizable ? 'Customize' : 'View Options'}
             </button>
           </div>
-        </div>
+        ))}
       </div>
 
-      {/* Error and Success Messages */}
-      {error && <div className="text-red-500 text-center">{error}</div>}
-      {successMessage && <div className="text-green-500 text-center">{successMessage}</div>}
-    </div>
+      {/* Full-screen Image Gallery Modal */}
+      {isGalleryOpen && selectedProduct && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+          <div className="relative w-full max-w-2xl h-full max-h-[80vh] flex flex-col">
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                setIsGalleryOpen(false);
+                setSelectedProduct(null);
+                onCustomizationModeChange(false);
+                onViewModeChange(false);
+              }}
+              className="absolute top-0 right-0 text-white hover:text-gray-300 p-4 z-50 touch-manipulation"
+              aria-label="Close modal"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            {/* Image Container */}
+            <div className="relative flex-1 flex items-center justify-center">
+              {/* Previous Image Button */}
+              <button
+                onClick={() => setSelectedImageIndex(prev => 
+                  prev > 0 ? prev - 1 : (selectedProduct as Product).images.length - 1
+                )}
+                className="absolute left-0 text-white hover:text-gray-300 p-2 bg-black/50 rounded-r-lg z-50 touch-manipulation"
+                aria-label="Previous image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              {/* Current Image */}
+              <img
+                src={(selectedProduct as Product).images[selectedImageIndex].src}
+                alt={`${(selectedProduct as Product).title} - Image ${selectedImageIndex + 1}`}
+                className="max-h-[70vh] max-w-full object-contain"
+              />
+
+              {/* Next Image Button */}
+              <button
+                onClick={() => setSelectedImageIndex(prev => 
+                  prev < (selectedProduct as Product).images.length - 1 ? prev + 1 : 0
+                )}
+                className="absolute right-0 text-white hover:text-gray-300 p-2 bg-black/50 rounded-l-lg z-50 touch-manipulation"
+                aria-label="Next image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Image Counter and Title */}
+            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-3 text-center z-50">
+              <div className="text-base font-semibold">{(selectedProduct as Product).title}</div>
+              <div className="text-sm">
+                {selectedImageIndex + 1} / {(selectedProduct as Product).images.length}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 } 
