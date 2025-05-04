@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useCart, CartContextType } from '../context/CartContext';
 import { productVariants } from './productVariants';
 import Image from 'next/image';
+import { eternalEleganceImages } from './eternalEleganceImages';
+import { eternalEleganceVariants } from './eternalEleganceVariants';
 
 // Add type for productVariants with index signature
 interface ProductVariantsType {
@@ -44,6 +46,25 @@ interface ProductCustomizerProps {
   };
 }
 
+// Eternal Elegance color options
+const EE_SHIRT_COLORS: ColorOption[] = [
+  { name: 'Black', value: 'black', hex: '#000000' },
+  { name: 'Charcoal', value: 'charcoal', hex: '#36454F' },
+  { name: 'Forest Green', value: 'fgreen', hex: '#228B22' },
+  { name: 'Light Blue', value: 'lblue', hex: '#ADD8E6' },
+  { name: 'Sand', value: 'sand', hex: '#C2B280' },
+  { name: 'White', value: 'white', hex: '#FFFFFF' },
+];
+
+const EE_LOGO_COLORS: ColorOption[] = [
+  { name: 'Grey', value: 'grey', hex: '#808080' },
+  { name: 'Violet', value: 'violet', hex: '#8F00FF' },
+  { name: 'White', value: 'white', hex: '#FFFFFF' },
+  { name: 'Black', value: 'black', hex: '#000000' },
+  { name: 'Red', value: 'red', hex: '#FF0000' },
+  { name: 'Blue', value: 'blue', hex: '#0000FF' },
+];
+
 const SHIRT_COLORS: ColorOption[] = [
   { name: 'Black', value: 'black', hex: '#000000' },
   { name: 'Charcoal', value: 'charcoal', hex: '#36454F' },
@@ -84,6 +105,16 @@ const LOGO_COLOR_TO_PRODUCT_ID: Record<string, string> = {
   white: '6814469c5057e72cc20d67c7',
 };
 
+// Eternal Elegance logo color to product ID mapping
+const EE_LOGO_COLOR_TO_PRODUCT_ID: Record<string, string> = {
+  red: '68163f2a42fcdb2640010975',
+  blue: '6816397864bdd1b0c608ecf7',
+  white: '681637d444c4abfbc303ec25',
+  violet: '6816351f960c7decc0099524',
+  grey: '68163317960c7decc0099499',
+  black: '6814c6d00ed813d9e5087aea',
+};
+
 // Replace productVariants import type with ProductVariantsType
 const productVariantsTyped: ProductVariantsType = productVariants;
 
@@ -95,8 +126,12 @@ const INVALID_COMBOS: Array<{ shirt: string; logo: string }> = [
 ];
 
 export default function ProductCustomizer({ product }: ProductCustomizerProps) {
-  const [selectedShirtColor, setSelectedShirtColor] = useState<ColorOption>(SHIRT_COLORS[0]);
-  const [selectedLogoColor, setSelectedLogoColor] = useState<ColorOption>(LOGO_COLORS[0]);
+  const isEternalElegance = product.title.toLowerCase().includes('eternal elegance');
+  // Use correct color options
+  const shirtColors = isEternalElegance ? EE_SHIRT_COLORS : SHIRT_COLORS;
+  const logoColors = isEternalElegance ? EE_LOGO_COLORS : LOGO_COLORS;
+  const [selectedShirtColor, setSelectedShirtColor] = useState<ColorOption>(shirtColors[0]);
+  const [selectedLogoColor, setSelectedLogoColor] = useState<ColorOption>(logoColors[0]);
   const [selectedSize, setSelectedSize] = useState<string>('M');
   const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -104,9 +139,14 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
   const { addItem, setIsCartOpen } = useCart();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Use correct variant mapping
+  const productVariantsTyped: ProductVariantsType = isEternalElegance ? eternalEleganceVariants : productVariants;
+
   const logoKey = selectedLogoColor.value;
   // Use the mapped product ID for productVariants lookup
-  const productId = LOGO_COLOR_TO_PRODUCT_ID[logoKey] || Object.keys(productVariantsTyped)[0];
+  const productId = isEternalElegance
+    ? EE_LOGO_COLOR_TO_PRODUCT_ID[logoKey]
+    : LOGO_COLOR_TO_PRODUCT_ID[logoKey] || Object.keys(productVariantsTyped)[0];
   const colorKey = selectedShirtColor.value;
   // Use the full color name for productVariants lookup
   const colorName = SHIRT_COLOR_CODE_TO_NAME[colorKey] || colorKey;
@@ -115,14 +155,21 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
   const availableSizes = Object.keys(productVariantsTyped[productId]?.[colorName] || {});
 
   // Build image paths
-  const imageBase = `/images/phoenixES/${selectedShirtColor.value}_${selectedLogoColor.value}`;
-  const images = [
-    `${imageBase}.jpg`,
-    `${imageBase}1.jpg`,
-  ];
+  let images: string[] = [];
+  if (isEternalElegance) {
+    const colorName = SHIRT_COLOR_CODE_TO_NAME[selectedShirtColor.value] || selectedShirtColor.value;
+    const logoKey = selectedLogoColor.value;
+    images = eternalEleganceImages[colorName]?.[logoKey] || [];
+  } else {
+    const imageBase = `/images/phoenixES/${selectedShirtColor.value}_${selectedLogoColor.value}`;
+    images = [
+      `${imageBase}.jpg`,
+      `${imageBase}1.jpg`,
+    ];
+  }
 
   // Filter logo colors based on selected shirt color
-  const validLogoColors = LOGO_COLORS.filter(
+  const validLogoColors = logoColors.filter(
     (color) =>
       !INVALID_COMBOS.some(
         combo =>
@@ -246,7 +293,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2 text-gray-900">Shirt Color</h3>
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {SHIRT_COLORS.map((color) => (
+            {shirtColors.map((color) => (
               <button
                 key={color.value}
                 className={`w-10 h-10 rounded-full border-2 flex-shrink-0 ${
@@ -342,7 +389,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
             <div>
               <h3 className="text-xl font-semibold mb-3 text-gray-900">Shirt Color</h3>
               <div className="flex flex-wrap gap-3">
-                {SHIRT_COLORS.map((color) => (
+                {shirtColors.map((color) => (
                   <button
                     key={color.value}
                     className={`w-12 h-12 rounded-full border-2 ${
