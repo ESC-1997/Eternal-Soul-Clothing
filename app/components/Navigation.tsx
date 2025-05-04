@@ -79,7 +79,7 @@ export default function Navigation() {
 
             <Link 
               href="/shop" 
-              className="group flex flex-col items-center"
+              className="group flex flex-col items-center relative"
               onClick={() => setIsOpen(false)}
             >
               <div className="flex justify-center">
@@ -213,6 +213,15 @@ export default function Navigation() {
                         >
                           +
                         </button>
+                        {/* Remove button to the right of quantity */}
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.id, item.size, item.color, item.logo)}
+                          className="ml-2 p-1 hover:bg-red-100 rounded"
+                          aria-label="Remove item"
+                        >
+                          <img src="/images/trash.png" alt="Remove" className="w-7 h-7" />
+                        </button>
                       </div>
                     </div>
                     <div className="font-semibold text-gray-900">${(item.price * item.quantity).toFixed(2)}</div>
@@ -224,6 +233,11 @@ export default function Navigation() {
 
           {/* Cart Footer */}
           <div className="border-t pt-4 mt-4">
+            {/* Subtotal Section */}
+            <div className="flex justify-between items-center mb-2 px-2 py-2 rounded" style={{ background: '#DADBE4' }}>
+              <span className="font-semibold text-[#1B1F3B]">Subtotal</span>
+              <span className="font-semibold text-[#1B1F3B]">${subtotal.toFixed(2)}</span>
+            </div>
             <div className="flex justify-between mb-4">
               <span className="font-semibold">Total</span>
               <span>${subtotal.toFixed(2)}</span>
