@@ -52,10 +52,24 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
         }
         const data = await response.json();
         
-        // Remove the product with ID 681449c6b03bb3ed0c01a685 from the main shop list
+        // Debug: Log all product titles
+        console.log('All products:', data.map((p: Product) => p.title));
+        
         const filteredProducts = data.filter(
-          (product: Product) => product.id !== "681449c6b03bb3ed0c01a685"
+          (product: Product) => {
+            const shouldInclude = 
+              product.id !== "681449c6b03bb3ed0c01a685" && // Remove the original Phoenix Logo
+              (product.title === "Eternal Lotus (Black & Grey)" || 
+               product.title === "Eternal Lotus - Purple Floral Graphic Tee ");
+            
+            // Debug: Log each product's title and whether it's included
+            console.log(`Product: ${product.title}, Included: ${shouldInclude}`);
+            return shouldInclude;
+          }
         );
+
+        // Debug: Log filtered products
+        console.log('Filtered products:', filteredProducts.map((p: Product) => p.title));
 
         // Filter out customizable products and create a single combined product
         const customizableProducts = filteredProducts.filter((product: Product) => product.customizable);
@@ -328,8 +342,67 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
           ]
         };
 
-        // Combine regular products with the single customizable product
-        setProducts([combinedCustomizableProduct, ...regularProducts]);
+        // Create Eternal Elegance product
+        const newCombinedProduct: Product = {
+          id: 'new-customizable-tshirt',
+          title: 'Eternal Elegance',
+          images: [
+            { src: '/images/eternal_elegance/elegance_white_red.jpg' }, // Default display image
+            { src: '/images/eternal_elegance/elegance_white_red1.jpg' } // Hover image
+          ],
+          variants: [{
+            id: 'default',
+            title: 'Starting at',
+            price: '3500' // $35.00 in cents - will be updated
+          }],
+          customizable: true,
+          colorMappings: [
+            // Will be populated with the provided details
+            {
+              shirtColor: '', // To be provided
+              logoColor: '', // To be provided
+              printifyProductId: '6814c6d00ed813d9e5087aea',
+              images: [] // To be provided
+            },
+            {
+              shirtColor: '', // To be provided
+              logoColor: '', // To be provided
+              printifyProductId: '68163317960c7decc0099499',
+              images: [] // To be provided
+            },
+            {
+              shirtColor: '', // To be provided
+              logoColor: '', // To be provided
+              printifyProductId: '6816351f960c7decc0099524',
+              images: [] // To be provided
+            },
+            {
+              shirtColor: '', // To be provided
+              logoColor: '', // To be provided
+              printifyProductId: '681637d444c4abfbc303ec25',
+              images: [] // To be provided
+            },
+            {
+              shirtColor: '', // To be provided
+              logoColor: '', // To be provided
+              printifyProductId: '6816397864bdd1b0c608ecf7',
+              images: [] // To be provided
+            },
+            {
+              shirtColor: '', // To be provided
+              logoColor: '', // To be provided
+              printifyProductId: '68163f2a42fcdb2640010975',
+              images: [] // To be provided
+            }
+          ]
+        };
+
+        // Combine only the four specified products
+        setProducts([
+          combinedCustomizableProduct, // ES Phoenix Logo
+          newCombinedProduct, // Eternal Elegance
+          ...regularProducts // Eternal Lotus (Black & Grey) and Eternal Lotus - Purple Floral Graphic Tee
+        ]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -397,9 +470,15 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
               <div 
                 className="cursor-pointer h-[160px] md:h-[200px] flex items-center justify-center bg-gray-50 relative group"
                 onClick={() => {
-                  setSelectedImageIndex(0);
-                  setIsGalleryOpen(true);
-                  setSelectedProduct({ ...product, customizable: false });
+                  if (product.customizable) {
+                    setSelectedProduct(product);
+                    onCustomizationModeChange(true);
+                    onViewModeChange(false);
+                  } else {
+                    setSelectedImageIndex(0);
+                    setIsGalleryOpen(true);
+                    setSelectedProduct({ ...product, customizable: false });
+                  }
                 }}
               >
                 {/* Main Image */}
