@@ -104,7 +104,7 @@ export default function ProfilePage() {
         </h1>
       </div>
       <p className="mb-6 text-gray-600 max-w-2xl text-center mx-auto">
-        Step into your realm. Update your shirt size for swift checkouts, unlock early access to exclusive drops, and stay in the loop with cosmic deals made just for you. This isn't just a profile—it's your portal to everything Eternal.
+        Step into your realm. Unlock early access to exclusive drops, and stay in the loop with cosmic deals made just for you. This isn't just a profile—it's your portal to everything Eternal.
       </p>
       <form className="space-y-4 w-full max-w-md" onSubmit={e => e.preventDefault()}>
         <div>
