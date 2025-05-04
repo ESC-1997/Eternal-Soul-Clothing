@@ -242,8 +242,9 @@ export default function Navigation() {
               <span className="font-semibold">Total</span>
               <span>${subtotal.toFixed(2)}</span>
             </div>
-            <button className="w-full bg-gray-900 text-white py-3 rounded hover:bg-gray-800 transition-colors" onClick={() => {/* TODO: handle checkout */}}>
-              Checkout
+            <button className="w-full bg-gray-900 text-white py-3 rounded hover:bg-gray-800 transition-colors flex items-center justify-center gap-2" onClick={() => {/* TODO: handle checkout */}}>
+              <span className="text-lg font-semibold">Checkout</span>
+              <img src="/images/credit_card1.png" alt="Checkout" className="w-8 h-7 ml-2" />
             </button>
             {cartItems.length > 0 && (
               <button className="w-full mt-2 text-xs text-gray-500 hover:underline" onClick={clearCart}>
