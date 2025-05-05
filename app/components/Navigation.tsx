@@ -4,11 +4,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '../context/CartContext';
+import { useProfileDrawer } from '../context/ProfileDrawerContext';
+import ProfileDrawer from './ProfileDrawer';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const { items: cartItems, subtotal, removeItem, updateQuantity, clearCart, isCartOpen, setIsCartOpen } = useCart();
+  const { user, drawerOpen, setDrawerOpen } = useProfileDrawer();
 
   // Close menu when route changes
   useEffect(() => {
@@ -96,24 +99,25 @@ export default function Navigation() {
               </button>
             </Link>
 
-            <Link 
-              href="/profile" 
-              className="group flex flex-col items-center"
-              onClick={() => setIsOpen(false)}
-            >
-              <div className="flex justify-center">
-                <Image
-                  src="/images/Profile.png"
-                  alt="Profile"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                />
-              </div>
-              <button className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
-                Profile
+            {user && (
+              <button
+                className="group flex flex-col items-center"
+                onClick={() => setDrawerOpen(true)}
+              >
+                <div className="flex justify-center">
+                  <Image
+                    src="/images/Profile.png"
+                    alt="Profile"
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
+                </div>
+                <span className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
+                  Profile
+                </span>
               </button>
-            </Link>
+            )}
 
             {/* Cart Button */}
             <div className="flex flex-col items-center space-y-1 mt-auto">
@@ -270,6 +274,9 @@ export default function Navigation() {
           onClick={() => setIsCartOpen(false)}
         />
       )}
+
+      {/* Render the ProfileDrawer globally so it can open from anywhere */}
+      <ProfileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </>
   );
 } 

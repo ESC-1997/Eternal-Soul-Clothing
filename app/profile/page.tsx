@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { supabase } from '../supabaseClient';
+import { useProfileDrawer } from '../context/ProfileDrawerContext';
 
 export default function ProfilePage() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
@@ -9,7 +10,7 @@ export default function ProfilePage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const { user, setUser, setDrawerOpen } = useProfileDrawer();
 
   // Handle sign in
   const handleSignIn = async () => {
@@ -23,6 +24,7 @@ export default function ProfilePage() {
       setError(error.message);
     } else {
       setUser(data.user);
+      setDrawerOpen(true);
     }
     setLoading(false);
   };
@@ -44,6 +46,7 @@ export default function ProfilePage() {
     if (data.user) {
       await supabase.from('profiles').insert({ id: data.user.id });
       setUser(data.user);
+      setDrawerOpen(true);
     }
     setLoading(false);
   };
@@ -53,7 +56,7 @@ export default function ProfilePage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setUser(user);
     });
-  }, []);
+  }, [setUser]);
 
   if (user) {
     return (

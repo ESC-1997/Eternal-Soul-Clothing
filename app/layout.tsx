@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Navigation from './components/Navigation';
 import { CartProvider } from './context/CartContext';
+import { ProfileDrawerProvider } from './context/ProfileDrawerContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -25,12 +26,14 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css?family=Bebas+Neue&display=swap" rel="stylesheet" />
       </head>
       <body className={inter.className} suppressHydrationWarning>
-        <CartProvider>
-          <Navigation />
-          <div className="lg:ml-24">
-            {children}
-          </div>
-        </CartProvider>
+        <ProfileDrawerProvider>
+          <CartProvider>
+            <Navigation />
+            <div className="lg:ml-24">
+              {children}
+            </div>
+          </CartProvider>
+        </ProfileDrawerProvider>
       </body>
     </html>
   );
