@@ -5,6 +5,7 @@ import { productVariants } from './productVariants';
 import Image from 'next/image';
 import { eternalEleganceImages } from './eternalEleganceImages';
 import { eternalEleganceVariants } from './eternalEleganceVariants';
+import { useProfileDrawer } from '../context/ProfileDrawerContext';
 
 // Add type for productVariants with index signature
 interface ProductVariantsType {
@@ -126,13 +127,14 @@ const INVALID_COMBOS: Array<{ shirt: string; logo: string }> = [
 ];
 
 export default function ProductCustomizer({ product }: ProductCustomizerProps) {
+  const { profile } = useProfileDrawer();
   const isEternalElegance = product.title.toLowerCase().includes('eternal elegance');
   // Use correct color options
   const shirtColors = isEternalElegance ? EE_SHIRT_COLORS : SHIRT_COLORS;
   const logoColors = isEternalElegance ? EE_LOGO_COLORS : LOGO_COLORS;
   const [selectedShirtColor, setSelectedShirtColor] = useState<ColorOption>(shirtColors[0]);
   const [selectedLogoColor, setSelectedLogoColor] = useState<ColorOption>(logoColors[0]);
-  const [selectedSize, setSelectedSize] = useState<string>('M');
+  const [selectedSize, setSelectedSize] = useState<string>(profile?.shirt_size || 'M');
   const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
@@ -185,6 +187,12 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedShirtColor]);
+
+  useEffect(() => {
+    if (profile?.shirt_size) {
+      setSelectedSize(profile.shirt_size);
+    }
+  }, [profile?.shirt_size]);
 
   const handleAddToCart = async () => {
     if (!variant) return;
