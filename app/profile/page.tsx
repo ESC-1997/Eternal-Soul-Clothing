@@ -42,9 +42,18 @@ export default function ProfilePage() {
       setLoading(false);
       return;
     }
-    // Create profile row
+    // Create profile row with all required fields
     if (data.user) {
-      await supabase.from('profiles').insert({ id: data.user.id });
+      await supabase.from('profiles').insert({
+        id: data.user.id,
+        email: data.user.email || null,
+        phonenumber: null,
+        firstname: null,
+        lastname: null,
+        emailnotifications: false,
+        smsnotifications: false,
+        shirt_size: null,
+      });
       setUser(data.user);
       setDrawerOpen(true);
     }
