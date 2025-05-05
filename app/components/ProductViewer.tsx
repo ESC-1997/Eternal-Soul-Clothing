@@ -1,8 +1,9 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import Image from 'next/image';
 import { productVariants } from './productVariants';
+import { useProfileDrawer } from '../context/ProfileDrawerContext';
 
 interface ProductViewerProps {
   product: {
@@ -37,11 +38,19 @@ const COLOR_OPTIONS = [
 ];
 
 export default function ProductViewer({ product }: ProductViewerProps) {
+  const { profile } = useProfileDrawer();
   const [selectedSize, setSelectedSize] = useState<string>('M');
   const [selectedColor, setSelectedColor] = useState<string>(COLOR_OPTIONS[0].value);
   const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
   const { addItem } = useCart();
+
+  // Update selectedSize when profile?.shirt_size changes
+  useEffect(() => {
+    if (profile?.shirt_size) {
+      setSelectedSize(profile.shirt_size);
+    }
+  }, [profile?.shirt_size]);
 
   const getVariantId = () => {
     const printifyColorName = COLOR_CODE_TO_NAME[selectedColor];

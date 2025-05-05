@@ -63,9 +63,12 @@ export default function ProfilePage() {
   // Check if user is already logged in on mount
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUser(user);
+      if (user) {
+        setUser(user);
+        setDrawerOpen(true);
+      }
     });
-  }, [setUser]);
+  }, [setUser, setDrawerOpen]);
 
   if (user) {
     return (

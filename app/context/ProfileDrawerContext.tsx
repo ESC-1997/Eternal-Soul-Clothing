@@ -6,6 +6,8 @@ interface ProfileDrawerContextType {
   setUser: (user: any) => void;
   drawerOpen: boolean;
   setDrawerOpen: (open: boolean) => void;
+  profile: any;
+  setProfile: (profile: any) => void;
 }
 
 const ProfileDrawerContext = createContext<ProfileDrawerContextType | undefined>(undefined);
@@ -19,9 +21,10 @@ export function useProfileDrawer() {
 export function ProfileDrawerProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
 
   return (
-    <ProfileDrawerContext.Provider value={{ user, setUser, drawerOpen, setDrawerOpen }}>
+    <ProfileDrawerContext.Provider value={{ user, setUser, drawerOpen, setDrawerOpen, profile, setProfile }}>
       {children}
     </ProfileDrawerContext.Provider>
   );

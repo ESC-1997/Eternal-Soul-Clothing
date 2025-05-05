@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
+import { useRouter } from 'next/navigation';
+import { useProfileDrawer } from '../context/ProfileDrawerContext';
 
 const SHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'];
 
@@ -20,6 +22,9 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
   const [notifySms, setNotifySms] = useState(false);
   const [shirtSize, setShirtSize] = useState('');
 
+  const router = useRouter();
+  const { setUser: setUserInContext, setProfile: setProfileInContext } = useProfileDrawer();
+
   useEffect(() => {
     if (!open) return;
     setLoading(true);
@@ -31,6 +36,7 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
         return;
       }
       setUser(user);
+      setUserInContext(user);
       setEmail(user.email || '');
       // Fetch profile
       let { data: profileData } = await supabase
@@ -53,6 +59,7 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
         profileData = newProfile;
       }
       setProfile(profileData);
+      setProfileInContext(profileData);
       setFirstName(profileData?.firstname || '');
       setLastName(profileData?.lastname || '');
       setNotifyEmail(profileData?.emailnotifications || false);
@@ -80,15 +87,25 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
     const { error: updateError, data } = await supabase
       .from('profiles')
       .update(updateData)
-      .eq('id', user.id);
+      .eq('id', user.id)
+      .select()
+      .single();
     console.log('Update result:', { updateError, data });
     if (updateError) {
       setError('Failed to update profile.');
     } else {
       setError(null);
+      setProfileInContext(data);
       onClose();
     }
     setSaving(false);
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    onClose();
+    router.push('/');
   };
 
   return (
@@ -192,6 +209,15 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
           </>
         )}
       </form>
+      <div className="p-6 border-t">
+        <button
+          type="button"
+          className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 transition-colors font-semibold"
+          onClick={handleSignOut}
+        >
+          Sign out
+        </button>
+      </div>
     </div>
   );
 } 
