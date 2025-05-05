@@ -107,8 +107,7 @@ export default function ProfilePage() {
         </h1>
       </div>
       <p className="mb-6 text-gray-600 max-w-2xl text-center mx-auto">
-        Step into your realm. Unlock early access to exclusive drops, and stay in the loop with cosmic deals made just for you. This isn't just a profile—it's your portal to everything Eternal.
-      </p>
+      Step into your realm. Unlock early access to exclusive drops, and stay in the loop with cosmic deals made just for you. This isn't just a profile—it's your portal to everything Eternal.      </p>
       <form className="space-y-4 w-full max-w-md" onSubmit={e => e.preventDefault()}>
         <div>
           <label className="block mb-1 font-semibold text-[#1B1F3B]">Email address or phone number</label>
