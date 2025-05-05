@@ -32,19 +32,33 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
       }
       setUser(user);
       setEmail(user.email || '');
-      setPhone(user.phone || '');
       // Fetch profile
-      const { data: profileData } = await supabase
+      let { data: profileData } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
+      // If no profile row, insert one
+      if (!profileData) {
+        const { data: newProfile } = await supabase.from('profiles').insert({
+          id: user.id,
+          email: user.email || null,
+          phonenumber: null,
+          firstname: null,
+          lastname: null,
+          emailnotifications: false,
+          smsnotifications: false,
+          shirt_size: null,
+        }).select().single();
+        profileData = newProfile;
+      }
       setProfile(profileData);
-      setFirstName(profileData?.first_name || '');
-      setLastName(profileData?.last_name || '');
-      setNotifyEmail(profileData?.notify_email || false);
-      setNotifySms(profileData?.notify_sms || false);
+      setFirstName(profileData?.firstname || '');
+      setLastName(profileData?.lastname || '');
+      setNotifyEmail(profileData?.emailnotifications || false);
+      setNotifySms(profileData?.smsnotifications || false);
       setShirtSize(profileData?.shirt_size || '');
+      setPhone(profileData?.phonenumber || '');
       setLoading(false);
     });
   }, [open]);
@@ -54,19 +68,20 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
     if (!user) return;
     setSaving(true);
     setError(null);
-    // Only send fields that are not undefined
     const updateData: any = {
-      first_name: firstName ?? '',
-      last_name: lastName ?? '',
-      notify_email: !!notifyEmail,
-      notify_sms: !!notifySms,
-      shirt_size: shirtSize ?? '',
-      phone: phone ?? '',
+      firstname: firstName || null,
+      lastname: lastName || null,
+      email: email || null,
+      phonenumber: phone || null,
+      emailnotifications: !!notifyEmail,
+      smsnotifications: !!notifySms,
+      shirt_size: shirtSize || null,
     };
-    const { error: updateError } = await supabase
+    const { error: updateError, data } = await supabase
       .from('profiles')
       .update(updateData)
       .eq('id', user.id);
+    console.log('Update result:', { updateError, data });
     if (updateError) {
       setError('Failed to update profile.');
     } else {
