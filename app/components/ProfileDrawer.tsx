@@ -32,19 +32,33 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
       }
       setUser(user);
       setEmail(user.email || '');
-      setPhone(user.phone || '');
       // Fetch profile
-      const { data: profileData } = await supabase
+      let { data: profileData } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
+      // If no profile row, insert one
+      if (!profileData) {
+        const { data: newProfile } = await supabase.from('profiles').insert({
+          id: user.id,
+          email: user.email || null,
+          phonenumber: null,
+          firstname: null,
+          lastname: null,
+          emailnotifications: false,
+          smsnotifications: false,
+          shirt_size: null,
+        }).select().single();
+        profileData = newProfile;
+      }
       setProfile(profileData);
-      setFirstName(profileData?.first_name || '');
-      setLastName(profileData?.last_name || '');
-      setNotifyEmail(profileData?.notify_email || false);
-      setNotifySms(profileData?.notify_sms || false);
+      setFirstName(profileData?.firstname || '');
+      setLastName(profileData?.lastname || '');
+      setNotifyEmail(profileData?.emailnotifications || false);
+      setNotifySms(profileData?.smsnotifications || false);
       setShirtSize(profileData?.shirt_size || '');
+      setPhone(profileData?.phonenumber || '');
       setLoading(false);
     });
   }, [open]);
@@ -54,17 +68,20 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
     if (!user) return;
     setSaving(true);
     setError(null);
-    const { error: updateError } = await supabase
+    const updateData: any = {
+      firstname: firstName || null,
+      lastname: lastName || null,
+      email: email || null,
+      phonenumber: phone || null,
+      emailnotifications: !!notifyEmail,
+      smsnotifications: !!notifySms,
+      shirt_size: shirtSize || null,
+    };
+    const { error: updateError, data } = await supabase
       .from('profiles')
-      .update({
-        first_name: firstName,
-        last_name: lastName,
-        notify_email: notifyEmail,
-        notify_sms: notifySms,
-        shirt_size: shirtSize,
-        phone,
-      })
+      .update(updateData)
       .eq('id', user.id);
+    console.log('Update result:', { updateError, data });
     if (updateError) {
       setError('Failed to update profile.');
     } else {
@@ -82,11 +99,11 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
     >
       <div className="flex justify-between items-center p-4 border-b">
         <h2 className="text-xl font-bold text-[#1B1F3B]">Edit Profile</h2>
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <button onClick={onClose} className="text-[#1B1F3B] hover:text-gray-700 text-2xl">&times;</button>
       </div>
       <form className="p-6 space-y-4" onSubmit={handleSave}>
         {loading ? (
-          <div className="text-center text-gray-500">Loading...</div>
+          <div className="text-center text-[#1B1F3B]">Loading...</div>
         ) : (
           <>
             <div className="flex gap-2">
@@ -94,7 +111,7 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
                 <label className="block mb-1 font-semibold text-[#1B1F3B]">First Name</label>
                 <input
                   type="text"
-                  className="w-full border rounded p-2"
+                  className="w-full border rounded p-2 text-[#1B1F3B]"
                   value={firstName}
                   onChange={e => setFirstName(e.target.value)}
                   placeholder="First Name"
@@ -104,7 +121,7 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
                 <label className="block mb-1 font-semibold text-[#1B1F3B]">Last Name</label>
                 <input
                   type="text"
-                  className="w-full border rounded p-2"
+                  className="w-full border rounded p-2 text-[#1B1F3B]"
                   value={lastName}
                   onChange={e => setLastName(e.target.value)}
                   placeholder="Last Name"
@@ -116,11 +133,11 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
               <div className="flex items-center gap-2">
                 <input
                   type="email"
-                  className="w-full border rounded p-2"
+                  className="w-full border rounded p-2 text-[#1B1F3B]"
                   value={email}
                   disabled
                 />
-                <label className="flex items-center gap-1 text-xs">
+                <label className="flex items-center gap-1 text-xs text-[#1B1F3B]">
                   <input
                     type="checkbox"
                     checked={notifyEmail}
@@ -135,12 +152,12 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
               <div className="flex items-center gap-2">
                 <input
                   type="text"
-                  className="w-full border rounded p-2"
+                  className="w-full border rounded p-2 text-[#1B1F3B]"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   placeholder="Phone Number"
                 />
-                <label className="flex items-center gap-1 text-xs">
+                <label className="flex items-center gap-1 text-xs text-[#1B1F3B]">
                   <input
                     type="checkbox"
                     checked={notifySms}
@@ -153,7 +170,7 @@ export default function ProfileDrawer({ open, onClose }: { open: boolean; onClos
             <div>
               <label className="block mb-1 font-semibold text-[#1B1F3B]">Shirt Size</label>
               <select
-                className="w-full border rounded p-2"
+                className="w-full border rounded p-2 text-[#1B1F3B]"
                 value={shirtSize}
                 onChange={e => setShirtSize(e.target.value)}
                 required

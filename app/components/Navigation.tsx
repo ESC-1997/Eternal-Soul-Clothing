@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import { useProfileDrawer } from '../context/ProfileDrawerContext';
 import ProfileDrawer from './ProfileDrawer';
@@ -10,6 +10,7 @@ import ProfileDrawer from './ProfileDrawer';
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const { items: cartItems, subtotal, removeItem, updateQuantity, clearCart, isCartOpen, setIsCartOpen } = useCart();
   const { user, drawerOpen, setDrawerOpen } = useProfileDrawer();
 
@@ -99,25 +100,30 @@ export default function Navigation() {
               </button>
             </Link>
 
-            {user && (
-              <button
-                className="group flex flex-col items-center"
-                onClick={() => setDrawerOpen(true)}
-              >
-                <div className="flex justify-center">
-                  <Image
-                    src="/images/Profile.png"
-                    alt="Profile"
-                    width={40}
-                    height={40}
-                    className="object-contain"
-                  />
-                </div>
-                <span className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
-                  Profile
-                </span>
-              </button>
-            )}
+            {/* Always show Profile button */}
+            <button
+              className="group flex flex-col items-center"
+              onClick={() => {
+                if (user) {
+                  setDrawerOpen(true);
+                } else {
+                  router.push('/profile');
+                }
+              }}
+            >
+              <div className="flex justify-center">
+                <Image
+                  src="/images/Profile.png"
+                  alt="Profile"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
+              </div>
+              <span className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
+                Profile
+              </span>
+            </button>
 
             {/* Cart Button */}
             <div className="flex flex-col items-center space-y-1 mt-auto">
