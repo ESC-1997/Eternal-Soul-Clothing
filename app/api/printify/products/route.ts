@@ -6,6 +6,7 @@ export async function GET() {
       headers: {
         'Authorization': `Bearer ${process.env.PRINTIFY_API_KEY}`,
         'Content-Type': 'application/json',
+        'User-Agent': 'EternalSoulApp',
       },
     });
 
