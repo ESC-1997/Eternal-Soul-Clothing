@@ -2,10 +2,35 @@
 import Image from 'next/image';
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export default function Home() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleCanPlay = () => {
+      setIsVideoLoading(false);
+      video.play().catch(error => {
+        console.error('Error playing video:', error);
+      });
+    };
+
+    video.addEventListener('canplay', handleCanPlay);
+    
+    // Force load the video
+    video.load();
+
+    return () => {
+      video.removeEventListener('canplay', handleCanPlay);
+    };
+  }, []);
+
   return (
     <main className="flex min-h-screen flex-col">
       <style jsx global>{`
@@ -49,8 +74,19 @@ export default function Home() {
       </div>
       {/* Top Section */}
       <div className="relative w-full h-[400px] overflow-hidden flex items-center justify-center">
-        {/* Responsive MP4 Video */}
+        {isVideoLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#1B1F3B]">
+            <img 
+              src="/images/Phoenix_ES_1B1F3B.png" 
+              alt="Loading..." 
+              width={60}
+              height={60}
+              className="animate-pulse"
+            />
+          </div>
+        )}
         <video
+          ref={videoRef}
           autoPlay
           loop
           muted
@@ -60,8 +96,16 @@ export default function Home() {
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: 'center 30%' }}
         >
-          <source src="/videos/Website_video.webm" type="video/webm" />
-          <source src="/videos/Website_video.mp4" type="video/mp4" />
+          <source 
+            src="/videos/Website_video.webm" 
+            type="video/webm" 
+            media="(max-width: 768px)"
+          />
+          <source 
+            src="/videos/Website_video.mp4" 
+            type="video/mp4" 
+            media="(min-width: 769px)"
+          />
         </video>
       </div>
 
