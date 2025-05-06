@@ -46,22 +46,22 @@ export default function Navigation() {
               className="relative group block cursor-pointer"
               onClick={() => setIsOpen(false)}
             >
-              <div className="relative">
+              <div className="flex flex-col items-center mt-7">
                 <Image
-                  src="/images/Phoenix_ES_Grey.png"
+                  src="/images/Home.png"
                   alt="Phoenix Eternal Soul"
-                  width={70}
-                  height={70}
+                  width={40}
+                  height={40}
                   className="object-contain"
                 />
-                <div className="absolute bottom-0 left-0 right-0 text-white px-1.5 py-0 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
+                <div className="text-white px-1.5 py-0 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center mt-2">
                   Home
                 </div>
               </div>
             </Link>
           </div>
           
-          <div className="flex flex-col items-center space-y-5 mt-10">
+          <div className="flex flex-col items-center space-y-5 mt-2">
             <Link 
               href="/collections" 
               className="group flex flex-col items-center"
