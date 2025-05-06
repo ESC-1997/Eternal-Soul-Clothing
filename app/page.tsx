@@ -7,30 +7,32 @@ const inter = Inter({ subsets: ['latin'] });
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col">
+      {/* Banner Section */}
+      <div style={{ width: '100%', background: '#DADBE4', height: '150px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '10px' }}>
+        <img 
+          src="/images/Phoenix_ES_1B1F3B.png" 
+          alt="Phoenix Logo" 
+          width={60}
+          height={60}
+          style={{ objectFit: 'contain' }}
+        />
+        <span style={{ fontFamily: 'Bebas Neue, sans-serif', color: '#1B1F3B', fontSize: '2rem', letterSpacing: '0.1em', marginTop: '8px', display: 'block' }}>
+          ETERNAL SOUL CLOTHING
+        </span>
+      </div>
       {/* Top Section */}
-      <div className="relative w-full h-screen flex items-center justify-center">
+      <div className="relative w-full h-[400px] overflow-hidden flex items-center justify-center">
+        {/* Responsive MP4 Video */}
         <video
           autoPlay
           loop
           muted
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: 'center 30%' }}
         >
-          <source src="/videos/background_official.mp4" type="video/mp4" />
+          <source src="/videos/Website Video.mp4" type="video/mp4" />
         </video>
-        <div className="relative z-10">
-          <Image
-            src="/images/midnight_ES.png"
-            alt="Midnight Eternal Soul"
-            width={550}
-            height={400}
-            className="object-contain"
-            style={{ filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.8))' }}
-            priority
-          />
-        </div>
-        {/* Gradient Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#1B1F3B] to-transparent"></div>
       </div>
 
       {/* About Section */}
