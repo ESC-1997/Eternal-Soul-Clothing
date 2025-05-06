@@ -1,12 +1,39 @@
 'use client';
 import Image from 'next/image';
 import { Inter } from 'next/font/google';
+import Link from 'next/link';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col">
+      <style jsx global>{`
+        .service-cards-container {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 32px;
+          margin-top: 48px;
+          overflow-x: auto;
+          width: 100%;
+          padding-bottom: 8px;
+          margin: 0 auto;
+          -webkit-overflow-scrolling: touch;
+          scroll-snap-type: x mandatory;
+          scroll-behavior: smooth;
+          touch-action: pan-x;
+          padding-left: 16px;
+          justify-content: flex-start;
+        }
+        
+        @media (min-width: 768px) {
+          .service-cards-container {
+            justify-content: center;
+            padding-left: 0;
+          }
+        }
+      `}</style>
       {/* Banner Section */}
       <div style={{ width: '100%', background: '#DADBE4', height: '150px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '10px' }}>
         <img 
@@ -33,6 +60,189 @@ export default function Home() {
         >
           <source src="/videos/Website_video.mp4" type="video/mp4" />
         </video>
+      </div>
+
+      {/* New Section Below Video */}
+      <div style={{ width: '100%', background: '#DADBE4', height: '520px' }}>
+        <h2 style={{
+          color: '#1B1F3B',
+          fontFamily: 'Bebas Neue, sans-serif',
+          fontSize: '2.5rem',
+          textAlign: 'center',
+          marginTop: '25px',
+          marginBottom: '25px',
+          letterSpacing: '0.1em',
+          fontWeight: 'bold',
+        }}>
+          FEATURED ITEMS
+        </h2>
+        {/* Horizontally Scrollable Service Cards */}
+        <div className="service-cards-container">
+          {/* Service Card 1 */}
+          <Link href="/shop" style={{ textDecoration: 'none', scrollSnapAlign: 'center' }}>
+            <div style={{ width: '230px', height: '320px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
+              <div style={{ width: '100%', height: '30px', background: '#1B1F3B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{
+                  fontFamily: 'Lato, sans-serif',
+                  fontStyle: 'italic',
+                  fontWeight: 600,
+                  color: '#DADBE4',
+                  fontSize: '0.65rem',
+                  letterSpacing: '0.03em',
+                  textAlign: 'center',
+                  width: '100%',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
+                  ETERNAL LOTUS (BLACK & GREY)
+                </span>
+              </div>
+              <img 
+                src="/images/eternal_lotus/eternal_lotus_white_backBG.jpg" 
+                alt="Eternal Lotus White" 
+                style={{ width: '100%', height: '240px', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
+              />
+              <div style={{
+                width: '100%',
+                background: '#DADBE4',
+                textAlign: 'center',
+                padding: '10px 0',
+                borderBottomLeftRadius: '16px',
+                borderBottomRightRadius: '16px',
+                fontFamily: 'Bebas Neue, sans-serif',
+                color: '#1B1F3B',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+              }}>
+                Shop now
+              </div>
+            </div>
+          </Link>
+          {/* Service Card 2 */}
+          <Link href="/shop" style={{ textDecoration: 'none', scrollSnapAlign: 'center' }}>
+            <div style={{ width: '230px', height: '320px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
+              <div style={{ width: '100%', height: '30px', background: '#1B1F3B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{
+                  fontFamily: 'Lato, sans-serif',
+                  fontStyle: 'italic',
+                  fontWeight: 600,
+                  color: '#DADBE4',
+                  fontSize: '0.75rem',
+                  letterSpacing: '0.03em',
+                  textAlign: 'center',
+                  width: '100%',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
+                  ES Phoenix Tee (Customizable) 
+                </span>
+              </div>
+              <img 
+                src="/images/phoenixES/sand_red1.jpg" 
+                alt="ES Phoenix Tee (Customizable)" 
+                style={{ width: '100%', height: '240px', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
+              />
+              <div style={{
+                width: '100%',
+                background: '#DADBE4',
+                textAlign: 'center',
+                padding: '10px 0',
+                borderBottomLeftRadius: '16px',
+                borderBottomRightRadius: '16px',
+                fontFamily: 'Bebas Neue, sans-serif',
+                color: '#1B1F3B',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+              }}>
+                Shop now
+              </div>
+            </div>
+          </Link>
+          {/* Service Card 3 */}
+          <Link href="/shop" style={{ textDecoration: 'none', scrollSnapAlign: 'center' }}>
+            <div style={{ width: '230px', height: '320px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
+              <div style={{ width: '100%', height: '30px', background: '#1B1F3B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{
+                  fontFamily: 'Lato, sans-serif',
+                  fontStyle: 'italic',
+                  fontWeight: 600,
+                  color: '#DADBE4',
+                  fontSize: '0.62rem',
+                  letterSpacing: '0.03em',
+                  textAlign: 'center',
+                  width: '100%',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
+                  ETERNAL LOTUS - PURPLE GRAPHIC TEE
+                </span>
+              </div>
+              <img 
+                src="/images/eternal_lotus/eternal_lotus_lblue_backP.jpg" 
+                alt="ETERNAL LOTUS - PURPLE GRAPHIC TEE" 
+                style={{ width: '100%', height: '240px', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
+              />
+              <div style={{
+                width: '100%',
+                background: '#DADBE4',
+                textAlign: 'center',
+                padding: '10px 0',
+                borderBottomLeftRadius: '16px',
+                borderBottomRightRadius: '16px',
+                fontFamily: 'Bebas Neue, sans-serif',
+                color: '#1B1F3B',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+              }}>
+                Shop now
+              </div>
+            </div>
+          </Link>
+          {/* Service Card 4 */}
+          <Link href="/shop" style={{ textDecoration: 'none', scrollSnapAlign: 'center' }}>
+            <div style={{ width: '230px', height: '320px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
+              <div style={{ width: '100%', height: '30px', background: '#1B1F3B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{
+                  fontFamily: 'Lato, sans-serif',
+                  fontStyle: 'italic',
+                  fontWeight: 600,
+                  color: '#DADBE4',
+                  fontSize: '0.65rem',
+                  letterSpacing: '0.03em',
+                  textAlign: 'center',
+                  width: '100%',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
+                  ETERNAL ELEGANCE (CUSTOMIZABLE)
+                </span>
+              </div>
+              <img 
+                src="/images/eternal_elegance/elegance_charcoal_white1.jpg" 
+                alt="ETERNAL ELEGANCE (CUSTOMIZABLE)" 
+                style={{ width: '100%', height: '240px', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
+              />
+              <div style={{
+                width: '100%',
+                background: '#DADBE4',
+                textAlign: 'center',
+                padding: '10px 0',
+                borderBottomLeftRadius: '16px',
+                borderBottomRightRadius: '16px',
+                fontFamily: 'Bebas Neue, sans-serif',
+                color: '#1B1F3B',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+              }}>
+                Shop now
+              </div>
+            </div>
+          </Link>
+        </div>
       </div>
 
       {/* About Section */}
