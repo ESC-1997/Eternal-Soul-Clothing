@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
       headers: {
         'Authorization': `Bearer ${process.env.PRINTIFY_API_KEY}`,
         'Content-Type': 'application/json',
+        'User-Agent': 'EternalSoulApp',
       },
       body: JSON.stringify({
         title: true,
