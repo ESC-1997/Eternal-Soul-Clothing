@@ -11,6 +11,7 @@ export async function POST(request: Request) {
       headers: {
         'Authorization': `Bearer ${process.env.PRINTIFY_API_KEY}`,
         'Content-Type': 'application/json',
+        'User-Agent': 'EternalSoulApp',
       },
       body: JSON.stringify({
         variant_id: size,
@@ -34,4 +35,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-} 
+}
