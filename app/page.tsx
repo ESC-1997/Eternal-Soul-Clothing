@@ -9,6 +9,20 @@ const inter = Inter({ subsets: ['latin'] });
 export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
+  const [videoSource, setVideoSource] = useState('/videos/Website_video.mp4');
+
+  useEffect(() => {
+    // Check if device is mobile
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+      const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+      if (mobileRegex.test(userAgent)) {
+        setVideoSource('/videos/Website_video.webm');
+      }
+    };
+
+    checkMobile();
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -22,14 +36,12 @@ export default function Home() {
     };
 
     video.addEventListener('canplay', handleCanPlay);
-    
-    // Force load the video
     video.load();
 
     return () => {
       video.removeEventListener('canplay', handleCanPlay);
     };
-  }, []);
+  }, [videoSource]);
 
   return (
     <main className="flex min-h-screen flex-col">
@@ -97,14 +109,8 @@ export default function Home() {
           style={{ objectPosition: 'center 30%' }}
         >
           <source 
-            src="/videos/Website_video.webm" 
-            type="video/webm" 
-            media="(max-width: 768px)"
-          />
-          <source 
-            src="/videos/Website_video.mp4" 
-            type="video/mp4" 
-            media="(min-width: 769px)"
+            src={videoSource} 
+            type={videoSource.endsWith('.webm') ? 'video/webm' : 'video/mp4'} 
           />
         </video>
       </div>
