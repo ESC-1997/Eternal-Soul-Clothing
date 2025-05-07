@@ -503,7 +503,11 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
             )}
             <div className="p-2 flex flex-col flex-grow">
               <h3 className="text-xs md:text-sm font-semibold text-gray-900 mb-1 line-clamp-2 flex-grow">{product.title}</h3>
-              <p className="text-xs md:text-sm text-gray-600 mb-2">{formatPrice(product.variants[0]?.price || '0')}</p>
+              <p className="text-xs md:text-sm text-gray-600 mb-2">
+                {(product.title === 'Eternal Collapse' || product.title === 'Vow of the Eternal')
+                  ? '$40.00'
+                  : formatPrice(product.variants[0]?.price || '0')}
+              </p>
             </div>
             <button
               className="w-full bg-gray-900 text-white py-2 px-3 rounded-none text-xs md:text-sm hover:bg-gray-800 transition-colors"
