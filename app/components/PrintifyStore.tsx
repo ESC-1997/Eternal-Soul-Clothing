@@ -59,8 +59,12 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
           (product: Product) => {
             const shouldInclude = 
               product.id !== "681449c6b03bb3ed0c01a685" && // Remove the original Phoenix Logo
-              (product.title === "Eternal Lotus (Black & Grey)" || 
-               product.title === "Eternal Lotus - Purple Floral Graphic Tee ");
+              (
+                product.title === "Eternal Lotus (Black & Grey)" || 
+                product.title === "Eternal Lotus - Purple Floral Graphic Tee " ||
+                product.title === "Eternal Collapse" ||
+                product.title === "Vow of the Eternal"
+              );
             
             // Debug: Log each product's title and whether it's included
             console.log(`Product: ${product.title}, Included: ${shouldInclude}`);
