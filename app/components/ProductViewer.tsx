@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext';
 import Image from 'next/image';
 import { productVariants } from './productVariants';
 import { useProfileDrawer } from '../context/ProfileDrawerContext';
+import { supabase } from "../supabaseClient"; // adjust path if needed
 
 interface ProductViewerProps {
   product: {
@@ -167,6 +168,25 @@ export default function ProductViewer({ product }: ProductViewerProps) {
     }
   }, [profile?.shirt_size]);
 
+  // Auto-restore user session on mount
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (data?.user) {
+        // Assuming you want to set the user in the profile drawer context
+        // You might want to handle this differently depending on your app's architecture
+        // For now, we'll just log the user
+        console.log('User restored:', data.user);
+      }
+    });
+    // Optionally, listen for auth state changes:
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('Auth state changed:', session?.user ?? null);
+    });
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, []);
+
   const getVariantId = () => {
     const printifyColorName = COLOR_CODE_TO_NAME[selectedColor];
     const productId = product.id;
@@ -188,7 +208,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
         color: selectedColor,
         logo: 'default',
         size: selectedSize,
-        price: parseInt(product.variants[0].price) / 100,
+        price: getCurrentPrice(),
         quantity: 1,
         image: getImagePath(),
       });
@@ -231,6 +251,18 @@ export default function ProductViewer({ product }: ProductViewerProps) {
     return ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', 'XS'];
   };
   const availableSizes = getAvailableSizes();
+
+  // Get stock status for the selected color and size
+  const getStockStatus = (size: string) => {
+    if (isEternalCollapse || isVowOfTheEternal) {
+      const productId = isEternalCollapse ? '681acbd3c9285dd17e0dd618' : '681ac79a1207456e76092f23';
+      const colorName = colorOptions.find(c => c.value === selectedColor)?.name;
+      if (!colorName) return 'In Stock';
+      return productVariants[productId]?.[colorName]?.[size]?.stock_status || 'In Stock';
+    }
+    return 'In Stock';
+  };
+  const selectedStockStatus = getStockStatus(selectedSize);
 
   // Get the price for the selected color and size for Eternal Collapse and Vow of the Eternal
   const getCurrentPrice = () => {
@@ -292,7 +324,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
               </span>
             </div>
             <div className="text-green-700 font-medium">
-              In Stock
+              {selectedStockStatus}
             </div>
           </div>
         )}
@@ -326,19 +358,29 @@ export default function ProductViewer({ product }: ProductViewerProps) {
             className="w-full p-2 border rounded text-gray-900"
           >
             {availableSizes.map((size) => (
-              <option key={size} value={size}>{size}</option>
+              <option
+                key={size}
+                value={size}
+                disabled={getStockStatus(size) === 'Out of Stock'}
+              >
+                {size} {getStockStatus(size) === 'Out of Stock' ? '(Out of Stock)' : ''}
+              </option>
             ))}
           </select>
         </div>
 
         {/* Add to Cart Button */}
         <button
-          disabled={isAddingToCart}
+          disabled={isAddingToCart || selectedStockStatus === 'Out of Stock'}
           onClick={handleAddToCart}
           className="w-full py-3 rounded text-white text-lg font-semibold transition-colors duration-200"
           style={{ background: '#15803D' }}
         >
-          {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+          {selectedStockStatus === 'Out of Stock'
+            ? 'Out of Stock'
+            : isAddingToCart
+              ? 'Adding...'
+              : 'Add to Cart'}
         </button>
       </div>
 
@@ -381,7 +423,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
                   </span>
                 </div>
                 <div className="text-green-700 font-medium">
-                  In Stock
+                  {selectedStockStatus}
                 </div>
               </div>
             )}
@@ -418,19 +460,29 @@ export default function ProductViewer({ product }: ProductViewerProps) {
                 className="w-full p-2 border rounded text-gray-900"
               >
                 {availableSizes.map((size) => (
-                  <option key={size} value={size}>{size}</option>
+                  <option
+                    key={size}
+                    value={size}
+                    disabled={getStockStatus(size) === 'Out of Stock'}
+                  >
+                    {size} {getStockStatus(size) === 'Out of Stock' ? '(Out of Stock)' : ''}
+                  </option>
                 ))}
               </select>
             </div>
 
             {/* Add to Cart Button */}
             <button
-              disabled={isAddingToCart}
+              disabled={isAddingToCart || selectedStockStatus === 'Out of Stock'}
               onClick={handleAddToCart}
               className="w-full py-4 rounded text-white text-xl font-semibold transition-colors duration-200"
               style={{ background: '#15803D' }}
             >
-              {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+              {selectedStockStatus === 'Out of Stock'
+                ? 'Out of Stock'
+                : isAddingToCart
+                  ? 'Adding...'
+                  : 'Add to Cart'}
             </button>
           </div>
         </div>
