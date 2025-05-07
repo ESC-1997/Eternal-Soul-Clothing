@@ -9,6 +9,7 @@ import ProfileDrawer from './ProfileDrawer';
 import React from 'react';
 import StripeProvider from './StripeProvider';
 import CheckoutForm from './CheckoutForm';
+import OrderCompleteDrawer from './OrderCompleteDrawer';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +18,7 @@ export default function Navigation() {
   const { items: cartItems, subtotal, removeItem, updateQuantity, clearCart, isCartOpen, setIsCartOpen } = useCart();
   const { user, drawerOpen, setDrawerOpen } = useProfileDrawer();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isOrderComplete, setIsOrderComplete] = useState(false);
 
   // Close menu when route changes
   useEffect(() => {
@@ -288,10 +290,21 @@ export default function Navigation() {
                 </svg>
               </button>
             </div>
-            <CheckoutForm subtotal={subtotal} clearCart={clearCart} setIsCheckoutOpen={setIsCheckoutOpen} />
+            <CheckoutForm 
+              subtotal={subtotal} 
+              clearCart={clearCart} 
+              setIsCheckoutOpen={setIsCheckoutOpen}
+              setIsOrderComplete={setIsOrderComplete}
+            />
           </div>
         </div>
       </StripeProvider>
+
+      {/* Order Complete Drawer */}
+      <OrderCompleteDrawer 
+        open={isOrderComplete} 
+        onClose={() => setIsOrderComplete(false)} 
+      />
 
       {/* Overlay for mobile */}
       {isOpen && (
