@@ -217,6 +217,39 @@ export default function ProductViewer({ product }: ProductViewerProps) {
     return `/images/eternal_lotus/eternal_lotus_${selectedColor}_${currentImageIndex === 0 ? 'front' : 'back'}${suffix}.jpg`;
   };
 
+  // Determine available sizes for the current product and color
+  const getAvailableSizes = () => {
+    if (isEternalCollapse || isVowOfTheEternal) {
+      const productId = isEternalCollapse ? '681acbd3c9285dd17e0dd618' : '681ac79a1207456e76092f23';
+      const colorName = colorOptions.find(c => c.value === selectedColor)?.name;
+      if (productVariants[productId] && colorName && productVariants[productId][colorName]) {
+        return Object.keys(productVariants[productId][colorName]);
+      }
+    }
+    // Default sizes
+    return ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', 'XS'];
+  };
+  const availableSizes = getAvailableSizes();
+
+  // Get the price for the selected color and size for Eternal Collapse and Vow of the Eternal
+  const getCurrentPrice = () => {
+    if (isEternalCollapse || isVowOfTheEternal) {
+      const productId = isEternalCollapse ? '681acbd3c9285dd17e0dd618' : '681ac79a1207456e76092f23';
+      const colorName = colorOptions.find(c => c.value === selectedColor)?.name;
+      if (
+        productVariants[productId] &&
+        colorName &&
+        productVariants[productId][colorName] &&
+        productVariants[productId][colorName][selectedSize]
+      ) {
+        return productVariants[productId][colorName][selectedSize].price / 100;
+      }
+    }
+    // Default price logic
+    return parseInt(product.variants[0].price) / 100;
+  };
+  const currentPrice = getCurrentPrice();
+
   return (
     <div className="space-y-6">
       {/* Mobile Layout */}
@@ -254,7 +287,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
           <div className="mb-4 flex items-center gap-4">
             <div className="inline-block px-4 py-2 rounded" style={{ background: '#15803D' }}>
               <span className="text-white font-semibold">
-                Price: ${(parseInt(product.variants[0].price) / 100).toFixed(2)}
+                Price: ${currentPrice.toFixed(2)}
               </span>
             </div>
             <div className="text-green-700 font-medium">
@@ -291,7 +324,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
             onChange={(e) => setSelectedSize(e.target.value)}
             className="w-full p-2 border rounded text-gray-900"
           >
-            {['S', 'M', 'L', 'XL', '2XL'].map((size) => (
+            {availableSizes.map((size) => (
               <option key={size} value={size}>{size}</option>
             ))}
           </select>
@@ -343,7 +376,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
               <div className="flex items-center gap-4">
                 <div className="px-4 py-2 rounded" style={{ background: '#15803D' }}>
                   <span className="text-white font-semibold">
-                    Price: ${(parseInt(product.variants[0].price) / 100).toFixed(2)}
+                    Price: ${currentPrice.toFixed(2)}
                   </span>
                 </div>
                 <div className="text-green-700 font-medium">
@@ -383,7 +416,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
                 onChange={(e) => setSelectedSize(e.target.value)}
                 className="w-full p-2 border rounded text-gray-900"
               >
-                {['S', 'M', 'L', 'XL', '2XL'].map((size) => (
+                {availableSizes.map((size) => (
                   <option key={size} value={size}>{size}</option>
                 ))}
               </select>
