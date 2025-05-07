@@ -158,7 +158,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
   const [selectedColor, setSelectedColor] = useState<string>(colorOptions[0].value);
   const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
-  const { addItem } = useCart();
+  const { addItem, setIsCartOpen } = useCart();
 
   // Update selectedSize when profile?.shirt_size changes
   useEffect(() => {
@@ -190,8 +190,9 @@ export default function ProductViewer({ product }: ProductViewerProps) {
         size: selectedSize,
         price: parseInt(product.variants[0].price) / 100,
         quantity: 1,
-        image: `/images/eternal_lotus/eternal_lotus_${selectedColor}_${currentImageIndex === 0 ? 'front' : 'back'}${product.title.includes('Purple') ? 'P' : 'BG'}.jpg`,
+        image: getImagePath(),
       });
+      setIsCartOpen(true);
     } catch (err) {
       console.error('Error adding to cart:', err);
     } finally {
