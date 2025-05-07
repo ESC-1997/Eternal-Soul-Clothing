@@ -228,33 +228,39 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
       setIsAddingToCart(true);
       setError(null);
 
-      // Use colorMappings for Eternal Elegance
-      if (isEternalElegance && product.colorMappings) {
-        const mapping = product.colorMappings.find(
-          (m) =>
-            m.shirtColor.toLowerCase() === shirtColor.toLowerCase() &&
-            m.logoColor.toLowerCase() === logoColor.toLowerCase() &&
-            m.size === size
-        );
+      // Use productVariantsTyped for Eternal Elegance
+      if (isEternalElegance) {
+        const productId = EE_LOGO_COLOR_TO_PRODUCT_ID[logoColor];
+        const colorName = SHIRT_COLOR_CODE_TO_NAME[shirtColor] || shirtColor;
+        const variant = productVariantsTyped[productId]?.[colorName]?.[size];
+        
         console.log({
           shirtColor,
           logoColor,
           size,
-          mapping,
-          colorMappings: product.colorMappings,
+          productId,
+          colorName,
+          variant,
+          productVariantsTyped
         });
-        if (!mapping) {
+
+        if (!productId) {
+          setError('No product ID found for selected logo color');
+          return;
+        }
+        if (!variant) {
           setError('No variant found for selected options');
           return;
         }
+
         addItem({
-          id: mapping.printifyProductId,
-          variantId: mapping.variantId,
+          id: productId,
+          variantId: variant.variant_id,
           name: product.title,
-          color: mapping.shirtColor,
-          logo: mapping.logoColor,
-          size: mapping.size,
-          price: mapping.price / 100,
+          color: shirtColor,
+          logo: logoColor,
+          size: size,
+          price: variant.price / 100,
           quantity: 1,
           image: images[0],
         });
@@ -267,41 +273,31 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
       const productId = LOGO_COLOR_TO_PRODUCT_ID[logoColor];
       const colorName = SHIRT_COLOR_CODE_TO_NAME[shirtColor] || shirtColor;
       const variant = productVariantsTyped[productId]?.[colorName]?.[size];
-      // Debug logging
-      console.log({
-        shirtColor,
-        logoColor,
-        size,
-        productId,
-        colorName,
-        variant,
-        productVariantsTyped,
-      });
+      
       if (!productId) {
         setError('No product ID found for selected logo color');
         return;
       }
-      // Check if the variant exists for the selected shirt color and size
       if (!variant) {
         setError('No variant found for selected options');
         return;
       }
-      // Add the item to the cart
+
       addItem({
         id: productId,
         variantId: variant.variant_id,
         name: product.title,
         color: shirtColor,
         logo: logoColor,
-        size,
+        size: size,
         price: variant.price / 100,
         quantity: 1,
-        image: `/images/phoenixES/${shirtColor}_${logoColor}.jpg`,
+        image: images[0],
       });
       setIsCartOpen(true);
       setSuccessMessage('Product added to cart!');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsAddingToCart(false);
     }
