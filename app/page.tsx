@@ -43,6 +43,13 @@ export default function Home() {
     };
   }, [videoSource]);
 
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      video.playbackRate = 0.5;
+    }
+  }, []);
+
   return (
     <main className="flex min-h-screen flex-col">
       <style jsx global>{`
@@ -320,4 +327,4 @@ export default function Home() {
       </section>
     </main>
   );
-} 
+}  
