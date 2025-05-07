@@ -5,9 +5,10 @@ interface CheckoutFormProps {
   subtotal: number;
   clearCart: () => void;
   setIsCheckoutOpen: (open: boolean) => void;
+  setIsOrderComplete: (open: boolean) => void;
 }
 
-export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen }: CheckoutFormProps) {
+export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, setIsOrderComplete }: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [checkoutError, setCheckoutError] = useState('');
@@ -20,7 +21,7 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen }:
   const [city, setCity] = useState('');
   const [stateField, setStateField] = useState('');
   const [zip, setZip] = useState('');
-  const [country, setCountry] = useState('');
+  const [country, setCountry] = useState('US');
   const [phone, setPhone] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,7 +49,7 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen }:
               city,
               state: stateField,
               postal_code: zip,
-              country,
+              country: 'US',
             },
             phone,
           },
@@ -75,7 +76,7 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen }:
               city,
               state: stateField,
               postal_code: zip,
-              country,
+              country: 'US',
             },
           },
         },
@@ -86,6 +87,7 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen }:
         setCheckoutSuccess('Payment successful! Thank you for your order.');
         clearCart();
         setIsCheckoutOpen(false);
+        setIsOrderComplete(true);
       }
     } catch (err: any) {
       setCheckoutError(err.message || 'An error occurred.');
@@ -98,37 +100,73 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen }:
     <form className="flex flex-col gap-4 flex-grow overflow-y-auto" onSubmit={handleSubmit}>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-        <input type="text" className="w-full border rounded p-2" placeholder="First & Last Name" required value={fullName} onChange={e => setFullName(e.target.value)} />
+        <input type="text" className="w-full border rounded p-2 text-[#1B1F3B]" placeholder="First & Last Name" required value={fullName} onChange={e => setFullName(e.target.value)} />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-        <input type="email" className="w-full border rounded p-2" placeholder="you@email.com" required value={email} onChange={e => setEmail(e.target.value)} />
+        <input type="email" className="w-full border rounded p-2 text-[#1B1F3B]" placeholder="you@email.com" required value={email} onChange={e => setEmail(e.target.value)} />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Shipping Address</label>
-        <input type="text" className="w-full border rounded p-2 mb-2" placeholder="Street Address" required value={streetAddress} onChange={e => setStreetAddress(e.target.value)} />
-        <input type="text" className="w-full border rounded p-2 mb-2" placeholder="Apt, Suite, Unit, etc. (optional)" value={aptSuite} onChange={e => setAptSuite(e.target.value)} />
+        <input type="text" className="w-full border rounded p-2 mb-2 text-[#1B1F3B]" placeholder="Street Address" required value={streetAddress} onChange={e => setStreetAddress(e.target.value)} />
+        <input type="text" className="w-full border rounded p-2 mb-2 text-[#1B1F3B]" placeholder="Apt, Suite, Unit, etc. (optional)" value={aptSuite} onChange={e => setAptSuite(e.target.value)} />
         <div className="flex gap-2">
-          <input type="text" className="w-1/2 border rounded p-2" placeholder="City" required value={city} onChange={e => setCity(e.target.value)} />
-          <input type="text" className="w-1/2 border rounded p-2" placeholder="State" required value={stateField} onChange={e => setStateField(e.target.value)} />
+          <input type="text" className="w-1/2 border rounded p-2 text-[#1B1F3B]" placeholder="City" required value={city} onChange={e => setCity(e.target.value)} />
+          <input type="text" className="w-1/2 border rounded p-2 text-[#1B1F3B]" placeholder="State" required value={stateField} onChange={e => setStateField(e.target.value)} />
         </div>
         <div className="flex gap-2 mt-2">
-          <input type="text" className="w-1/2 border rounded p-2" placeholder="ZIP Code" required value={zip} onChange={e => setZip(e.target.value)} />
-          <input type="text" className="w-1/2 border rounded p-2" placeholder="Country" required value={country} onChange={e => setCountry(e.target.value)} />
+          <input type="text" className="w-1/2 border rounded p-2 text-[#1B1F3B]" placeholder="ZIP Code" required value={zip} onChange={e => setZip(e.target.value)} />
+          <div className="w-1/2">
+            <select 
+              className="w-full border rounded p-2 text-[#1B1F3B] bg-white" 
+              value={country} 
+              onChange={e => setCountry(e.target.value)}
+              disabled
+            >
+              <option value="US">United States</option>
+            </select>
+          </div>
         </div>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-        <input type="tel" className="w-full border rounded p-2" placeholder="(555) 555-5555" required value={phone} onChange={e => setPhone(e.target.value)} />
+        <input type="tel" className="w-full border rounded p-2 text-[#1B1F3B]" placeholder="(555) 555-5555" required value={phone} onChange={e => setPhone(e.target.value)} />
       </div>
       <div className="mt-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">Payment Information</label>
         <div className="w-full border rounded p-4 bg-gray-50">
-          <CardElement options={{ hidePostalCode: true }} />
+          <CardElement 
+            options={{
+              style: {
+                base: {
+                  fontSize: '16px',
+                  color: '#1B1F3B',
+                  '::placeholder': {
+                    color: '#aab7c4'
+                  }
+                },
+                invalid: {
+                  color: '#fa755a',
+                  iconColor: '#fa755a'
+                }
+              },
+              hidePostalCode: true
+            }} 
+          />
         </div>
       </div>
-      {checkoutError && <div className="text-red-600 text-sm mt-2">{checkoutError}</div>}
-      {checkoutSuccess && <div className="text-green-600 text-sm mt-2">{checkoutSuccess}</div>}
+      {checkoutError && (
+        <div className="text-red-600 text-sm mt-2 p-3 bg-red-50 border border-red-200 rounded">
+          <p className="font-semibold">Error:</p>
+          <p>{checkoutError}</p>
+        </div>
+      )}
+      {checkoutSuccess && (
+        <div className="text-green-600 text-sm mt-2 p-3 bg-green-50 border border-green-200 rounded">
+          <p className="font-semibold">Success!</p>
+          <p>{checkoutSuccess}</p>
+        </div>
+      )}
       <button type="submit" className="w-full mt-6 bg-[#1B1F3B] text-white py-3 rounded font-semibold hover:bg-[#15182c] transition-colors" disabled={isProcessing}>
         {isProcessing ? 'Processing...' : 'Place Order'}
       </button>
