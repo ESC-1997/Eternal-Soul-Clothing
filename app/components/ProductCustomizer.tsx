@@ -42,7 +42,11 @@ interface ProductCustomizerProps {
       shirtColor: string;
       logoColor: string;
       printifyProductId: string;
-      images: string[];
+      size: string;
+      variantId: number;
+      price: number;
+      stock_status: string;
+      images?: string[];
     }[];
   };
 }
@@ -224,23 +228,64 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
       setIsAddingToCart(true);
       setError(null);
 
-      // Get the product ID directly from your mapping
+      // Use colorMappings for Eternal Elegance
+      if (isEternalElegance && product.colorMappings) {
+        const mapping = product.colorMappings.find(
+          (m) =>
+            m.shirtColor.toLowerCase() === shirtColor.toLowerCase() &&
+            m.logoColor.toLowerCase() === logoColor.toLowerCase() &&
+            m.size === size
+        );
+        console.log({
+          shirtColor,
+          logoColor,
+          size,
+          mapping,
+          colorMappings: product.colorMappings,
+        });
+        if (!mapping) {
+          setError('No variant found for selected options');
+          return;
+        }
+        addItem({
+          id: mapping.printifyProductId,
+          variantId: mapping.variantId,
+          name: product.title,
+          color: mapping.shirtColor,
+          logo: mapping.logoColor,
+          size: mapping.size,
+          price: mapping.price / 100,
+          quantity: 1,
+          image: images[0],
+        });
+        setIsCartOpen(true);
+        setSuccessMessage('Product added to cart!');
+        return;
+      }
+
+      // Fallback to old logic for other products
       const productId = LOGO_COLOR_TO_PRODUCT_ID[logoColor];
+      const colorName = SHIRT_COLOR_CODE_TO_NAME[shirtColor] || shirtColor;
+      const variant = productVariantsTyped[productId]?.[colorName]?.[size];
+      // Debug logging
+      console.log({
+        shirtColor,
+        logoColor,
+        size,
+        productId,
+        colorName,
+        variant,
+        productVariantsTyped,
+      });
       if (!productId) {
         setError('No product ID found for selected logo color');
         return;
       }
-
-      // Get the full color name for lookup
-      const colorName = SHIRT_COLOR_CODE_TO_NAME[shirtColor] || shirtColor;
-
       // Check if the variant exists for the selected shirt color and size
-      const variant = productVariantsTyped[productId]?.[colorName]?.[size];
       if (!variant) {
         setError('No variant found for selected options');
         return;
       }
-
       // Add the item to the cart
       addItem({
         id: productId,
