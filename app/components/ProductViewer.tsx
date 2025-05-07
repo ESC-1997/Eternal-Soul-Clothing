@@ -37,10 +37,125 @@ const COLOR_OPTIONS = [
   { name: 'Light Blue', value: 'lblue', hex: '#ADD8E6' },
 ];
 
+// Manual color mapping for Eternal Collapse
+const ETERNAL_COLLAPSE_COLORS = [
+  {
+    name: 'White',
+    value: 'white',
+    hex: '#FFFFFF',
+    images: [
+      '/images/eternal_collapse/white.jpg',
+      '/images/eternal_collapse/white1.jpg',
+    ],
+  },
+  {
+    name: 'Black',
+    value: 'black',
+    hex: '#000000',
+    images: [
+      '/images/eternal_collapse/black.jpg',
+      '/images/eternal_collapse/black1.jpg',
+    ],
+  },
+  {
+    name: 'Sand',
+    value: 'sand',
+    hex: '#C2B280',
+    images: [
+      '/images/eternal_collapse/sand.jpg',
+      '/images/eternal_collapse/sand1.jpg',
+    ],
+  },
+  {
+    name: 'Dark Chocolate',
+    value: 'dchocolate',
+    hex: '#3E2723',
+    images: [
+      '/images/eternal_collapse/dchocolate.jpg',
+      '/images/eternal_collapse/dchocolate1.jpg',
+    ],
+  },
+  {
+    name: 'Charcoal',
+    value: 'charcoal',
+    hex: '#444444',
+    images: [
+      '/images/eternal_collapse/charcoal.jpg',
+      '/images/eternal_collapse/charcoal1.jpg',
+    ],
+  },
+  {
+    name: 'Navy',
+    value: 'navy',
+    hex: '#001F54',
+    images: [
+      '/images/eternal_collapse/navy.jpg',
+      '/images/eternal_collapse/navy1.jpg',
+    ],
+  },
+];
+
+// Manual color mapping for Vow of the Eternal
+const VOW_OF_THE_ETERNAL_COLORS = [
+  {
+    name: 'Black',
+    value: 'black',
+    hex: '#000000',
+    images: [
+      '/images/vow_of_the_eternal/black.jpg',
+      '/images/vow_of_the_eternal/black1.jpg',
+    ],
+  },
+  {
+    name: 'Sand',
+    value: 'sand',
+    hex: '#C2B280',
+    images: [
+      '/images/vow_of_the_eternal/sand.jpg',
+      '/images/vow_of_the_eternal/sand.jpg',
+    ],
+  },
+  {
+    name: 'Dark Chocolate',
+    value: 'dchocolate',
+    hex: '#3E2723',
+    images: [
+      '/images/vow_of_the_eternal/dchocolate.jpg',
+      '/images/vow_of_the_eternal/dchocolate1.jpg',
+    ],
+  },
+  {
+    name: 'Stone Blue',
+    value: 'sblue',
+    hex: '#5A7CA5',
+    images: [
+      '/images/vow_of_the_eternal/sblue.jpg',
+      '/images/vow_of_the_eternal/sblue1.jpg',
+    ],
+  },
+  {
+    name: 'Charcoal',
+    value: 'charcoal',
+    hex: '#444444',
+    images: [
+      '/images/vow_of_the_eternal/charcoal.jpg',
+      '/images/vow_of_the_eternal/charcoal1.jpg',
+    ],
+  },
+];
+
 export default function ProductViewer({ product }: ProductViewerProps) {
   const { profile } = useProfileDrawer();
   const [selectedSize, setSelectedSize] = useState<string>('M');
-  const [selectedColor, setSelectedColor] = useState<string>(COLOR_OPTIONS[0].value);
+  // Use custom color options for Eternal Collapse and Vow of the Eternal
+  const isEternalCollapse = product.title === 'Eternal Collapse';
+  const isVowOfTheEternal = product.title === 'Vow of the Eternal';
+  const colorOptions = isEternalCollapse
+    ? ETERNAL_COLLAPSE_COLORS
+    : isVowOfTheEternal
+      ? VOW_OF_THE_ETERNAL_COLORS
+      : COLOR_OPTIONS;
+  const [selectedColor, setSelectedColor] = useState<string>(colorOptions[0].value);
   const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
   const { addItem } = useCart();
@@ -88,7 +203,16 @@ export default function ProductViewer({ product }: ProductViewerProps) {
     setCurrentImageIndex(currentImageIndex === 0 ? 1 : 0);
   };
 
+  // Custom image logic for Eternal Collapse and Vow of the Eternal
   const getImagePath = () => {
+    if (isEternalCollapse) {
+      const colorObj = ETERNAL_COLLAPSE_COLORS.find(c => c.value === selectedColor);
+      return colorObj ? colorObj.images[currentImageIndex] : ETERNAL_COLLAPSE_COLORS[0].images[0];
+    }
+    if (isVowOfTheEternal) {
+      const colorObj = VOW_OF_THE_ETERNAL_COLORS.find(c => c.value === selectedColor);
+      return colorObj ? colorObj.images[currentImageIndex] : VOW_OF_THE_ETERNAL_COLORS[0].images[0];
+    }
     const suffix = product.title.includes('Purple') ? 'P' : 'BG';
     return `/images/eternal_lotus/eternal_lotus_${selectedColor}_${currentImageIndex === 0 ? 'front' : 'back'}${suffix}.jpg`;
   };
@@ -143,7 +267,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2 text-gray-900">Color</h3>
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {COLOR_OPTIONS.map((color) => (
+            {colorOptions.map((color) => (
               <button
                 key={color.value}
                 className={`w-10 h-10 rounded-full border-2 flex-shrink-0 ${
@@ -235,7 +359,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
             <div>
               <h3 className="text-xl font-semibold mb-3 text-gray-900">Color</h3>
               <div className="flex flex-wrap gap-3">
-                {COLOR_OPTIONS.map((color) => (
+                {colorOptions.map((color) => (
                   <button
                     key={color.value}
                     className={`w-12 h-12 rounded-full border-2 ${
