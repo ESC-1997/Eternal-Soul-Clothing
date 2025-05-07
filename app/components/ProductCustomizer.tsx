@@ -270,6 +270,15 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
     setSelectedSize(e.target.value);
   };
 
+  // Helper to get stock status for a given size
+  const getStockStatus = (size: string) => {
+    if (productVariantsTyped[productId] && productVariantsTyped[productId][colorName] && productVariantsTyped[productId][colorName][size]) {
+      return productVariantsTyped[productId][colorName][size].stock_status || 'In Stock';
+    }
+    return 'In Stock';
+  };
+  const selectedStockStatus = getStockStatus(selectedSize);
+
   return (
     <div className="space-y-6">
       {/* Mobile Layout */}
@@ -292,7 +301,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
               </span>
             </div>
             <div className="text-green-700 font-medium">
-              In Stock
+              {selectedStockStatus}
             </div>
           </div>
         )}
@@ -346,19 +355,29 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
             className="w-full p-2 border rounded text-gray-900"
           >
             {availableSizes.map((size) => (
-              <option key={size} value={size}>{size}</option>
+              <option
+                key={size}
+                value={size}
+                disabled={getStockStatus(size) === 'Out of Stock'}
+              >
+                {size} {getStockStatus(size) === 'Out of Stock' ? '(Out of Stock)' : ''}
+              </option>
             ))}
           </select>
         </div>
 
         {/* Add to Cart Button */}
         <button
-          disabled={isAddingToCart}
+          disabled={isAddingToCart || selectedStockStatus === 'Out of Stock'}
           onClick={() => handleCustomize(selectedShirtColor.value, selectedLogoColor.value, selectedSize)}
           className="w-full py-3 rounded text-white text-lg font-semibold transition-colors duration-200"
           style={{ background: '#15803D' }}
         >
-          {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+          {selectedStockStatus === 'Out of Stock'
+            ? 'Out of Stock'
+            : isAddingToCart
+              ? 'Adding...'
+              : 'Add to Cart'}
         </button>
       </div>
 
@@ -385,7 +404,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
                   </span>
                 </div>
                 <div className="text-green-700 font-medium">
-                  In Stock
+                  {selectedStockStatus}
                 </div>
               </div>
             )}
@@ -442,19 +461,29 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
                 className="w-full p-2 border rounded text-gray-900"
               >
                 {availableSizes.map((size) => (
-                  <option key={size} value={size}>{size}</option>
+                  <option
+                    key={size}
+                    value={size}
+                    disabled={getStockStatus(size) === 'Out of Stock'}
+                  >
+                    {size} {getStockStatus(size) === 'Out of Stock' ? '(Out of Stock)' : ''}
+                  </option>
                 ))}
               </select>
             </div>
 
             {/* Add to Cart Button */}
             <button
-              disabled={isAddingToCart}
+              disabled={isAddingToCart || selectedStockStatus === 'Out of Stock'}
               onClick={() => handleCustomize(selectedShirtColor.value, selectedLogoColor.value, selectedSize)}
               className="w-full py-4 rounded text-white text-xl font-semibold transition-colors duration-200"
               style={{ background: '#15803D' }}
             >
-              {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+              {selectedStockStatus === 'Out of Stock'
+                ? 'Out of Stock'
+                : isAddingToCart
+                  ? 'Adding...'
+                  : 'Add to Cart'}
             </button>
           </div>
         </div>
