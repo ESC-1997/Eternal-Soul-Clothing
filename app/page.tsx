@@ -38,6 +38,12 @@ export default function Home() {
     video.addEventListener('canplay', handleCanPlay);
     video.load();
 
+    // Ensure muted and try to play programmatically for mobile autoplay
+    video.muted = true;
+    video.play().catch((err) => {
+      console.log('Autoplay error:', err);
+    });
+
     return () => {
       video.removeEventListener('canplay', handleCanPlay);
     };
@@ -327,4 +333,4 @@ export default function Home() {
       </section>
     </main>
   );
-}  
+} 
