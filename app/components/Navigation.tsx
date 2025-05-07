@@ -6,6 +6,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import { useProfileDrawer } from '../context/ProfileDrawerContext';
 import ProfileDrawer from './ProfileDrawer';
+import React from 'react';
+import StripeProvider from './StripeProvider';
+import CheckoutForm from './CheckoutForm';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +16,7 @@ export default function Navigation() {
   const router = useRouter();
   const { items: cartItems, subtotal, removeItem, updateQuantity, clearCart, isCartOpen, setIsCartOpen } = useCart();
   const { user, drawerOpen, setDrawerOpen } = useProfileDrawer();
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // Close menu when route changes
   useEffect(() => {
@@ -252,7 +256,7 @@ export default function Navigation() {
               <span className="font-semibold">Total</span>
               <span>${subtotal.toFixed(2)}</span>
             </div>
-            <button className="w-full bg-gray-900 text-white py-3 rounded hover:bg-gray-800 transition-colors flex items-center justify-center gap-2" onClick={() => {/* TODO: handle checkout */}}>
+            <button className="w-full bg-gray-900 text-white py-3 rounded hover:bg-gray-800 transition-colors flex items-center justify-center gap-2" onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }}>
               <span className="text-lg font-semibold">Checkout</span>
               <img src="/images/credit_card1.png" alt="Checkout" className="w-8 h-7 ml-2" />
             </button>
@@ -264,6 +268,30 @@ export default function Navigation() {
           </div>
         </div>
       </div>
+
+      {/* Checkout Panel */}
+      <StripeProvider>
+        <div
+          className={`fixed right-0 top-0 h-screen w-[420px] bg-white z-[103] shadow-lg transform transition-transform duration-300 ease-in-out
+            ${isCheckoutOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        >
+          <div className="p-8 h-full flex flex-col">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">Checkout</h2>
+              <button
+                onClick={() => setIsCheckoutOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <CheckoutForm subtotal={subtotal} clearCart={clearCart} setIsCheckoutOpen={setIsCheckoutOpen} />
+          </div>
+        </div>
+      </StripeProvider>
 
       {/* Overlay for mobile */}
       {isOpen && (
