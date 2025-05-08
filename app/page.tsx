@@ -206,7 +206,7 @@ export default function Home() {
                 </span>
               </div>
               <img 
-                src="/images/phoenixES/sand_red1.jpg" 
+                src="/images/vow_of_the_eternal/dchocolate.jpg" 
                 alt="ES Phoenix Tee (Customizable)" 
                 style={{ width: '100%', height: '240px', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
               />
@@ -247,8 +247,8 @@ export default function Home() {
                 </span>
               </div>
               <img 
-                src="/images/eternal_lotus/eternal_lotus_lblue_backP.jpg" 
-                alt="ETERNAL LOTUS - PURPLE GRAPHIC TEE" 
+                src="/images/eternal_collapse/sand.jpg" 
+                alt="ETERNAL COLLAPSE" 
                 style={{ width: '100%', height: '240px', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
               />
               <div style={{
