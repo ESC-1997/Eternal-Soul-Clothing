@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { useCart } from '../context/CartContext';
 
 interface CheckoutFormProps {
   subtotal: number;
@@ -23,6 +24,7 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
   const [zip, setZip] = useState('');
   const [country, setCountry] = useState('US');
   const [phone, setPhone] = useState('');
+  const { items: cartItems } = useCart();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,6 +87,42 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
         setCheckoutError(result.error.message || 'Payment failed.');
       } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
         setCheckoutSuccess('Payment successful! Thank you for your order.');
+        // Build Printify order payload
+        const line_items = cartItems.map(item => ({
+          product_id: item.id,
+          variant_id: item.variantId,
+          quantity: item.quantity,
+        }));
+        const address_to = {
+          first_name: fullName.split(' ')[0] || fullName,
+          last_name: fullName.split(' ').slice(1).join(' ') || '',
+          email,
+          phone: '', // Add phone if you collect it
+          country: 'US',
+          region: stateField,
+          city,
+          address1: streetAddress,
+          address2: aptSuite,
+          zip: zip,
+        };
+        const orderPayload = {
+          external_id: `order-${Date.now()}`,
+          label: 'Website Order',
+          line_items,
+          shipping_method: 1,
+          address_to,
+        };
+        try {
+          console.log('Calling Printify order API with:', orderPayload);
+          await fetch('/api/printify/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderPayload),
+          });
+        } catch (err) {
+          // Optionally show a warning, but don't block order complete drawer
+          console.error('Printify order creation failed:', err);
+        }
         clearCart();
         setIsCheckoutOpen(false);
         setIsOrderComplete(true);
