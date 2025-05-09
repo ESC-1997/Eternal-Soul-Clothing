@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../utils/supabase";
 
 const SHIRT_SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
 
@@ -11,6 +11,13 @@ const generateUniqueId = () => {
     const v = c === 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
+};
+
+// Helper to check if user is new (created within last 5 minutes)
+const isNewUser = (createdAt: string) => {
+  const created = new Date(createdAt).getTime();
+  const now = Date.now();
+  return now - created < 5 * 60 * 1000;
 };
 
 export default function ProfilePage() {
@@ -33,6 +40,7 @@ export default function ProfilePage() {
   const [notifySms, setNotifySms] = useState(false);
   const [shirtSize, setShirtSize] = useState("");
   const [saving, setSaving] = useState(false);
+  const [welcomeSent, setWelcomeSent] = useState(false);
 
   useEffect(() => {
     const getSession = async () => {
@@ -121,6 +129,14 @@ export default function ProfilePage() {
     } else if (data && data.user) {
       setUser(data.user);
       setStep("profile");
+      // Only send welcome email if user is new
+      if (isNewUser(data.user.created_at)) {
+        fetch('/api/send-welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: data.user.email, name: firstName }),
+        });
+      }
     }
     setVerifying(false);
   };
