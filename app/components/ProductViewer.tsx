@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import Image from 'next/image';
 import { productVariants } from './productVariants';
-import { useProfileDrawer } from '../context/ProfileDrawerContext';
 import { supabase } from "../supabaseClient"; // adjust path if needed
 
 interface ProductViewerProps {
@@ -146,7 +145,6 @@ const VOW_OF_THE_ETERNAL_COLORS = [
 ];
 
 export default function ProductViewer({ product }: ProductViewerProps) {
-  const { profile } = useProfileDrawer();
   const [selectedSize, setSelectedSize] = useState<string>('M');
   // Use custom color options for Eternal Collapse and Vow of the Eternal
   const isEternalCollapse = product.title === 'Eternal Collapse';
@@ -160,13 +158,6 @@ export default function ProductViewer({ product }: ProductViewerProps) {
   const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
   const { addItem, setIsCartOpen } = useCart();
-
-  // Update selectedSize when profile?.shirt_size changes
-  useEffect(() => {
-    if (profile?.shirt_size) {
-      setSelectedSize(profile.shirt_size);
-    }
-  }, [profile?.shirt_size]);
 
   // Auto-restore user session on mount
   useEffect(() => {
