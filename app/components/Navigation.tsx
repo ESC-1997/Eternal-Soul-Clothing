@@ -4,8 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
-import { useProfileDrawer } from '../context/ProfileDrawerContext';
-import ProfileDrawer from './ProfileDrawer';
 import React from 'react';
 import StripeProvider from './StripeProvider';
 import CheckoutForm from './CheckoutForm';
@@ -16,7 +14,6 @@ export default function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
   const { items: cartItems, subtotal, removeItem, updateQuantity, clearCart, isCartOpen, setIsCartOpen } = useCart();
-  const { user, drawerOpen, setDrawerOpen } = useProfileDrawer();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isOrderComplete, setIsOrderComplete] = useState(false);
 
@@ -109,13 +106,7 @@ export default function Navigation() {
             {/* Always show Profile button */}
             <button
               className="group flex flex-col items-center"
-              onClick={() => {
-                if (user) {
-                  setDrawerOpen(true);
-                } else {
-                  router.push('/profile');
-                }
-              }}
+              onClick={() => router.push('/profile')}
             >
               <div className="flex justify-center">
                 <Image
@@ -260,7 +251,7 @@ export default function Navigation() {
             </div>
             <button className="w-full bg-gray-900 text-white py-3 rounded hover:bg-gray-800 transition-colors flex items-center justify-center gap-2" onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }}>
               <span className="text-lg font-semibold">Checkout</span>
-              <img src="/images/credit_card1.png" alt="Checkout" className="w-8 h-7 ml-2" />
+              <img src="/images/checkout.png" alt="Checkout" className="w-10 h-13 ml-1s" />
             </button>
             {cartItems.length > 0 && (
               <button className="w-full mt-2 text-xs text-gray-500 hover:underline" onClick={clearCart}>
@@ -321,9 +312,6 @@ export default function Navigation() {
           onClick={() => setIsCartOpen(false)}
         />
       )}
-
-      {/* Render the ProfileDrawer globally so it can open from anywhere */}
-      <ProfileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </>
   );
 } 
