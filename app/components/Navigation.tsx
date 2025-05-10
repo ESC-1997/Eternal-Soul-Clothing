@@ -122,6 +122,25 @@ export default function Navigation() {
               </span>
             </button>
 
+            <Link 
+              href="/resources" 
+              className="group flex flex-col items-center"
+              onClick={() => setIsOpen(false)}
+            >
+              <div className="flex justify-center">
+                <Image
+                  src="/images/About.png"
+                  alt="Resources"
+                  width={35}
+                  height={35}
+                  className="object-contain"
+                />
+              </div>
+              <button className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
+                Resources
+              </button>
+            </Link>
+
             {/* Cart Button */}
             <div className="flex flex-col items-center space-y-1 mt-auto">
               <button 
