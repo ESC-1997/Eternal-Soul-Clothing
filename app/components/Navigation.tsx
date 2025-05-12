@@ -129,7 +129,7 @@ export default function Navigation() {
             >
               <div className="flex justify-center">
                 <Image
-                  src="/images/About.png"
+                  src="/images/about.png"
                   alt="Resources"
                   width={35}
                   height={35}
