@@ -4,15 +4,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
-import { useProfileDrawer } from '../context/ProfileDrawerContext';
-import ProfileDrawer from './ProfileDrawer';
+import React from 'react';
+import StripeProvider from './StripeProvider';
+import CheckoutForm from './CheckoutForm';
+import OrderCompleteDrawer from './OrderCompleteDrawer';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { items: cartItems, subtotal, removeItem, updateQuantity, clearCart, isCartOpen, setIsCartOpen } = useCart();
-  const { user, drawerOpen, setDrawerOpen } = useProfileDrawer();
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isOrderComplete, setIsOrderComplete] = useState(false);
+  const [discount, setDiscount] = useState(0);
 
   // Close menu when route changes
   useEffect(() => {
@@ -46,22 +50,22 @@ export default function Navigation() {
               className="relative group block cursor-pointer"
               onClick={() => setIsOpen(false)}
             >
-              <div className="relative">
+              <div className="flex flex-col items-center mt-7">
                 <Image
-                  src="/images/Phoenix_ES_Grey.png"
+                  src="/images/Home.png"
                   alt="Phoenix Eternal Soul"
-                  width={70}
-                  height={70}
+                  width={40}
+                  height={40}
                   className="object-contain"
                 />
-                <div className="absolute bottom-0 left-0 right-0 text-white px-1.5 py-0 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
+                <div className="text-white px-1.5 py-0 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center mt-2">
                   Home
                 </div>
               </div>
             </Link>
           </div>
           
-          <div className="flex flex-col items-center space-y-5 mt-10">
+          <div className="flex flex-col items-center space-y-5 mt-2">
             <Link 
               href="/collections" 
               className="group flex flex-col items-center"
@@ -103,13 +107,7 @@ export default function Navigation() {
             {/* Always show Profile button */}
             <button
               className="group flex flex-col items-center"
-              onClick={() => {
-                if (user) {
-                  setDrawerOpen(true);
-                } else {
-                  router.push('/profile');
-                }
-              }}
+              onClick={() => router.push('/profile')}
             >
               <div className="flex justify-center">
                 <Image
@@ -124,6 +122,25 @@ export default function Navigation() {
                 Profile
               </span>
             </button>
+
+            <Link 
+              href="/resources" 
+              className="group flex flex-col items-center"
+              onClick={() => setIsOpen(false)}
+            >
+              <div className="flex justify-center">
+                <Image
+                  src="/images/about.png"
+                  alt="Resources"
+                  width={35}
+                  height={35}
+                  className="object-contain"
+                />
+              </div>
+              <button className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
+                Resources
+              </button>
+            </Link>
 
             {/* Cart Button */}
             <div className="flex flex-col items-center space-y-1 mt-auto">
@@ -248,13 +265,21 @@ export default function Navigation() {
               <span className="font-semibold text-[#1B1F3B]">Subtotal</span>
               <span className="font-semibold text-[#1B1F3B]">${subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between mb-4">
-              <span className="font-semibold">Total</span>
-              <span>${subtotal.toFixed(2)}</span>
+            {/* Discount Section - Only show if there's a discount */}
+            {discount > 0 && (
+              <div className="flex justify-between items-center mb-2 px-2 py-2">
+                <span className="text-green-600">Discount</span>
+                <span className="text-green-600">-${discount.toFixed(2)}</span>
+              </div>
+            )}
+            {/* Total Section */}
+            <div className="flex justify-between items-center mb-4 px-2 py-2 bg-[#B054FF] rounded">
+              <span className="font-bold text-lg text-white">Total</span>
+              <span className="font-bold text-lg text-white">${(subtotal - discount).toFixed(2)}</span>
             </div>
-            <button className="w-full bg-gray-900 text-white py-3 rounded hover:bg-gray-800 transition-colors flex items-center justify-center gap-2" onClick={() => {/* TODO: handle checkout */}}>
+            <button className="w-full bg-gray-900 text-white py-3 rounded hover:bg-gray-800 transition-colors flex items-center justify-center gap-2" onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }}>
               <span className="text-lg font-semibold">Checkout</span>
-              <img src="/images/credit_card1.png" alt="Checkout" className="w-8 h-7 ml-2" />
+              <img src="/images/checkout.png" alt="Checkout" className="w-10 h-13 ml-1s" />
             </button>
             {cartItems.length > 0 && (
               <button className="w-full mt-2 text-xs text-gray-500 hover:underline" onClick={clearCart}>
@@ -264,6 +289,41 @@ export default function Navigation() {
           </div>
         </div>
       </div>
+
+      {/* Checkout Panel */}
+      <StripeProvider>
+        <div
+          className={`fixed right-0 top-0 h-screen w-[420px] bg-white z-[103] shadow-lg transform transition-transform duration-300 ease-in-out
+            ${isCheckoutOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        >
+          <div className="p-8 h-full flex flex-col">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">Checkout</h2>
+              <button
+                onClick={() => setIsCheckoutOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <CheckoutForm 
+              subtotal={subtotal} 
+              clearCart={clearCart} 
+              setIsCheckoutOpen={setIsCheckoutOpen}
+              setIsOrderComplete={setIsOrderComplete}
+            />
+          </div>
+        </div>
+      </StripeProvider>
+
+      {/* Order Complete Drawer */}
+      <OrderCompleteDrawer 
+        open={isOrderComplete} 
+        onClose={() => setIsOrderComplete(false)} 
+      />
 
       {/* Overlay for mobile */}
       {isOpen && (
@@ -280,9 +340,6 @@ export default function Navigation() {
           onClick={() => setIsCartOpen(false)}
         />
       )}
-
-      {/* Render the ProfileDrawer globally so it can open from anywhere */}
-      <ProfileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </>
   );
 } 
