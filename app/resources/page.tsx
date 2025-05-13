@@ -41,7 +41,13 @@ export default function Resources() {
               />
             </div>
           </Link>
-          <div className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" style={{ background: '#B054FF' }}>
+          <a 
+            href="https://linktr.ee/eternalsoulclothing" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" 
+            style={{ background: '#B054FF' }}
+          >
             <div className="absolute" style={{ 
               color: '#DADBE4', 
               fontFamily: 'Bebas Neue, sans-serif',
@@ -54,8 +60,8 @@ export default function Resources() {
             }}>
               FOLLOW<br />OUR<br />SOCIALS
             </div>
-          </div>
-          <div className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" style={{ background: '#B054FF' }}>
+          </a>
+          <Link href="/sizes" className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" style={{ background: '#B054FF' }}>
             <div className="absolute" style={{ 
               color: '#DADBE4', 
               fontFamily: 'Bebas Neue, sans-serif',
@@ -82,10 +88,10 @@ export default function Resources() {
                 style={{ objectFit: 'contain' }}
               />
             </div>
-          </div>
+          </Link>
           
           {/* Row 2 */}
-          <div className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" style={{ background: '#B054FF' }}>
+          <Link href="/terms" className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" style={{ background: '#B054FF' }}>
             <div className="absolute" style={{ 
               color: '#DADBE4', 
               fontFamily: 'Bebas Neue, sans-serif',
@@ -112,7 +118,7 @@ export default function Resources() {
                 style={{ objectFit: 'contain' }}
               />
             </div>
-          </div>
+          </Link>
           <div className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" style={{ background: '#B054FF' }}>
             <div className="absolute" style={{ 
               color: '#DADBE4', 
@@ -185,7 +191,7 @@ export default function Resources() {
               />
             </div>
           </div>
-          <div className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" style={{ background: '#B054FF' }}>
+          <Link href="/shipping" className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" style={{ background: '#B054FF' }}>
             <div className="absolute" style={{ 
               color: '#DADBE4', 
               fontFamily: 'Bebas Neue, sans-serif',
@@ -198,7 +204,7 @@ export default function Resources() {
             }}>
               OUR<br />SHIPPING<br />POLICY
             </div>
-          </div>
+          </Link>
           <div className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" style={{ background: '#B054FF' }}>
             <div className="absolute" style={{ 
               color: '#DADBE4', 
