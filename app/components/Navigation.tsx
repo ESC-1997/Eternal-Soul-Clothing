@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import React from 'react';
-import StripeProvider from '../components/StripeProvider';
-import CheckoutForm from '../components/CheckoutForm';
-import OrderCompleteDrawer from '../components/OrderCompleteDrawer';
+import StripeProvider from './StripeProvider';
+import CheckoutForm from './CheckoutForm';
+import OrderCompleteDrawer from './OrderCompleteDrawer';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
