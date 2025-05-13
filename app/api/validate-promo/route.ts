@@ -14,13 +14,15 @@ export async function POST(req: Request) {
     const result = await PromoCodeService.validateCode(code, subtotal, ip, customerId || undefined);
 
     // Track the promo code usage
-    const analyticsId = await PromoAnalyticsService.trackPromoUse(
+    const analyticsId = await PromoAnalyticsService.trackPromoUsage(
       result.couponId,
-      subtotal,
+      'pending', // orderId will be updated when payment is completed
+      customerId || 'anonymous',
       result.discount,
+      subtotal,
+      subtotal - result.discount,
       ip,
-      userAgent,
-      customerId || undefined
+      userAgent
     );
 
     return NextResponse.json({
