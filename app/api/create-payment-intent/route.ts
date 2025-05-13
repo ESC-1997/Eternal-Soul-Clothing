@@ -8,11 +8,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: Request) {
   try {
-    const { amount, shipping, receipt_email, coupon } = await req.json();
+    const { amount, shipping, receipt_email, coupon, shippingMethod } = await req.json();
+
+    // Calculate total amount including shipping
+    const totalAmount = amount + (shippingMethod?.price || 0);
 
     // Create a PaymentIntent with the order amount and currency
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convert to cents
+      amount: Math.round(totalAmount * 100), // Convert to cents
       currency: 'usd',
       automatic_payment_methods: {
         enabled: true,
@@ -32,6 +35,8 @@ export async function POST(req: Request) {
       receipt_email,
       metadata: {
         coupon: coupon || undefined,
+        shipping_method: shippingMethod?.id || undefined,
+        shipping_cost: shippingMethod?.price?.toString() || '0',
       },
     });
 

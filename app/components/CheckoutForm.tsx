@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '../context/CartContext';
 import PromoCodeInput from './PromoCodeInput';
@@ -25,9 +25,77 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
   const [zip, setZip] = useState('');
   const [country, setCountry] = useState('US');
   const [phone, setPhone] = useState('');
-  const { items: cartItems } = useCart();
+  const { items: cartItems, shippingMethod, setShippingMethod, shippingCost } = useCart();
   const [discount, setDiscount] = useState(0);
   const [couponId, setCouponId] = useState<string | null>(null);
+  const [shippingRates, setShippingRates] = useState<any[]>([]);
+  const [isLoadingShipping, setIsLoadingShipping] = useState(false);
+  const [error, setError] = useState('');
+
+  // Fetch shipping rates when address is complete
+  const fetchShippingRates = async () => {
+    if (!city || !stateField || !zip || !streetAddress) {
+      console.log('Missing required address fields:', { city, stateField, zip, streetAddress });
+      return;
+    }
+
+    try {
+      setIsLoadingShipping(true);
+      setError('');
+
+      const address = {
+        country: 'US',
+        state: stateField,
+        city,
+        zip,
+        streetAddress,
+      };
+
+      console.log('Fetching shipping rates for address:', address);
+
+      const response = await fetch('/api/printify/shipping-rates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address,
+          items: cartItems.map(item => ({
+            id: item.id,
+            variantId: item.variantId,
+            quantity: item.quantity,
+          })),
+        }),
+      });
+
+      const data = await response.json();
+      console.log('Shipping rates response:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch shipping rates');
+      }
+
+      if (!data.shippingRates || !Array.isArray(data.shippingRates)) {
+        throw new Error('Invalid shipping rates response format');
+      }
+
+      setShippingRates(data.shippingRates);
+      if (data.shippingRates.length > 0 && !shippingMethod) {
+        setShippingMethod(data.shippingRates[0]);
+      }
+    } catch (error: any) {
+      console.error('Error from shipping rates API:', error.message);
+      setError(error.message);
+    } finally {
+      setIsLoadingShipping(false);
+    }
+  };
+
+  // Call fetchShippingRates when address fields change
+  useEffect(() => {
+    const timer = setTimeout(fetchShippingRates, 500);
+    return () => clearTimeout(timer);
+  }, [city, stateField, zip, streetAddress, cartItems, country, shippingMethod, setShippingMethod]);
 
   const handlePromoApplied = (discountAmount: number, couponId: string) => {
     setDiscount(discountAmount);
@@ -36,6 +104,10 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!shippingMethod) {
+      setCheckoutError('Please select a shipping method');
+      return;
+    }
     setCheckoutError('');
     setCheckoutSuccess('');
     setIsProcessing(true);
@@ -118,7 +190,7 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
           external_id: `order-${Date.now()}`,
           label: 'Website Order',
           line_items,
-          shipping_method: 1,
+          shipping_method: shippingMethod.id,
           address_to,
         };
         try {
@@ -179,6 +251,45 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
         <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
         <input type="tel" className="w-full border rounded p-2 text-[#1B1F3B]" placeholder="(555) 555-5555" required value={phone} onChange={e => setPhone(e.target.value)} />
       </div>
+      {/* Shipping Method Selection */}
+      <div className="mt-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Shipping Method</label>
+        {isLoadingShipping ? (
+          <div className="text-gray-500">Loading shipping options...</div>
+        ) : shippingRates.length > 0 ? (
+          <div className="space-y-2">
+            {shippingRates.map((rate) => (
+              <label
+                key={rate.id}
+                className={`flex items-center p-3 border rounded cursor-pointer ${
+                  shippingMethod?.id === rate.id ? 'border-[#B054FF] bg-purple-50' : 'border-gray-200'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="shipping"
+                  value={rate.id}
+                  checked={shippingMethod?.id === rate.id}
+                  onChange={() => setShippingMethod(rate)}
+                  className="mr-3"
+                />
+                <div className="flex-1">
+                  <div className="text-sm text-gray-500">{rate.name}</div>
+                  <div className="text-sm text-gray-500">
+                    {rate.delivery_time} • ${rate.price.toFixed(2)}
+                  </div>
+                </div>
+              </label>
+            ))}
+          </div>
+        ) : (
+          <div className="text-gray-500">
+            {!city || !stateField || !zip || !streetAddress 
+              ? 'Please enter your complete shipping address to see shipping options'
+              : 'No shipping options available for this address'}
+          </div>
+        )}
+      </div>
       <PromoCodeInput 
         onPromoApplied={handlePromoApplied}
         subtotal={subtotal}
@@ -195,10 +306,16 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
             <span className="text-green-600">-${discount.toFixed(2)}</span>
           </div>
         )}
+        {shippingMethod && (
+          <div className="flex justify-between text-sm">
+            <span className="text-[#1B1F3B]">Shipping</span>
+            <span className="text-[#1B1F3B]">${shippingMethod.price.toFixed(2)}</span>
+          </div>
+        )}
         <div className="border-t pt-2 mt-2">
           <div className="flex justify-between font-bold text-lg bg-[#B054FF] text-white p-2 rounded">
             <span>Total</span>
-            <span>${(subtotal - discount).toFixed(2)}</span>
+            <span>${(subtotal - discount + (shippingMethod?.price || 0)).toFixed(2)}</span>
           </div>
         </div>
       </div>
@@ -225,10 +342,10 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
           />
         </div>
       </div>
-      {checkoutError && (
+      {error && (
         <div className="text-red-600 text-sm mt-2 p-3 bg-red-50 border border-red-200 rounded">
           <p className="font-semibold">Error:</p>
-          <p>{checkoutError}</p>
+          <p>{error}</p>
         </div>
       )}
       {checkoutSuccess && (

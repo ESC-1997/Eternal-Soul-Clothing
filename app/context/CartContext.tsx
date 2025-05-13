@@ -22,6 +22,18 @@ export interface CartContextType {
   subtotal: number;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  shippingMethod: ShippingMethod | null;
+  setShippingMethod: (method: ShippingMethod | null) => void;
+  shippingCost: number;
+}
+
+export interface ShippingMethod {
+  id: string;
+  name: string;
+  price: number;
+  currency: string;
+  delivery_time: string;
+  is_express: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -29,6 +41,8 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethod | null>(null);
+  const [shippingCost, setShippingCost] = useState(0);
 
   const addItem = (item: CartItem) => {
     setItems(prev => {
@@ -69,7 +83,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   return (
     <CartContext.Provider value={{
       items, addItem, removeItem, updateQuantity, clearCart, subtotal,
-      isCartOpen, setIsCartOpen
+      isCartOpen, setIsCartOpen, shippingMethod, setShippingMethod, shippingCost
     }}>
       {children}
     </CartContext.Provider>
