@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import React from 'react';
-import StripeProvider from './StripeProvider';
-import CheckoutForm from './CheckoutForm';
-import OrderCompleteDrawer from './OrderCompleteDrawer';
+import StripeProvider from '../components/StripeProvider';
+import CheckoutForm from '../components/CheckoutForm';
+import OrderCompleteDrawer from '../components/OrderCompleteDrawer';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,6 +16,7 @@ export default function Navigation() {
   const { items: cartItems, subtotal, removeItem, updateQuantity, clearCart, isCartOpen, setIsCartOpen } = useCart();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isOrderComplete, setIsOrderComplete] = useState(false);
+  const [discount, setDiscount] = useState(0);
 
   // Close menu when route changes
   useEffect(() => {
@@ -121,6 +122,25 @@ export default function Navigation() {
                 Profile
               </span>
             </button>
+
+            <Link 
+              href="/resources" 
+              className="group flex flex-col items-center"
+              onClick={() => setIsOpen(false)}
+            >
+              <div className="flex justify-center">
+                <Image
+                  src="/images/about.png"
+                  alt="Resources"
+                  width={35}
+                  height={35}
+                  className="object-contain"
+                />
+              </div>
+              <button className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
+                Resources
+              </button>
+            </Link>
 
             {/* Cart Button */}
             <div className="flex flex-col items-center space-y-1 mt-auto">
@@ -245,9 +265,17 @@ export default function Navigation() {
               <span className="font-semibold text-[#1B1F3B]">Subtotal</span>
               <span className="font-semibold text-[#1B1F3B]">${subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between mb-4">
-              <span className="font-semibold">Total</span>
-              <span>${subtotal.toFixed(2)}</span>
+            {/* Discount Section - Only show if there's a discount */}
+            {discount > 0 && (
+              <div className="flex justify-between items-center mb-2 px-2 py-2">
+                <span className="text-green-600">Discount</span>
+                <span className="text-green-600">-${discount.toFixed(2)}</span>
+              </div>
+            )}
+            {/* Total Section */}
+            <div className="flex justify-between items-center mb-4 px-2 py-2 bg-[#B054FF] rounded">
+              <span className="font-bold text-lg text-white">Total</span>
+              <span className="font-bold text-lg text-white">${(subtotal - discount).toFixed(2)}</span>
             </div>
             <button className="w-full bg-gray-900 text-white py-3 rounded hover:bg-gray-800 transition-colors flex items-center justify-center gap-2" onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }}>
               <span className="text-lg font-semibold">Checkout</span>
