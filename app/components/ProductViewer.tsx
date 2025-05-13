@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import Image from 'next/image';
 import { productVariants } from './productVariants';
-import { useProfileDrawer } from '../context/ProfileDrawerContext';
+import { supabase } from "../supabaseClient"; // adjust path if needed
 
 interface ProductViewerProps {
   product: {
@@ -37,20 +37,146 @@ const COLOR_OPTIONS = [
   { name: 'Light Blue', value: 'lblue', hex: '#ADD8E6' },
 ];
 
+// Manual color mapping for Eternal Collapse
+const ETERNAL_COLLAPSE_COLORS = [
+  {
+    name: 'White',
+    value: 'white',
+    hex: '#FFFFFF',
+    images: [
+      '/images/eternal_collapse/white.jpg',
+      '/images/eternal_collapse/white1.jpg',
+    ],
+  },
+  {
+    name: 'Black',
+    value: 'black',
+    hex: '#000000',
+    images: [
+      '/images/eternal_collapse/black.jpg',
+      '/images/eternal_collapse/black1.jpg',
+    ],
+  },
+  {
+    name: 'Sand',
+    value: 'sand',
+    hex: '#C2B280',
+    images: [
+      '/images/eternal_collapse/sand.jpg',
+      '/images/eternal_collapse/sand1.jpg',
+    ],
+  },
+  {
+    name: 'Dark Chocolate',
+    value: 'dchocolate',
+    hex: '#3E2723',
+    images: [
+      '/images/eternal_collapse/dchocolate.jpg',
+      '/images/eternal_collapse/dchocolate1.jpg',
+    ],
+  },
+  {
+    name: 'Charcoal',
+    value: 'charcoal',
+    hex: '#444444',
+    images: [
+      '/images/eternal_collapse/charcoal.jpg',
+      '/images/eternal_collapse/charcoal1.jpg',
+    ],
+  },
+  {
+    name: 'Navy',
+    value: 'navy',
+    hex: '#001F54',
+    images: [
+      '/images/eternal_collapse/navy.jpg',
+      '/images/eternal_collapse/navy1.jpg',
+    ],
+  },
+];
+
+// Manual color mapping for Vow of the Eternal
+const VOW_OF_THE_ETERNAL_COLORS = [
+  {
+    name: 'Black',
+    value: 'black',
+    hex: '#000000',
+    images: [
+      '/images/vow_of_the_eternal/black.jpg',
+      '/images/vow_of_the_eternal/black1.jpg',
+    ],
+  },
+  {
+    name: 'Sand',
+    value: 'sand',
+    hex: '#C2B280',
+    images: [
+      '/images/vow_of_the_eternal/sand.jpg',
+      '/images/vow_of_the_eternal/sand.jpg',
+    ],
+  },
+  {
+    name: 'Dark Chocolate',
+    value: 'dchocolate',
+    hex: '#3E2723',
+    images: [
+      '/images/vow_of_the_eternal/dchocolate.jpg',
+      '/images/vow_of_the_eternal/dchocolate1.jpg',
+    ],
+  },
+  {
+    name: 'Stone Blue',
+    value: 'sblue',
+    hex: '#5A7CA5',
+    images: [
+      '/images/vow_of_the_eternal/sblue.jpg',
+      '/images/vow_of_the_eternal/sblue1.jpg',
+    ],
+  },
+  {
+    name: 'Charcoal',
+    value: 'charcoal',
+    hex: '#444444',
+    images: [
+      '/images/vow_of_the_eternal/charcoal.jpg',
+      '/images/vow_of_the_eternal/charcoal1.jpg',
+    ],
+  },
+];
+
 export default function ProductViewer({ product }: ProductViewerProps) {
-  const { profile } = useProfileDrawer();
   const [selectedSize, setSelectedSize] = useState<string>('M');
-  const [selectedColor, setSelectedColor] = useState<string>(COLOR_OPTIONS[0].value);
+  // Use custom color options for Eternal Collapse and Vow of the Eternal
+  const isEternalCollapse = product.title === 'Eternal Collapse';
+  const isVowOfTheEternal = product.title === 'Vow of the Eternal';
+  const colorOptions = isEternalCollapse
+    ? ETERNAL_COLLAPSE_COLORS
+    : isVowOfTheEternal
+      ? VOW_OF_THE_ETERNAL_COLORS
+      : COLOR_OPTIONS;
+  const [selectedColor, setSelectedColor] = useState<string>(colorOptions[0].value);
   const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
-  const { addItem } = useCart();
+  const { addItem, setIsCartOpen } = useCart();
 
-  // Update selectedSize when profile?.shirt_size changes
+  // Auto-restore user session on mount
   useEffect(() => {
-    if (profile?.shirt_size) {
-      setSelectedSize(profile.shirt_size);
-    }
-  }, [profile?.shirt_size]);
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (data?.user) {
+        // Assuming you want to set the user in the profile drawer context
+        // You might want to handle this differently depending on your app's architecture
+        // For now, we'll just log the user
+        console.log('User restored:', data.user);
+      }
+    });
+    // Optionally, listen for auth state changes:
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('Auth state changed:', session?.user ?? null);
+    });
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, []);
 
   const getVariantId = () => {
     const printifyColorName = COLOR_CODE_TO_NAME[selectedColor];
@@ -73,10 +199,11 @@ export default function ProductViewer({ product }: ProductViewerProps) {
         color: selectedColor,
         logo: 'default',
         size: selectedSize,
-        price: parseInt(product.variants[0].price) / 100,
+        price: getCurrentPrice(),
         quantity: 1,
-        image: `/images/eternal_lotus/eternal_lotus_${selectedColor}_${currentImageIndex === 0 ? 'front' : 'back'}${product.title.includes('Purple') ? 'P' : 'BG'}.jpg`,
+        image: getImagePath(),
       });
+      setIsCartOpen(true);
     } catch (err) {
       console.error('Error adding to cart:', err);
     } finally {
@@ -88,10 +215,64 @@ export default function ProductViewer({ product }: ProductViewerProps) {
     setCurrentImageIndex(currentImageIndex === 0 ? 1 : 0);
   };
 
+  // Custom image logic for Eternal Collapse and Vow of the Eternal
   const getImagePath = () => {
+    if (isEternalCollapse) {
+      const colorObj = ETERNAL_COLLAPSE_COLORS.find(c => c.value === selectedColor);
+      return colorObj ? colorObj.images[currentImageIndex] : ETERNAL_COLLAPSE_COLORS[0].images[0];
+    }
+    if (isVowOfTheEternal) {
+      const colorObj = VOW_OF_THE_ETERNAL_COLORS.find(c => c.value === selectedColor);
+      return colorObj ? colorObj.images[currentImageIndex] : VOW_OF_THE_ETERNAL_COLORS[0].images[0];
+    }
     const suffix = product.title.includes('Purple') ? 'P' : 'BG';
     return `/images/eternal_lotus/eternal_lotus_${selectedColor}_${currentImageIndex === 0 ? 'front' : 'back'}${suffix}.jpg`;
   };
+
+  // Determine available sizes for the current product and color
+  const getAvailableSizes = () => {
+    if (isEternalCollapse || isVowOfTheEternal) {
+      const productId = isEternalCollapse ? '681acbd3c9285dd17e0dd618' : '681ac79a1207456e76092f23';
+      const colorName = colorOptions.find(c => c.value === selectedColor)?.name;
+      if (productVariants[productId] && colorName && productVariants[productId][colorName]) {
+        return Object.keys(productVariants[productId][colorName]);
+      }
+    }
+    // Default sizes
+    return ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', 'XS'];
+  };
+  const availableSizes = getAvailableSizes();
+
+  // Get stock status for the selected color and size
+  const getStockStatus = (size: string) => {
+    if (isEternalCollapse || isVowOfTheEternal) {
+      const productId = isEternalCollapse ? '681acbd3c9285dd17e0dd618' : '681ac79a1207456e76092f23';
+      const colorName = colorOptions.find(c => c.value === selectedColor)?.name;
+      if (!colorName) return 'In Stock';
+      return productVariants[productId]?.[colorName]?.[size]?.stock_status || 'In Stock';
+    }
+    return 'In Stock';
+  };
+  const selectedStockStatus = getStockStatus(selectedSize);
+
+  // Get the price for the selected color and size for Eternal Collapse and Vow of the Eternal
+  const getCurrentPrice = () => {
+    if (isEternalCollapse || isVowOfTheEternal) {
+      const productId = isEternalCollapse ? '681acbd3c9285dd17e0dd618' : '681ac79a1207456e76092f23';
+      const colorName = colorOptions.find(c => c.value === selectedColor)?.name;
+      if (
+        productVariants[productId] &&
+        colorName &&
+        productVariants[productId][colorName] &&
+        productVariants[productId][colorName][selectedSize]
+      ) {
+        return productVariants[productId][colorName][selectedSize].price / 100;
+      }
+    }
+    // Default price logic
+    return parseInt(product.variants[0].price) / 100;
+  };
+  const currentPrice = getCurrentPrice();
 
   return (
     <div className="space-y-6">
@@ -130,11 +311,11 @@ export default function ProductViewer({ product }: ProductViewerProps) {
           <div className="mb-4 flex items-center gap-4">
             <div className="inline-block px-4 py-2 rounded" style={{ background: '#15803D' }}>
               <span className="text-white font-semibold">
-                Price: ${(parseInt(product.variants[0].price) / 100).toFixed(2)}
+                Price: ${currentPrice.toFixed(2)}
               </span>
             </div>
             <div className="text-green-700 font-medium">
-              In Stock
+              {selectedStockStatus}
             </div>
           </div>
         )}
@@ -143,7 +324,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2 text-gray-900">Color</h3>
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {COLOR_OPTIONS.map((color) => (
+            {colorOptions.map((color) => (
               <button
                 key={color.value}
                 className={`w-10 h-10 rounded-full border-2 flex-shrink-0 ${
@@ -167,20 +348,30 @@ export default function ProductViewer({ product }: ProductViewerProps) {
             onChange={(e) => setSelectedSize(e.target.value)}
             className="w-full p-2 border rounded text-gray-900"
           >
-            {['S', 'M', 'L', 'XL', '2XL'].map((size) => (
-              <option key={size} value={size}>{size}</option>
+            {availableSizes.map((size) => (
+              <option
+                key={size}
+                value={size}
+                disabled={getStockStatus(size) === 'Out of Stock'}
+              >
+                {size} {getStockStatus(size) === 'Out of Stock' ? '(Out of Stock)' : ''}
+              </option>
             ))}
           </select>
         </div>
 
         {/* Add to Cart Button */}
         <button
-          disabled={isAddingToCart}
+          disabled={isAddingToCart || selectedStockStatus === 'Out of Stock'}
           onClick={handleAddToCart}
           className="w-full py-3 rounded text-white text-lg font-semibold transition-colors duration-200"
           style={{ background: '#15803D' }}
         >
-          {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+          {selectedStockStatus === 'Out of Stock'
+            ? 'Out of Stock'
+            : isAddingToCart
+              ? 'Adding...'
+              : 'Add to Cart'}
         </button>
       </div>
 
@@ -219,11 +410,11 @@ export default function ProductViewer({ product }: ProductViewerProps) {
               <div className="flex items-center gap-4">
                 <div className="px-4 py-2 rounded" style={{ background: '#15803D' }}>
                   <span className="text-white font-semibold">
-                    Price: ${(parseInt(product.variants[0].price) / 100).toFixed(2)}
+                    Price: ${currentPrice.toFixed(2)}
                   </span>
                 </div>
                 <div className="text-green-700 font-medium">
-                  In Stock
+                  {selectedStockStatus}
                 </div>
               </div>
             )}
@@ -235,7 +426,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
             <div>
               <h3 className="text-xl font-semibold mb-3 text-gray-900">Color</h3>
               <div className="flex flex-wrap gap-3">
-                {COLOR_OPTIONS.map((color) => (
+                {colorOptions.map((color) => (
                   <button
                     key={color.value}
                     className={`w-12 h-12 rounded-full border-2 ${
@@ -259,20 +450,30 @@ export default function ProductViewer({ product }: ProductViewerProps) {
                 onChange={(e) => setSelectedSize(e.target.value)}
                 className="w-full p-2 border rounded text-gray-900"
               >
-                {['S', 'M', 'L', 'XL', '2XL'].map((size) => (
-                  <option key={size} value={size}>{size}</option>
+                {availableSizes.map((size) => (
+                  <option
+                    key={size}
+                    value={size}
+                    disabled={getStockStatus(size) === 'Out of Stock'}
+                  >
+                    {size} {getStockStatus(size) === 'Out of Stock' ? '(Out of Stock)' : ''}
+                  </option>
                 ))}
               </select>
             </div>
 
             {/* Add to Cart Button */}
             <button
-              disabled={isAddingToCart}
+              disabled={isAddingToCart || selectedStockStatus === 'Out of Stock'}
               onClick={handleAddToCart}
               className="w-full py-4 rounded text-white text-xl font-semibold transition-colors duration-200"
               style={{ background: '#15803D' }}
             >
-              {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+              {selectedStockStatus === 'Out of Stock'
+                ? 'Out of Stock'
+                : isAddingToCart
+                  ? 'Adding...'
+                  : 'Add to Cart'}
             </button>
           </div>
         </div>

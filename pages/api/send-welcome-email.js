@@ -17,16 +17,18 @@ export default async function handler(req, res) {
 
   const msg = {
     to,
-    from: process.env.SENDGRID_FROM_EMAIL, // Set this in your .env.local
-    subject: 'Welcome to Our App!',
-    text: `Hi${name ? ' ' + name : ''}, welcome to our app!`,
-    html: `<strong>Hi${name ? ' ' + name : ''}, welcome to our app!</strong>`,
+    from: process.env.SENDGRID_FROM_EMAIL,
+    templateId: 'd-845ddb0e9a1a4db4af466fc168fbb98a',
+    dynamic_template_data: {
+      first_name: name,
+    },
   };
 
   console.log('Attempting to send email with config:', {
     to: msg.to,
     from: msg.from,
-    subject: msg.subject
+    templateId: msg.templateId,
+    dynamic_template_data: msg.dynamic_template_data,
   });
 
   try {

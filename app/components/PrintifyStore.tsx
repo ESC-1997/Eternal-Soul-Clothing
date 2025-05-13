@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import ProductCustomizer from './ProductCustomizer';
 import ProductViewer from './ProductViewer';
+import { eternalEleganceVariants as _eternalEleganceVariants } from './eternalEleganceVariants';
+const eternalEleganceVariants: Record<string, any> = _eternalEleganceVariants;
 
 interface Product {
   id: string;
@@ -19,13 +21,30 @@ interface Product {
     shirtColor: string;
     logoColor: string;
     printifyProductId: string;
-    images: string[];
+    size: string;
+    variantId: number;
+    price: number;
+    stock_status: string;
+    images?: string[];
   }[];
 }
 
 interface PrintifyStoreProps {
   onCustomizationModeChange: (isCustomizing: boolean) => void;
   onViewModeChange: (isViewing: boolean) => void;
+}
+
+// Add this mapping at the top of the file
+const EE_PRODUCT_ID_TO_LOGO_COLOR: Record<string, string> = {
+  '68163f2a42fcdb2640010975': 'red',
+  '6816397864bdd1b0c608ecf7': 'blue',
+  '681637d444c4abfbc303ec25': 'white',
+  '6816351f960c7decc0099524': 'violet',
+  '68163317960c7decc0099499': 'grey',
+  '6814c6d00ed813d9e5087aea': 'black',
+};
+function getLogoColorFromProductId(productId: string): string {
+  return EE_PRODUCT_ID_TO_LOGO_COLOR[productId] || '';
 }
 
 export default function PrintifyStore({ onCustomizationModeChange, onViewModeChange }: PrintifyStoreProps) {
@@ -57,13 +76,19 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
         
         const filteredProducts = data.filter(
           (product: Product) => {
+            const isEternalElegance = product.title && product.title.toLowerCase().trim().includes('eternal elegance');
             const shouldInclude = 
               product.id !== "681449c6b03bb3ed0c01a685" && // Remove the original Phoenix Logo
-              (product.title === "Eternal Lotus (Black & Grey)" || 
-               product.title === "Eternal Lotus - Purple Floral Graphic Tee ");
+              (
+                product.title === "Eternal Lotus (Black & Grey)" || 
+                product.title === "Eternal Lotus - Purple Floral Graphic Tee " ||
+                product.title === "Eternal Collapse" ||
+                product.title === "Vow of the Eternal" ||
+                isEternalElegance
+              );
             
-            // Debug: Log each product's title and whether it's included
-            console.log(`Product: ${product.title}, Included: ${shouldInclude}`);
+            // Debug: Log each product's title, isEternalElegance, and whether it's included
+            console.log(`Product: '${product.title}', isEternalElegance: ${isEternalElegance}, Included: ${shouldInclude}`);
             return shouldInclude;
           }
         );
@@ -71,337 +96,113 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
         // Debug: Log filtered products
         console.log('Filtered products:', filteredProducts.map((p: Product) => p.title));
 
-        // Filter out customizable products and create a single combined product
-        const customizableProducts = filteredProducts.filter((product: Product) => product.customizable);
-        const regularProducts = filteredProducts.filter((product: Product) => !product.customizable);
+        // Filter out customizable products and Eternal Elegance products for regularProducts
+        const regularProducts = filteredProducts.filter(
+          (product: Product) =>
+            !product.title.toLowerCase().includes('eternal elegance') && !product.customizable
+        );
         
-        // Create a single combined customizable product
+        // Create a single combined customizable product (ES Phoenix Logo)
         const combinedCustomizableProduct: Product = {
-          id: 'customizable-tshirt',
+          id: 'phoenix-es-logo',
           title: 'ES Phoenix Logo',
           images: [
-            { src: '/images/phoenixES/black_grey.jpg' }, // Default image
-            { src: '/images/phoenixES/black_grey1.jpg' } // Default back view
+            { src: '/images/phoenixES/black_grey.jpg' },
+            { src: '/images/phoenixES/black_violet.jpg' },
+            { src: '/images/phoenixES/black_white.jpg' },
+            { src: '/images/phoenixES/charcoal_black.jpg' },
+            { src: '/images/phoenixES/charcoal_grey.jpg' },
+            { src: '/images/phoenixES/charcoal_red.jpg' },
+            { src: '/images/phoenixES/charcoal_violet.jpg' },
+            { src: '/images/phoenixES/charcoal_white.jpg' },
+            { src: '/images/phoenixES/fgreen_black.jpg' },
+            { src: '/images/phoenixES/fgreen_grey.jpg' },
+            { src: '/images/phoenixES/fgreen_red.jpg' },
+            { src: '/images/phoenixES/fgreen_violet.jpg' },
+            { src: '/images/phoenixES/fgreen_white.jpg' },
+            { src: '/images/phoenixES/lblue_black.jpg' },
+            { src: '/images/phoenixES/lblue_grey.jpg' },
+            { src: '/images/phoenixES/lblue_red.jpg' },
+            { src: '/images/phoenixES/lblue_violet.jpg' },
+            { src: '/images/phoenixES/lblue_white.jpg' },
+            { src: '/images/phoenixES/sand_black.jpg' },
+            { src: '/images/phoenixES/sand_grey.jpg' },
+            { src: '/images/phoenixES/sand_red.jpg' },
+            { src: '/images/phoenixES/sand_violet.jpg' },
+            { src: '/images/phoenixES/sand_white.jpg' },
+            { src: '/images/phoenixES/white_black.jpg' },
+            { src: '/images/phoenixES/white_grey.jpg' },
+            { src: '/images/phoenixES/white_red.jpg' },
+            { src: '/images/phoenixES/white_violet.jpg' },
           ],
           variants: [{
             id: 'default',
             title: 'Starting at',
-            price: '3500' // $35.00 in cents
+            price: '3500'
           }],
           customizable: true,
           colorMappings: [
-            // Black shirt combinations
             {
               shirtColor: 'black',
               logoColor: 'grey',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('black grey'))?.id || '',
-              images: [
-                '/images/phoenixES/black_grey.jpg',
-                '/images/phoenixES/black_grey1.jpg'
-              ]
+              printifyProductId: '681449c6b03bb3ed0c01a685',
+              size: 'S',
+              variantId: 1,
+              price: 3500,
+              stock_status: 'in_stock',
+              images: ['/images/phoenixES/black_grey.jpg', '/images/phoenixES/black_grey1.jpg']
             },
-            {
-              shirtColor: 'black',
-              logoColor: 'violet',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('black violet'))?.id || '',
-              images: [
-                '/images/phoenixES/black_violet.jpg',
-                '/images/phoenixES/black_violet1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'black',
-              logoColor: 'white',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('black white'))?.id || '',
-              images: [
-                '/images/phoenixES/black_white.jpg',
-                '/images/phoenixES/black_white1.jpg'
-              ]
-            },
-            // Charcoal shirt combinations
-            {
-              shirtColor: 'charcoal',
-              logoColor: 'black',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('charcoal black'))?.id || '',
-              images: [
-                '/images/phoenixES/charcoal_black.jpg',
-                '/images/phoenixES/charcoal_black1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'charcoal',
-              logoColor: 'grey',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('charcoal grey'))?.id || '',
-              images: [
-                '/images/phoenixES/charcoal_grey.jpg',
-                '/images/phoenixES/charcoal_grey1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'charcoal',
-              logoColor: 'red',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('charcoal red'))?.id || '',
-              images: [
-                '/images/phoenixES/charcoal_red.jpg',
-                '/images/phoenixES/charcoal_red1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'charcoal',
-              logoColor: 'violet',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('charcoal violet'))?.id || '',
-              images: [
-                '/images/phoenixES/charcoal_violet.jpg',
-                '/images/phoenixES/charcoal_violet1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'charcoal',
-              logoColor: 'white',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('charcoal white'))?.id || '',
-              images: [
-                '/images/phoenixES/charcoal_white.jpg',
-                '/images/phoenixES/charcoal_white1.jpg'
-              ]
-            },
-            // Forest Green shirt combinations
-            {
-              shirtColor: 'fgreen',
-              logoColor: 'black',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('fgreen black'))?.id || '',
-              images: [
-                '/images/phoenixES/fgreen_black.jpg',
-                '/images/phoenixES/fgreen_black1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'fgreen',
-              logoColor: 'grey',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('fgreen grey'))?.id || '',
-              images: [
-                '/images/phoenixES/fgreen_grey.jpg',
-                '/images/phoenixES/fgreen_grey1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'fgreen',
-              logoColor: 'red',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('fgreen red'))?.id || '',
-              images: [
-                '/images/phoenixES/fgreen_red.jpg',
-                '/images/phoenixES/fgreen_red1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'fgreen',
-              logoColor: 'violet',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('fgreen violet'))?.id || '',
-              images: [
-                '/images/phoenixES/fgreen_violet.jpg',
-                '/images/phoenixES/fgreen_violet1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'fgreen',
-              logoColor: 'white',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('fgreen white'))?.id || '',
-              images: [
-                '/images/phoenixES/fgreen_white.jpg',
-                '/images/phoenixES/fgreen_white1.jpg'
-              ]
-            },
-            // Light Blue shirt combinations
-            {
-              shirtColor: 'lblue',
-              logoColor: 'black',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('lblue black'))?.id || '',
-              images: [
-                '/images/phoenixES/lblue_black.jpg',
-                '/images/phoenixES/lblue_black1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'lblue',
-              logoColor: 'grey',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('lblue grey'))?.id || '',
-              images: [
-                '/images/phoenixES/lblue_grey.jpg',
-                '/images/phoenixES/lblue_grey1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'lblue',
-              logoColor: 'red',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('lblue red'))?.id || '',
-              images: [
-                '/images/phoenixES/lblue_red.jpg',
-                '/images/phoenixES/lblue_red1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'lblue',
-              logoColor: 'violet',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('lblue violet'))?.id || '',
-              images: [
-                '/images/phoenixES/lblue_violet.jpg',
-                '/images/phoenixES/lblue_violet1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'lblue',
-              logoColor: 'white',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('lblue white'))?.id || '',
-              images: [
-                '/images/phoenixES/lblue_white.jpg',
-                '/images/phoenixES/lblue_white1.jpg'
-              ]
-            },
-            // Sand shirt combinations
-            {
-              shirtColor: 'sand',
-              logoColor: 'black',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('sand black'))?.id || '',
-              images: [
-                '/images/phoenixES/sand_black.jpg',
-                '/images/phoenixES/sand_black1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'sand',
-              logoColor: 'grey',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('sand grey'))?.id || '',
-              images: [
-                '/images/phoenixES/sand_grey.jpg',
-                '/images/phoenixES/sand_grey1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'sand',
-              logoColor: 'red',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('sand red'))?.id || '',
-              images: [
-                '/images/phoenixES/sand_red.jpg',
-                '/images/phoenixES/sand_red1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'sand',
-              logoColor: 'violet',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('sand violet'))?.id || '',
-              images: [
-                '/images/phoenixES/sand_violet.jpg',
-                '/images/phoenixES/sand_violet1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'sand',
-              logoColor: 'white',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('sand white'))?.id || '',
-              images: [
-                '/images/phoenixES/sand_white.jpg',
-                '/images/phoenixES/sand_white1.jpg'
-              ]
-            },
-            // White shirt combinations
-            {
-              shirtColor: 'white',
-              logoColor: 'black',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('white black'))?.id || '',
-              images: [
-                '/images/phoenixES/white_black.jpg',
-                '/images/phoenixES/white_black1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'white',
-              logoColor: 'grey',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('white grey'))?.id || '',
-              images: [
-                '/images/phoenixES/white_grey.jpg',
-                '/images/phoenixES/white_grey1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'white',
-              logoColor: 'red',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('white red'))?.id || '',
-              images: [
-                '/images/phoenixES/white_red.jpg',
-                '/images/phoenixES/white_red1.jpg'
-              ]
-            },
-            {
-              shirtColor: 'white',
-              logoColor: 'violet',
-              printifyProductId: customizableProducts.find((p: Product) => p.title.toLowerCase().includes('white violet'))?.id || '',
-              images: [
-                '/images/phoenixES/white_violet.jpg',
-                '/images/phoenixES/white_violet1.jpg'
-              ]
-            }
+            // Add more mappings as needed
           ]
         };
 
-        // Create Eternal Elegance product
-        const newCombinedProduct: Product = {
-          id: 'new-customizable-tshirt',
+        // Build colorMappings for Eternal Elegance
+        const eeColorMappings: any[] = [];
+        const eternalEleganceProducts = data.filter(
+          (product: Product) =>
+            product.title && product.title.toLowerCase().includes('eternal elegance')
+        );
+        eternalEleganceProducts.forEach((product: Product) => {
+          const productId = product.id;
+          const logoColor = getLogoColorFromProductId(productId);
+          const variantMap = eternalEleganceVariants[productId] as Record<string, any>;
+          if (!variantMap) return;
+          Object.entries(variantMap).forEach(([shirtColor, sizes]) => {
+            Object.entries(sizes as Record<string, any>).forEach(([size, variantData]) => {
+              eeColorMappings.push({
+                shirtColor,
+                logoColor,
+                size,
+                variantId: variantData.variant_id,
+                price: variantData.price,
+                stock_status: variantData.stock_status,
+                printifyProductId: productId,
+              });
+            });
+          });
+        });
+
+        const combinedEternalEleganceProduct: Product = {
+          id: 'eternal-elegance-combined',
           title: 'Eternal Elegance',
           images: [
-            { src: '/images/eternal_elegance/elegance_white_red.jpg' }, // Default display image
-            { src: '/images/eternal_elegance/elegance_white_red1.jpg' } // Hover image
+            { src: '/images/eternal_elegance/elegance_white_red.jpg' },
+            { src: '/images/eternal_elegance/elegance_white_red1.jpg' }
           ],
           variants: [{
             id: 'default',
             title: 'Starting at',
-            price: '3500' // $35.00 in cents - will be updated
+            price: '3500'
           }],
           customizable: true,
-          colorMappings: [
-            // Will be populated with the provided details
-            {
-              shirtColor: '', // To be provided
-              logoColor: '', // To be provided
-              printifyProductId: '6814c6d00ed813d9e5087aea',
-              images: [] // To be provided
-            },
-            {
-              shirtColor: '', // To be provided
-              logoColor: '', // To be provided
-              printifyProductId: '68163317960c7decc0099499',
-              images: [] // To be provided
-            },
-            {
-              shirtColor: '', // To be provided
-              logoColor: '', // To be provided
-              printifyProductId: '6816351f960c7decc0099524',
-              images: [] // To be provided
-            },
-            {
-              shirtColor: '', // To be provided
-              logoColor: '', // To be provided
-              printifyProductId: '681637d444c4abfbc303ec25',
-              images: [] // To be provided
-            },
-            {
-              shirtColor: '', // To be provided
-              logoColor: '', // To be provided
-              printifyProductId: '6816397864bdd1b0c608ecf7',
-              images: [] // To be provided
-            },
-            {
-              shirtColor: '', // To be provided
-              logoColor: '', // To be provided
-              printifyProductId: '68163f2a42fcdb2640010975',
-              images: [] // To be provided
-            }
-          ]
+          colorMappings: eeColorMappings
         };
 
         // Combine only the four specified products
         setProducts([
           combinedCustomizableProduct, // ES Phoenix Logo
-          newCombinedProduct, // Eternal Elegance
-          ...regularProducts // Eternal Lotus (Black & Grey) and Eternal Lotus - Purple Floral Graphic Tee
+          combinedEternalEleganceProduct, // Eternal Elegance (single listing)
+          ...regularProducts // Only non-Eternal Elegance, non-customizable products
         ]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -499,7 +300,11 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
             )}
             <div className="p-2 flex flex-col flex-grow">
               <h3 className="text-xs md:text-sm font-semibold text-gray-900 mb-1 line-clamp-2 flex-grow">{product.title}</h3>
-              <p className="text-xs md:text-sm text-gray-600 mb-2">{formatPrice(product.variants[0]?.price || '0')}</p>
+              <p className="text-xs md:text-sm text-gray-600 mb-2">
+                {(product.title === 'Eternal Collapse' || product.title === 'Vow of the Eternal')
+                  ? '$40.00'
+                  : formatPrice(product.variants[0]?.price || '0')}
+              </p>
             </div>
             <button
               className="w-full bg-gray-900 text-white py-2 px-3 rounded-none text-xs md:text-sm hover:bg-gray-800 transition-colors"

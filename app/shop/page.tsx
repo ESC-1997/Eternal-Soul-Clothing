@@ -21,35 +21,7 @@ export default function Shop() {
                 className="object-contain"
               />
             </div>
-            {/* Bubble overlays for web and mobile */}
-            <img src="/images/bubble.png" alt="Customizable Overlay 1" className="bubble-img bubble-1" />
-            <img src="/images/bubble.png" alt="Customizable Overlay 2" className="bubble-img bubble-2" />
-            <style jsx>{`
-              .bubble-img {
-                position: absolute;
-                width: 100px;
-                height: 90px;
-                z-index: 30;
-              }
-              .bubble-1 {
-                left: 177px;
-                top: 330px;
-              }
-              .bubble-2 {
-                left: 465px;
-                top: 330px;
-              }
-              @media (max-width: 767px) {
-                .bubble-1 {
-                  left: 100px;
-                  top: 320px;
-                }
-                .bubble-2 {
-                  left: 290px;
-                  top: 320px;
-                }
-              }
-            `}</style>
+            {/* Bubble overlays for web and mobile removed */}
           </>
         )}
         <PrintifyStore 

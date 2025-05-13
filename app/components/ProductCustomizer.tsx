@@ -5,7 +5,6 @@ import { productVariants } from './productVariants';
 import Image from 'next/image';
 import { eternalEleganceImages } from './eternalEleganceImages';
 import { eternalEleganceVariants } from './eternalEleganceVariants';
-import { useProfileDrawer } from '../context/ProfileDrawerContext';
 
 // Add type for productVariants with index signature
 interface ProductVariantsType {
@@ -42,7 +41,11 @@ interface ProductCustomizerProps {
       shirtColor: string;
       logoColor: string;
       printifyProductId: string;
-      images: string[];
+      size: string;
+      variantId: number;
+      price: number;
+      stock_status: string;
+      images?: string[];
     }[];
   };
 }
@@ -127,14 +130,13 @@ const INVALID_COMBOS: Array<{ shirt: string; logo: string }> = [
 ];
 
 export default function ProductCustomizer({ product }: ProductCustomizerProps) {
-  const { profile } = useProfileDrawer();
   const isEternalElegance = product.title.toLowerCase().includes('eternal elegance');
   // Use correct color options
   const shirtColors = isEternalElegance ? EE_SHIRT_COLORS : SHIRT_COLORS;
   const logoColors = isEternalElegance ? EE_LOGO_COLORS : LOGO_COLORS;
   const [selectedShirtColor, setSelectedShirtColor] = useState<ColorOption>(shirtColors[0]);
   const [selectedLogoColor, setSelectedLogoColor] = useState<ColorOption>(logoColors[0]);
-  const [selectedSize, setSelectedSize] = useState<string>(profile?.shirt_size || 'M');
+  const [selectedSize, setSelectedSize] = useState<string>('M');
   const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
@@ -188,12 +190,6 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedShirtColor]);
 
-  useEffect(() => {
-    if (profile?.shirt_size) {
-      setSelectedSize(profile.shirt_size);
-    }
-  }, [profile?.shirt_size]);
-
   const handleAddToCart = async () => {
     if (!variant) return;
     try {
@@ -224,39 +220,76 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
       setIsAddingToCart(true);
       setError(null);
 
-      // Get the product ID directly from your mapping
+      // Use productVariantsTyped for Eternal Elegance
+      if (isEternalElegance) {
+        const productId = EE_LOGO_COLOR_TO_PRODUCT_ID[logoColor];
+        const colorName = SHIRT_COLOR_CODE_TO_NAME[shirtColor] || shirtColor;
+        const variant = productVariantsTyped[productId]?.[colorName]?.[size];
+        
+        console.log({
+          shirtColor,
+          logoColor,
+          size,
+          productId,
+          colorName,
+          variant,
+          productVariantsTyped
+        });
+
+        if (!productId) {
+          setError('No product ID found for selected logo color');
+          return;
+        }
+        if (!variant) {
+          setError('No variant found for selected options');
+          return;
+        }
+
+        addItem({
+          id: productId,
+          variantId: variant.variant_id,
+          name: product.title,
+          color: shirtColor,
+          logo: logoColor,
+          size: size,
+          price: variant.price / 100,
+          quantity: 1,
+          image: images[0],
+        });
+        setIsCartOpen(true);
+        setSuccessMessage('Product added to cart!');
+        return;
+      }
+
+      // Fallback to old logic for other products
       const productId = LOGO_COLOR_TO_PRODUCT_ID[logoColor];
+      const colorName = SHIRT_COLOR_CODE_TO_NAME[shirtColor] || shirtColor;
+      const variant = productVariantsTyped[productId]?.[colorName]?.[size];
+      
       if (!productId) {
         setError('No product ID found for selected logo color');
         return;
       }
-
-      // Get the full color name for lookup
-      const colorName = SHIRT_COLOR_CODE_TO_NAME[shirtColor] || shirtColor;
-
-      // Check if the variant exists for the selected shirt color and size
-      const variant = productVariantsTyped[productId]?.[colorName]?.[size];
       if (!variant) {
         setError('No variant found for selected options');
         return;
       }
 
-      // Add the item to the cart
       addItem({
         id: productId,
         variantId: variant.variant_id,
         name: product.title,
         color: shirtColor,
         logo: logoColor,
-        size,
+        size: size,
         price: variant.price / 100,
         quantity: 1,
-        image: `/images/phoenixES/${shirtColor}_${logoColor}.jpg`,
+        image: images[0],
       });
       setIsCartOpen(true);
       setSuccessMessage('Product added to cart!');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsAddingToCart(false);
     }
@@ -269,6 +302,15 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
   const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedSize(e.target.value);
   };
+
+  // Helper to get stock status for a given size
+  const getStockStatus = (size: string) => {
+    if (productVariantsTyped[productId] && productVariantsTyped[productId][colorName] && productVariantsTyped[productId][colorName][size]) {
+      return productVariantsTyped[productId][colorName][size].stock_status || 'In Stock';
+    }
+    return 'In Stock';
+  };
+  const selectedStockStatus = getStockStatus(selectedSize);
 
   return (
     <div className="space-y-6">
@@ -292,7 +334,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
               </span>
             </div>
             <div className="text-green-700 font-medium">
-              In Stock
+              {selectedStockStatus}
             </div>
           </div>
         )}
@@ -346,19 +388,29 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
             className="w-full p-2 border rounded text-gray-900"
           >
             {availableSizes.map((size) => (
-              <option key={size} value={size}>{size}</option>
+              <option
+                key={size}
+                value={size}
+                disabled={getStockStatus(size) === 'Out of Stock'}
+              >
+                {size} {getStockStatus(size) === 'Out of Stock' ? '(Out of Stock)' : ''}
+              </option>
             ))}
           </select>
         </div>
 
         {/* Add to Cart Button */}
         <button
-          disabled={isAddingToCart}
+          disabled={isAddingToCart || selectedStockStatus === 'Out of Stock'}
           onClick={() => handleCustomize(selectedShirtColor.value, selectedLogoColor.value, selectedSize)}
           className="w-full py-3 rounded text-white text-lg font-semibold transition-colors duration-200"
           style={{ background: '#15803D' }}
         >
-          {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+          {selectedStockStatus === 'Out of Stock'
+            ? 'Out of Stock'
+            : isAddingToCart
+              ? 'Adding...'
+              : 'Add to Cart'}
         </button>
       </div>
 
@@ -385,7 +437,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
                   </span>
                 </div>
                 <div className="text-green-700 font-medium">
-                  In Stock
+                  {selectedStockStatus}
                 </div>
               </div>
             )}
@@ -442,19 +494,29 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
                 className="w-full p-2 border rounded text-gray-900"
               >
                 {availableSizes.map((size) => (
-                  <option key={size} value={size}>{size}</option>
+                  <option
+                    key={size}
+                    value={size}
+                    disabled={getStockStatus(size) === 'Out of Stock'}
+                  >
+                    {size} {getStockStatus(size) === 'Out of Stock' ? '(Out of Stock)' : ''}
+                  </option>
                 ))}
               </select>
             </div>
 
             {/* Add to Cart Button */}
             <button
-              disabled={isAddingToCart}
+              disabled={isAddingToCart || selectedStockStatus === 'Out of Stock'}
               onClick={() => handleCustomize(selectedShirtColor.value, selectedLogoColor.value, selectedSize)}
               className="w-full py-4 rounded text-white text-xl font-semibold transition-colors duration-200"
               style={{ background: '#15803D' }}
             >
-              {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+              {selectedStockStatus === 'Out of Stock'
+                ? 'Out of Stock'
+                : isAddingToCart
+                  ? 'Adding...'
+                  : 'Add to Cart'}
             </button>
           </div>
         </div>
