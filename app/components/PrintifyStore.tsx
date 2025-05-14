@@ -84,11 +84,18 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
                 product.title === "Eternal Lotus - Purple Floral Graphic Tee " ||
                 product.title === "Eternal Collapse" ||
                 product.title === "Vow of the Eternal" ||
+                product.title === "Eternal Awakening" ||
                 isEternalElegance
               );
             
             // Debug: Log each product's title, isEternalElegance, and whether it's included
             console.log(`Product: '${product.title}', isEternalElegance: ${isEternalElegance}, Included: ${shouldInclude}`);
+            
+            // Debug: Log variant data for Eternal Awakening
+            if (product.title === "Eternal Awakening") {
+              console.log('Eternal Awakening variants in frontend:', product.variants);
+            }
+            
             return shouldInclude;
           }
         );
@@ -303,6 +310,8 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
               <p className="text-xs md:text-sm text-gray-600 mb-2">
                 {(product.title === 'Eternal Collapse' || product.title === 'Vow of the Eternal')
                   ? '$40.00'
+                  : product.title === 'Eternal Awakening'
+                  ? '$45.00'
                   : formatPrice(product.variants[0]?.price || '0')}
               </p>
             </div>
