@@ -12,10 +12,11 @@ export async function POST(req: Request) {
 
     // Calculate total amount including shipping
     const totalAmount = amount + (shippingMethod?.price || 0);
+    console.log('amount:', amount, 'shippingMethod:', shippingMethod, 'shipping price:', shippingMethod?.price, 'totalAmount:', totalAmount);
 
     // Create a PaymentIntent with the order amount and currency
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(totalAmount * 100), // Convert to cents
+      amount: Math.round(totalAmount), // Already in cents
       currency: 'usd',
       automatic_payment_methods: {
         enabled: true,
