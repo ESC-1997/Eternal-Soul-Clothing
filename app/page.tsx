@@ -3,6 +3,10 @@ import Image from 'next/image';
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import EternalThreadsCarousel from './components/EternalThreadsCarousel';
+import PhoenixESCarousel from './components/PhoenixESCarousel';
+import EternalSlashCarousel from './components/EternalSlashCarousel';
+import { CarouselSyncProvider } from './components/CarouselSyncContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -128,7 +132,7 @@ export default function Home() {
         </video>
       </div>
 
-      {/* New Section Below Video */}
+      {/* Featured Items Section */}
       <div style={{ width: '100%', background: '#DADBE4', height: '520px' }}>
         <h2 style={{
           color: '#1B1F3B',
@@ -202,7 +206,7 @@ export default function Home() {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                 }}>
-                  ES Phoenix Tee (Customizable) 
+                  VOW OF THE ETERNAL
                 </span>
               </div>
               <img 
@@ -235,7 +239,7 @@ export default function Home() {
                   fontStyle: 'italic',
                   fontWeight: 600,
                   color: '#DADBE4',
-                  fontSize: '0.62rem',
+                  fontSize: '0.75rem',
                   letterSpacing: '0.03em',
                   textAlign: 'center',
                   width: '100%',
@@ -243,7 +247,7 @@ export default function Home() {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                 }}>
-                  ETERNAL LOTUS - PURPLE GRAPHIC TEE
+                  ETERNAL COLLAPSE
                 </span>
               </div>
               <img 
@@ -276,7 +280,7 @@ export default function Home() {
                   fontStyle: 'italic',
                   fontWeight: 600,
                   color: '#DADBE4',
-                  fontSize: '0.65rem',
+                  fontSize: '0.75rem',
                   letterSpacing: '0.03em',
                   textAlign: 'center',
                   width: '100%',
@@ -284,12 +288,12 @@ export default function Home() {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                 }}>
-                  ETERNAL ELEGANCE (CUSTOMIZABLE)
+                  ETERNAL AWAKENING
                 </span>
               </div>
               <img 
-                src="/images/eternal_elegance/elegance_charcoal_white1.jpg" 
-                alt="ETERNAL ELEGANCE (CUSTOMIZABLE)" 
+                src="/images/eternal_awakening/black_back.jpg" 
+                alt="ETERNAL AWAKENING" 
                 style={{ width: '100%', height: '240px', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
               />
               <div style={{
@@ -309,6 +313,49 @@ export default function Home() {
             </div>
           </Link>
         </div>
+      </div>
+
+      {/* Eternal Threads Section */}
+      <div style={{ width: '100%', background: '#1B1F3B', padding: '50px 0' }}>
+        <CarouselSyncProvider imageCount={15}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <h2 style={{
+              color: '#DADBE4',
+              fontFamily: 'Bebas Neue, sans-serif',
+              fontSize: '2.5rem',
+              textAlign: 'center',
+              letterSpacing: '0.1em',
+              fontWeight: 'bold',
+              marginBottom: '10px'
+            }}>
+              ETERNAL THREADS
+            </h2>
+            <p style={{
+              color: '#DADBE4',
+              fontFamily: 'Lato, sans-serif',
+              fontSize: '1.2rem',
+              fontStyle: 'italic',
+              textAlign: 'center',
+              marginBottom: '25px'
+            }}>
+              a collection of customizable t-shirts
+            </p>
+            <div className="w-full flex flex-col md:flex-row justify-center items-center gap-8">
+              {/* Elegance (left) */}
+              <div className="w-full md:flex-1 flex justify-center mb-6 md:mb-0">
+                <EternalThreadsCarousel />
+              </div>
+              {/* PhoenixES (center) */}
+              <div className="w-full md:flex-1 flex justify-center mb-6 md:mb-0">
+                <PhoenixESCarousel />
+              </div>
+              {/* Eternal Slash (right) */}
+              <div className="w-full md:flex-1 flex justify-center">
+                <EternalSlashCarousel />
+              </div>
+            </div>
+          </div>
+        </CarouselSyncProvider>
       </div>
     </main>
   );
