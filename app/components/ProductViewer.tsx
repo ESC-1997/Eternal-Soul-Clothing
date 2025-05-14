@@ -37,6 +37,59 @@ const COLOR_OPTIONS = [
   { name: 'Light Blue', value: 'lblue', hex: '#ADD8E6' },
 ];
 
+// Eternal Awakening color options
+const ETERNAL_AWAKENING_COLORS = [
+  { name: 'Black', value: 'black', hex: '#000000' },
+  { name: 'Dark Chocolate', value: 'dchocolate', hex: '#3E2723' },
+  { name: 'Gravel', value: 'gravel', hex: '#4A4A4A' },
+  { name: 'Light Blue', value: 'lblue', hex: '#ADD8E6' },
+  { name: 'Navy', value: 'navy', hex: '#001F54' },
+  { name: 'Sand', value: 'sand', hex: '#C2B280' },
+  { name: 'Tweed', value: 'tweed', hex: '#8B7355' },
+  { name: 'Violet', value: 'violet', hex: '#8A2BE2' },
+  { name: 'White', value: 'white', hex: '#FFFFFF' },
+];
+
+// Eternal Awakening color-to-image mapping
+const ETERNAL_AWAKENING_IMAGE_MAP: Record<string, { front: string; back: string }> = {
+  black: {
+    front: '/images/eternal_awakening/black_front.jpg',
+    back: '/images/eternal_awakening/black_back.jpg',
+  },
+  dchocolate: {
+    front: '/images/eternal_awakening/dchocolate_front.jpg',
+    back: '/images/eternal_awakening/dchocolate_back.jpg',
+  },
+  gravel: {
+    front: '/images/eternal_awakening/gravel_front.jpg',
+    back: '/images/eternal_awakening/gravel_back.jpg',
+  },
+  lblue: {
+    front: '/images/eternal_awakening/lblue_front.jpg',
+    back: '/images/eternal_awakening/lblue_back.jpg',
+  },
+  navy: {
+    front: '/images/eternal_awakening/navy_front.jpg',
+    back: '/images/eternal_awakening/navy_back.jpg',
+  },
+  sand: {
+    front: '/images/eternal_awakening/sand_front.jpg',
+    back: '/images/eternal_awakening/sand_back.jpg',
+  },
+  tweed: {
+    front: '/images/eternal_awakening/tweed_front.jpg',
+    back: '/images/eternal_awakening/tweed_back.jpg',
+  },
+  violet: {
+    front: '/images/eternal_awakening/violet_front.jpg',
+    back: '/images/eternal_awakening/violet_back.jpg',
+  },
+  white: {
+    front: '/images/eternal_awakening/white_front.jpg',
+    back: '/images/eternal_awakening/white_back.jpg',
+  },
+};
+
 // Manual color mapping for Eternal Collapse
 const ETERNAL_COLLAPSE_COLORS = [
   {
@@ -146,14 +199,17 @@ const VOW_OF_THE_ETERNAL_COLORS = [
 
 export default function ProductViewer({ product }: ProductViewerProps) {
   const [selectedSize, setSelectedSize] = useState<string>('M');
-  // Use custom color options for Eternal Collapse and Vow of the Eternal
+  // Use custom color options for specific products
   const isEternalCollapse = product.title === 'Eternal Collapse';
   const isVowOfTheEternal = product.title === 'Vow of the Eternal';
+  const isEternalAwakening = product.title === 'Eternal Awakening';
   const colorOptions = isEternalCollapse
     ? ETERNAL_COLLAPSE_COLORS
     : isVowOfTheEternal
       ? VOW_OF_THE_ETERNAL_COLORS
-      : COLOR_OPTIONS;
+      : isEternalAwakening
+        ? ETERNAL_AWAKENING_COLORS
+        : COLOR_OPTIONS;
   const [selectedColor, setSelectedColor] = useState<string>(colorOptions[0].value);
   const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
@@ -215,7 +271,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
     setCurrentImageIndex(currentImageIndex === 0 ? 1 : 0);
   };
 
-  // Custom image logic for Eternal Collapse and Vow of the Eternal
+  // Custom image logic for Eternal Collapse, Vow of the Eternal, and Eternal Awakening
   const getImagePath = () => {
     if (isEternalCollapse) {
       const colorObj = ETERNAL_COLLAPSE_COLORS.find(c => c.value === selectedColor);
@@ -224,6 +280,11 @@ export default function ProductViewer({ product }: ProductViewerProps) {
     if (isVowOfTheEternal) {
       const colorObj = VOW_OF_THE_ETERNAL_COLORS.find(c => c.value === selectedColor);
       return colorObj ? colorObj.images[currentImageIndex] : VOW_OF_THE_ETERNAL_COLORS[0].images[0];
+    }
+    if (isEternalAwakening) {
+      const colorKey = selectedColor;
+      const side = currentImageIndex === 0 ? 'front' : 'back';
+      return ETERNAL_AWAKENING_IMAGE_MAP[colorKey]?.[side] || ETERNAL_AWAKENING_IMAGE_MAP['black'].front;
     }
     const suffix = product.title.includes('Purple') ? 'P' : 'BG';
     return `/images/eternal_lotus/eternal_lotus_${selectedColor}_${currentImageIndex === 0 ? 'front' : 'back'}${suffix}.jpg`;
@@ -238,7 +299,10 @@ export default function ProductViewer({ product }: ProductViewerProps) {
         return Object.keys(productVariants[productId][colorName]);
       }
     }
-    // Default sizes
+    // Default sizes - put XS at the beginning for Eternal Awakening
+    if (isEternalAwakening) {
+      return ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'];
+    }
     return ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', 'XS'];
   };
   const availableSizes = getAvailableSizes();
@@ -255,7 +319,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
   };
   const selectedStockStatus = getStockStatus(selectedSize);
 
-  // Get the price for the selected color and size for Eternal Collapse and Vow of the Eternal
+  // Get the price for the selected color and size
   const getCurrentPrice = () => {
     if (isEternalCollapse || isVowOfTheEternal) {
       const productId = isEternalCollapse ? '681acbd3c9285dd17e0dd618' : '681ac79a1207456e76092f23';
@@ -267,6 +331,16 @@ export default function ProductViewer({ product }: ProductViewerProps) {
         productVariants[productId][colorName][selectedSize]
       ) {
         return productVariants[productId][colorName][selectedSize].price / 100;
+      }
+    }
+    if (isEternalAwakening) {
+      // Price logic for Eternal Awakening
+      if (['3XL', '4XL', '5XL'].includes(selectedSize)) {
+        return 48.00;
+      } else if (selectedSize === '2XL') {
+        return 47.00;
+      } else {
+        return 45.00;
       }
     }
     // Default price logic
