@@ -39,7 +39,7 @@ export default function Navigation() {
       <nav 
         className={`fixed left-0 top-0 h-screen z-[100] transition-all duration-300 ease-in-out
           ${isOpen ? 'w-24' : 'w-0 lg:w-24'}`} 
-        style={{ backgroundColor: '#1B1F3B' }}
+        style={{ background: 'linear-gradient(to bottom, #9F2FFF, #7A1FBF, #9F2FFF)' }}
       >
         <div 
           className={`flex flex-col p-1.5 ${!isOpen && '!hidden lg:!flex'} overflow-hidden pt-16 lg:pt-0`}
