@@ -4,7 +4,7 @@ export interface PromoAnalytics {
   id: string;
   promo_code_id: string;
   order_id: string;
-  customer_id: string;
+  customer_id: string | null;
   discount_amount: number;
   original_amount: number;
   final_amount: number;
@@ -28,7 +28,7 @@ export class PromoAnalyticsService {
   static async trackPromoUsage(
     promoCodeId: string,
     orderId: string,
-    customerId: string,
+    customerId: string | null,
     discountAmount: number,
     originalAmount: number,
     finalAmount: number,

@@ -29,8 +29,9 @@ export default function PromoCodeInput({ onPromoApplied, subtotal }: PromoCodeIn
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          code: promoCode,
+          code: promoCode.trim().toUpperCase(),
           subtotal,
+          customerId: null
         }),
       });
 
@@ -43,7 +44,7 @@ export default function PromoCodeInput({ onPromoApplied, subtotal }: PromoCodeIn
       setSuccess('Promo code applied successfully!');
       onPromoApplied(data.discount, data.couponId);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to apply promo code');
     } finally {
       setIsLoading(false);
     }
