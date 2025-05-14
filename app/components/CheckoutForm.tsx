@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '../context/CartContext';
 import PromoCodeInput from './PromoCodeInput';
+import { supabase } from '../supabase/client';
 
 interface CheckoutFormProps {
   subtotal: number;
@@ -31,6 +32,17 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
   const [shippingRates, setShippingRates] = useState<any[]>([]);
   const [isLoadingShipping, setIsLoadingShipping] = useState(false);
   const [error, setError] = useState('');
+
+  // Get user's email when component mounts
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        setEmail(user.email);
+      }
+    };
+    getUser();
+  }, []);
 
   // Fetch shipping rates when address is complete
   const fetchShippingRates = async () => {
