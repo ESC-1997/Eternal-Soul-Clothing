@@ -55,48 +55,22 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
       setIsLoadingShipping(true);
       setError('');
 
-      const address = {
-        country: 'US',
-        state: stateField,
-        city,
-        zip,
-        streetAddress,
+      // Calculate shipping: $4.75 for the first shirt, $1.00 for each additional shirt
+      const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+      const shippingPrice = totalQuantity > 0 ? 4.75 + (totalQuantity - 1) * 1.0 : 0;
+      const shippingOption = {
+        id: '1',
+        name: 'Standard Shipping',
+        delivery_time: '5-8 business days',
+        price: Math.round(shippingPrice * 100),
+        currency: 'USD',
+        is_express: false,
       };
-
-      console.log('Fetching shipping rates for address:', address);
-
-      const response = await fetch('/api/printify/shipping-rates', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          address,
-          items: cartItems.map(item => ({
-            id: item.id,
-            variantId: item.variantId,
-            quantity: item.quantity,
-          })),
-        }),
-      });
-
-      const data = await response.json();
-      console.log('Shipping rates response:', data);
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch shipping rates');
-      }
-
-      if (!data.shippingRates || !Array.isArray(data.shippingRates)) {
-        throw new Error('Invalid shipping rates response format');
-      }
-
-      setShippingRates(data.shippingRates);
-      if (data.shippingRates.length > 0 && !shippingMethod) {
-        setShippingMethod(data.shippingRates[0]);
+      setShippingRates([shippingOption]);
+      if (!shippingMethod || shippingMethod.id !== '1') {
+        setShippingMethod(shippingOption);
       }
     } catch (error: any) {
-      console.error('Error from shipping rates API:', error.message);
       setError(error.message);
     } finally {
       setIsLoadingShipping(false);
@@ -149,6 +123,7 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
           },
           receipt_email: email,
           coupon: couponId,
+          shippingMethod,
         }),
       });
       const { clientSecret, error } = await res.json();
@@ -190,7 +165,7 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
           first_name: fullName.split(' ')[0] || fullName,
           last_name: fullName.split(' ').slice(1).join(' ') || '',
           email,
-          phone: '', // Add phone if you collect it
+          phone,
           country: 'US',
           region: stateField,
           city,
@@ -202,7 +177,7 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
           external_id: `order-${Date.now()}`,
           label: 'Website Order',
           line_items,
-          shipping_method: shippingMethod.id,
+          shipping_method: Number(shippingMethod.id),
           address_to,
         };
         try {
@@ -321,13 +296,13 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
         {shippingMethod && (
           <div className="flex justify-between text-sm">
             <span className="text-[#1B1F3B]">Shipping</span>
-            <span className="text-[#1B1F3B]">${shippingMethod.price.toFixed(2)}</span>
+            <span className="text-[#1B1F3B]">${(shippingMethod.price / 100).toFixed(2)}</span>
           </div>
         )}
         <div className="border-t pt-2 mt-2">
           <div className="flex justify-between font-bold text-lg bg-[#B054FF] text-white p-2 rounded">
             <span>Total</span>
-            <span>${(subtotal - discount + (shippingMethod?.price || 0)).toFixed(2)}</span>
+            <span>${(subtotal - discount + (shippingMethod ? shippingMethod.price / 100 : 0)).toFixed(2)}</span>
           </div>
         </div>
       </div>
