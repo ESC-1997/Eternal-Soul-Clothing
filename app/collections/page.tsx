@@ -4,37 +4,33 @@ import { useEffect, useState } from 'react';
 
 export default function Collections() {
   return (
-    <main className="relative w-full min-h-screen p-0 m-0" style={{ background: '#DADBE4' }}>
-      {/* Customizable Collection Section */}
-      <div style={{
-        width: '100%',
-        background: '#64748B',
-        height: '850px',
-        marginTop: 0,
-        paddingTop: '60px',
-      }}>
-        <h2 style={{
-          color: '#1B1F3B',
-          fontFamily: 'Bebas Neue, sans-serif',
-          fontSize: '3rem',
-          textAlign: 'center',
-          marginTop: 0,
-          letterSpacing: '0.1em',
-          fontWeight: 'bold',
-        }}>
-          CUSTOMIZABLE COLLECTION!
-        </h2>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '32px',
-          marginTop: '120px',
-        }}>
-          <div style={{ width: '230px', height: '300px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)' }}></div>
-          <div style={{ width: '230px', height: '300px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)' }}></div>
-          <div style={{ width: '230px', height: '300px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)' }}></div>
-          <div style={{ width: '230px', height: '300px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)' }}></div>
+    <main className="relative w-full min-h-screen">
+      {/* Background Image */}
+      <div className="fixed inset-0 w-full h-full flex items-center justify-center z-0">
+        <Image
+          src="/images/Collections_BG1.png"
+          alt="Collections Background"
+          width={650}
+          height={600}
+          className="object-contain"
+          priority
+        />
+      </div>
+
+      {/* Modal */}
+      <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="absolute inset-0 backdrop-blur-sm bg-black/30"></div>
+        <div className="relative bg-white/30 p-8 rounded-lg max-w-md text-center backdrop-blur-sm">
+          <h2 className="text-3xl font-bold mb-4" style={{ 
+            color: '#1B1F3B',
+            textShadow: '0 0 10px rgb(255, 255, 255)'
+          }}>Coming Soon</h2>
+          <p className="text-lg" style={{ 
+            color: '#1B1F3B',
+            textShadow: '0 0 10px rgb(255, 255, 255)'
+          }}>
+            Our collection is being prepared with care. Stay tuned for the launch of our exclusive designs.
+          </p>
         </div>
       </div>
     </main>
