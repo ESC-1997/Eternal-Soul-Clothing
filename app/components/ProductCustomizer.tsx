@@ -198,17 +198,17 @@ const ES_VALID_SHIRT_COLORS: Record<string, string[]> = {
 
 export default function ProductCustomizer({ product }: ProductCustomizerProps) {
   const isEternalElegance = product.title.toLowerCase().includes('eternal elegance');
-  const isEternalSlash = product.title.toLowerCase().includes('eternal slash');
+  const isEternalDivide = product.title.toLowerCase().includes('eternal divide');
   
   // Use correct color options
   const shirtColors = isEternalElegance 
     ? EE_SHIRT_COLORS 
-    : isEternalSlash 
+    : isEternalDivide 
       ? ES_SHIRT_COLORS 
       : SHIRT_COLORS;
   const logoColors = isEternalElegance 
     ? EE_LOGO_COLORS 
-    : isEternalSlash 
+    : isEternalDivide 
       ? ES_LOGO_COLORS 
       : LOGO_COLORS;
   const [selectedShirtColor, setSelectedShirtColor] = useState<ColorOption>(shirtColors[0]);
@@ -221,24 +221,24 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Use correct variant mapping
-  const productVariantsTyped: ProductVariantsType = isEternalElegance ? eternalEleganceVariants : isEternalSlash ? eternalSlashVariants : productVariants;
+  const productVariantsTyped: ProductVariantsType = isEternalElegance ? eternalEleganceVariants : isEternalDivide ? eternalSlashVariants : productVariants;
 
   const logoKey = selectedLogoColor.value;
   // Use the mapped product ID for productVariants lookup
   const productId = isEternalElegance
     ? EE_LOGO_COLOR_TO_PRODUCT_ID[logoKey]
-    : isEternalSlash
+    : isEternalDivide
       ? ES_LOGO_COLOR_TO_PRODUCT_ID[logoKey]
       : LOGO_COLOR_TO_PRODUCT_ID[logoKey] || Object.keys(productVariantsTyped)[0];
   const colorKey = selectedShirtColor.value;
   // Use the correct color name format for variants lookup
-  const colorName = isEternalSlash ? colorKey : SHIRT_COLOR_CODE_TO_NAME[colorKey] || colorKey;
+  const colorName = isEternalDivide ? colorKey : SHIRT_COLOR_CODE_TO_NAME[colorKey] || colorKey;
   const sizeKey = selectedSize;
 
   // Use the correct variants data source
   const variantsData = isEternalElegance 
     ? eternalEleganceVariants 
-    : isEternalSlash 
+    : isEternalDivide 
       ? eternalSlashVariants 
       : productVariantsTyped;
 
@@ -249,13 +249,13 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
   // Get available sizes based on the actual variants data
   let availableSizes: string[] = [];
   
-  if (isEternalSlash) {
-    type EternalSlashProductId = keyof typeof eternalSlashVariants;
-    type EternalSlashColorName = keyof (typeof eternalSlashVariants)[EternalSlashProductId];
+  if (isEternalDivide) {
+    type EternalDivideProductId = keyof typeof eternalSlashVariants;
+    type EternalDivideColorName = keyof (typeof eternalSlashVariants)[EternalDivideProductId];
     
-    const productVariants = eternalSlashVariants[productId as EternalSlashProductId];
+    const productVariants = eternalSlashVariants[productId as EternalDivideProductId];
     if (productVariants) {
-      const colorVariants = productVariants[colorName as EternalSlashColorName];
+      const colorVariants = productVariants[colorName as EternalDivideColorName];
       if (colorVariants) {
         availableSizes = Object.keys(colorVariants).filter(size => 
           colorVariants[size as keyof typeof colorVariants].stock_status === 'in_stock'
@@ -267,15 +267,15 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
   }
   
   console.log('Debug values:', {
-    isEternalSlash,
+    isEternalDivide,
     logoKey,
     productId,
     colorKey,
     colorName,
     selectedSize,
     availableSizes,
-    productVariants: isEternalSlash ? eternalSlashVariants[productId as keyof typeof eternalSlashVariants] : null,
-    colorVariants: isEternalSlash ? eternalSlashVariants[productId as keyof typeof eternalSlashVariants]?.[colorName as keyof (typeof eternalSlashVariants)[keyof typeof eternalSlashVariants]] : null
+    productVariants: isEternalDivide ? eternalSlashVariants[productId as keyof typeof eternalSlashVariants] : null,
+    colorVariants: isEternalDivide ? eternalSlashVariants[productId as keyof typeof eternalSlashVariants]?.[colorName as keyof (typeof eternalSlashVariants)[keyof typeof eternalSlashVariants]] : null
   });
   
   // If the currently selected size is not available, select the first available size
@@ -289,7 +289,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
     const colorName = SHIRT_COLOR_CODE_TO_NAME[selectedShirtColor.value] || selectedShirtColor.value;
     const logoKey = selectedLogoColor.value;
     images = eternalEleganceImages[colorName]?.[logoKey] || [];
-  } else if (isEternalSlash) {
+  } else if (isEternalDivide) {
     const logoColor = selectedLogoColor.value;
     const shirtColor = COLOR_TO_IMAGE_CODE[selectedShirtColor.value] || selectedShirtColor.value;
     // Only show image if it's a valid combination
@@ -315,8 +315,8 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
   }
 
   // Filter logo colors based on selected shirt color
-  const validLogoColors = isEternalSlash 
-    ? logoColors // For Eternal Slash, allow all combinations
+  const validLogoColors = isEternalDivide 
+    ? logoColors // For Eternal Divide, allow all combinations
     : logoColors.filter(
         (color) =>
           !INVALID_COMBOS.some(
@@ -326,8 +326,8 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
           )
       );
 
-  // Filter shirt colors based on selected logo color for Eternal Slash
-  const validShirtColors = isEternalSlash && selectedLogoColor.value in ES_VALID_SHIRT_COLORS
+  // Filter shirt colors based on selected logo color for Eternal Divide
+  const validShirtColors = isEternalDivide && selectedLogoColor.value in ES_VALID_SHIRT_COLORS
     ? shirtColors.filter(color => ES_VALID_SHIRT_COLORS[selectedLogoColor.value].includes(color.value))
     : shirtColors;
 
@@ -341,11 +341,11 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
 
   // Auto-select a valid shirt color if the current one becomes invalid
   useEffect(() => {
-    if (isEternalSlash && selectedLogoColor.value in ES_VALID_SHIRT_COLORS && 
+    if (isEternalDivide && selectedLogoColor.value in ES_VALID_SHIRT_COLORS && 
         !ES_VALID_SHIRT_COLORS[selectedLogoColor.value].includes(selectedShirtColor.value)) {
       setSelectedShirtColor(validShirtColors[0]);
     }
-  }, [selectedLogoColor, isEternalSlash]);
+  }, [selectedLogoColor, isEternalDivide]);
 
   const handleAddToCart = async () => {
     if (!variant) return;
@@ -377,16 +377,16 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
       setIsAddingToCart(true);
       setError(null);
 
-      // Use productVariantsTyped for Eternal Elegance and Eternal Slash
-      if (isEternalElegance || isEternalSlash) {
+      // Use productVariantsTyped for Eternal Elegance and Eternal Divide
+      if (isEternalElegance || isEternalDivide) {
         const productId = isEternalElegance 
           ? EE_LOGO_COLOR_TO_PRODUCT_ID[logoColor]
           : ES_LOGO_COLOR_TO_PRODUCT_ID[logoColor];
-        const colorName = isEternalSlash ? shirtColor : SHIRT_COLOR_CODE_TO_NAME[shirtColor] || shirtColor;
+        const colorName = isEternalDivide ? shirtColor : SHIRT_COLOR_CODE_TO_NAME[shirtColor] || shirtColor;
         const variant = productVariantsTyped[productId]?.[colorName]?.[size];
         
         console.log('Variant lookup:', {
-          isEternalSlash,
+          isEternalDivide,
           isEternalElegance,
           shirtColor,
           logoColor,
