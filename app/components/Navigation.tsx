@@ -168,10 +168,10 @@ export default function Navigation() {
 
       {/* Cart Panel */}
       <div 
-        className={`fixed right-0 top-0 h-screen w-96 bg-white z-[102] transform transition-transform duration-300 ease-in-out
+        className={`fixed right-0 top-0 h-screen w-full min-w-0 max-w-[100vw] sm:max-w-sm md:max-w-md lg:w-96 bg-white z-[102] transform transition-transform duration-300 ease-in-out
           ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        <div className="p-6 h-full flex flex-col">
+        <div className="p-6 h-full flex flex-col overflow-y-auto">
           {/* Cart Header */}
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold">Shopping Cart</h2>
@@ -293,10 +293,10 @@ export default function Navigation() {
       {/* Checkout Panel */}
       <StripeProvider>
         <div
-          className={`fixed right-0 top-0 h-screen w-[420px] bg-white z-[103] shadow-lg transform transition-transform duration-300 ease-in-out
+          className={`fixed right-0 top-0 h-screen w-full min-w-0 max-w-[100vw] sm:max-w-sm md:max-w-md lg:w-[420px] bg-white z-[103] shadow-lg transform transition-transform duration-300 ease-in-out
             ${isCheckoutOpen ? 'translate-x-0' : 'translate-x-full'}`}
         >
-          <div className="p-8 h-full flex flex-col">
+          <div className="p-8 h-full flex flex-col overflow-y-auto">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Checkout</h2>
