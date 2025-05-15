@@ -229,7 +229,7 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
 
         const combinedEternalSlashProduct: Product = {
           id: 'eternal-slash-combined',
-          title: 'Eternal Slash',
+          title: 'Eternal Divide',
           images: [
             // Purple (Violet) combinations
             { src: '/images/eternal_slash/purple_black.jpg' },
