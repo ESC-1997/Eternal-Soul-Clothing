@@ -1,8 +1,12 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState } from 'react';
+import ReturnRequestModal from '../components/ReturnRequestModal';
 
 export default function Resources() {
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+
   return (
     <main className="min-h-screen" style={{ 
       background: 'url(/images/resource_pageBG.png)',
@@ -119,7 +123,7 @@ export default function Resources() {
               />
             </div>
           </Link>
-          <div className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" style={{ background: '#B054FF' }}>
+          <Link href="/returns" className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" style={{ background: '#B054FF' }}>
             <div className="absolute" style={{ 
               color: '#DADBE4', 
               fontFamily: 'Bebas Neue, sans-serif',
@@ -132,8 +136,12 @@ export default function Resources() {
             }}>
               OUR<br />RETURN<br />POLICY
             </div>
-          </div>
-          <div className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" style={{ background: '#B054FF' }}>
+          </Link>
+          <div 
+            onClick={() => setIsReturnModalOpen(true)}
+            className="aspect-square rounded-xl relative cursor-pointer transition-transform hover:scale-105" 
+            style={{ background: '#B054FF' }}
+          >
             <div className="absolute" style={{ 
               color: '#DADBE4', 
               fontFamily: 'Bebas Neue, sans-serif',
@@ -221,6 +229,11 @@ export default function Resources() {
           </div>
         </div>
       </div>
+
+      <ReturnRequestModal 
+        isOpen={isReturnModalOpen} 
+        onClose={() => setIsReturnModalOpen(false)} 
+      />
     </main>
   );
 } 
