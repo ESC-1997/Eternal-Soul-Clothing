@@ -203,7 +203,7 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
   };
 
   return (
-    <form className="flex flex-col gap-4 flex-grow overflow-y-auto" onSubmit={handleSubmit}>
+    <form className="flex flex-col gap-4 flex-grow overflow-y-auto w-full max-w-md mx-auto px-2" onSubmit={handleSubmit}>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
         <input type="text" className="w-full border rounded p-2 text-[#1B1F3B]" placeholder="First & Last Name" required value={fullName} onChange={e => setFullName(e.target.value)} />
@@ -263,7 +263,7 @@ export default function CheckoutForm({ subtotal, clearCart, setIsCheckoutOpen, s
                 <div className="flex-1">
                   <div className="text-sm text-gray-500">{rate.name}</div>
                   <div className="text-sm text-gray-500">
-                    {rate.delivery_time} • ${rate.price.toFixed(2)}
+                    {rate.delivery_time} • ${(rate.price / 100).toFixed(2)}
                   </div>
                 </div>
               </label>
