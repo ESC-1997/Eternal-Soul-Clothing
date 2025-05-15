@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext';
 import Image from 'next/image';
 import { productVariants } from './productVariants';
 import { supabase } from "../supabaseClient"; // adjust path if needed
+import ShareButton from './ShareButton';
 
 interface ProductViewerProps {
   product: {
@@ -447,6 +448,14 @@ export default function ProductViewer({ product }: ProductViewerProps) {
               ? 'Adding...'
               : 'Add to Cart'}
         </button>
+
+        {/* Add Share Button */}
+        <div className="flex justify-center">
+          <ShareButton 
+            productId={product.title.toLowerCase().replace(/\s+/g, '-')} 
+            productTitle={product.title} 
+          />
+        </div>
       </div>
 
       {/* Desktop Layout */}
@@ -549,6 +558,14 @@ export default function ProductViewer({ product }: ProductViewerProps) {
                   ? 'Adding...'
                   : 'Add to Cart'}
             </button>
+
+            {/* Add Share Button */}
+            <div className="flex justify-center">
+              <ShareButton 
+                productId={product.title.toLowerCase().replace(/\s+/g, '-')} 
+                productTitle={product.title} 
+              />
+            </div>
           </div>
         </div>
       </div>
