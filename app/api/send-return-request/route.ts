@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import sgMail from '@sendgrid/mail';
-import { ratelimit, getIP } from '@/lib/rate-limit';
+import { ratelimit, getIP } from '../../../lib/rate-limit';
 
 // Initialize SendGrid
 if (!process.env.SENDGRID_API_KEY) {
