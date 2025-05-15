@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import ProductCustomizer from './ProductCustomizer';
 import ProductViewer from './ProductViewer';
 import { eternalEleganceVariants as _eternalEleganceVariants } from './eternalEleganceVariants';
+import { eternalSlashVariants as _eternalSlashVariants } from './eternalSlashVariants';
 const eternalEleganceVariants: Record<string, any> = _eternalEleganceVariants;
+const eternalSlashVariants: Record<string, any> = _eternalSlashVariants;
 
 interface Product {
   id: string;
@@ -43,8 +45,18 @@ const EE_PRODUCT_ID_TO_LOGO_COLOR: Record<string, string> = {
   '68163317960c7decc0099499': 'grey',
   '6814c6d00ed813d9e5087aea': 'black',
 };
-function getLogoColorFromProductId(productId: string): string {
-  return EE_PRODUCT_ID_TO_LOGO_COLOR[productId] || '';
+
+const ES_PRODUCT_ID_TO_LOGO_COLOR: Record<string, string> = {
+  '6820b02093284a99660b189d': 'midnight_indigo',
+  '6820aed333803c3c4502120d': 'red',
+  '6820ad40471efa6af008268a': 'white',
+  '6820abb0471efa6af0082632': 'grey',
+  '681fe48893284a99660af2f9': 'black',
+  '681fe068ebfdaacb650ca1d7': 'violet'
+};
+
+function getLogoColorFromProductId(productId: string, productType: 'ee' | 'es' = 'ee'): string {
+  return productType === 'ee' ? EE_PRODUCT_ID_TO_LOGO_COLOR[productId] || '' : ES_PRODUCT_ID_TO_LOGO_COLOR[productId] || '';
 }
 
 export default function PrintifyStore({ onCustomizationModeChange, onViewModeChange }: PrintifyStoreProps) {
@@ -189,6 +201,137 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
           });
         });
 
+        // Build colorMappings for Eternal Slash
+        const esColorMappings: any[] = [];
+        const eternalSlashProducts = data.filter(
+          (product: Product) =>
+            product.title && product.title.toLowerCase().includes('eternal slash')
+        );
+        eternalSlashProducts.forEach((product: Product) => {
+          const productId = product.id;
+          const logoColor = getLogoColorFromProductId(productId, 'es');
+          const variantMap = eternalSlashVariants[productId] as Record<string, any>;
+          if (!variantMap) return;
+          Object.entries(variantMap).forEach(([shirtColor, sizes]) => {
+            Object.entries(sizes as Record<string, any>).forEach(([size, variantData]) => {
+              esColorMappings.push({
+                shirtColor,
+                logoColor,
+                size,
+                variantId: variantData.variant_id,
+                price: variantData.price,
+                stock_status: variantData.stock_status,
+                printifyProductId: productId,
+              });
+            });
+          });
+        });
+
+        const combinedEternalSlashProduct: Product = {
+          id: 'eternal-slash-combined',
+          title: 'Eternal Slash',
+          images: [
+            // Purple (Violet) combinations
+            { src: '/images/eternal_slash/purple_black.jpg' },
+            { src: '/images/eternal_slash/purple_charcoal.jpg' },
+            { src: '/images/eternal_slash/purple_forest_green.jpg' },
+            { src: '/images/eternal_slash/purple_light_blue.jpg' },
+            { src: '/images/eternal_slash/purple_sand.jpg' },
+            { src: '/images/eternal_slash/purple_white.jpg' },
+            // Midnight Indigo combinations
+            { src: '/images/eternal_slash/midnight_indigo_black.jpg' },
+            { src: '/images/eternal_slash/midnight_indigo_charcoal.jpg' },
+            { src: '/images/eternal_slash/midnight_indigo_light_blue.jpg' },
+            { src: '/images/eternal_slash/midnight_indigo_sage.jpg' },
+            { src: '/images/eternal_slash/midnight_indigo_sand.jpg' },
+            { src: '/images/eternal_slash/midnight_indigo_stone_blue.jpg' },
+            { src: '/images/eternal_slash/midnight_indigo_white.jpg' },
+            // Red combinations
+            { src: '/images/eternal_slash/red_black.jpg' },
+            { src: '/images/eternal_slash/red_charcoal.jpg' },
+            { src: '/images/eternal_slash/red_dark_chocolate.jpg' },
+            { src: '/images/eternal_slash/red_forest_green.jpg' },
+            { src: '/images/eternal_slash/red_light_blue.jpg' },
+            { src: '/images/eternal_slash/red_navy.jpg' },
+            { src: '/images/eternal_slash/red_sage.jpg' },
+            { src: '/images/eternal_slash/red_sand.jpg' },
+            { src: '/images/eternal_slash/red_white.jpg' },
+            // White combinations
+            { src: '/images/eternal_slash/white_black.jpg' },
+            { src: '/images/eternal_slash/white_charcoal.jpg' },
+            { src: '/images/eternal_slash/white_dark_chocolate.jpg' },
+            { src: '/images/eternal_slash/white_forest_green.jpg' },
+            { src: '/images/eternal_slash/white_light_blue.jpg' },
+            { src: '/images/eternal_slash/white_navy.jpg' },
+            { src: '/images/eternal_slash/white_sage.jpg' },
+            { src: '/images/eternal_slash/white_sand.jpg' },
+            // Grey combinations
+            { src: '/images/eternal_slash/grey_black.jpg' },
+            { src: '/images/eternal_slash/grey_charcoal.jpg' },
+            { src: '/images/eternal_slash/grey_forest_green.jpg' },
+            { src: '/images/eternal_slash/grey_light_blue.jpg' },
+            { src: '/images/eternal_slash/grey_navy.jpg' },
+            { src: '/images/eternal_slash/grey_sage.jpg' },
+            { src: '/images/eternal_slash/grey_sand.jpg' },
+            { src: '/images/eternal_slash/grey_white.jpg' },
+            // Black combinations
+            { src: '/images/eternal_slash/black_charcoal.jpg' },
+            { src: '/images/eternal_slash/black_forest_green.jpg' },
+            { src: '/images/eternal_slash/black_light_blue.jpg' },
+            { src: '/images/eternal_slash/black_sand.jpg' },
+            { src: '/images/eternal_slash/black_white.jpg' }
+          ],
+          variants: [
+            {
+              id: 'XS',
+              title: 'Extra Small',
+              price: '3500'
+            },
+            {
+              id: 'S',
+              title: 'Small',
+              price: '3500'
+            },
+            {
+              id: 'M',
+              title: 'Medium',
+              price: '3500'
+            },
+            {
+              id: 'L',
+              title: 'Large',
+              price: '3500'
+            },
+            {
+              id: 'XL',
+              title: 'Extra Large',
+              price: '3500'
+            },
+            {
+              id: '2XL',
+              title: '2X Large',
+              price: '3500'
+            },
+            {
+              id: '3XL',
+              title: '3X Large',
+              price: '3750'
+            },
+            {
+              id: '4XL',
+              title: '4X Large',
+              price: '3750'
+            },
+            {
+              id: '5XL',
+              title: '5X Large',
+              price: '3750'
+            }
+          ],
+          customizable: true,
+          colorMappings: esColorMappings
+        };
+
         const combinedEternalEleganceProduct: Product = {
           id: 'eternal-elegance-combined',
           title: 'Eternal Elegance',
@@ -209,6 +352,7 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
         setProducts([
           combinedCustomizableProduct, // ES Phoenix Logo
           combinedEternalEleganceProduct, // Eternal Elegance (single listing)
+          combinedEternalSlashProduct, // Eternal Slash (single listing)
           ...regularProducts // Only non-Eternal Elegance, non-customizable products
         ]);
       } catch (err) {
@@ -271,7 +415,7 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-2 lg:gap-3 p-2 md:p-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4 lg:gap-6 p-2 md:p-4">
         {products.map((product) => (
           <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[200px] md:max-w-[240px] mx-auto h-[280px] md:h-[320px] flex flex-col">
             {product.images[0] && (
