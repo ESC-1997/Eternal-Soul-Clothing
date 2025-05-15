@@ -39,12 +39,12 @@ export default function Navigation() {
       <nav 
         className={`fixed left-0 top-0 h-screen z-[100] transition-all duration-300 ease-in-out
           ${isOpen ? 'w-24' : 'w-0 lg:w-24'}`} 
-        style={{ background: 'linear-gradient(to bottom, #9F2FFF, #7A1FBF, #9F2FFF)' }}
+        style={{ background: 'linear-gradient(to bottom, #9F2FFF, #1B1F3B)' }}
       >
         <div 
-          className={`flex flex-col p-1.5 ${!isOpen && '!hidden lg:!flex'} overflow-hidden pt-16 lg:pt-0`}
+          className={`flex flex-col p-1.5 ${!isOpen && '!hidden lg:!flex'} overflow-hidden pt-8 lg:pt-0`}
         >
-          <div className="flex justify-center mb-2">
+          <div className="flex justify-center mb-4">
             <Link 
               href="/" 
               className="relative group block cursor-pointer"
@@ -163,6 +163,17 @@ export default function Navigation() {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Phoenix Logo at very bottom */}
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center">
+          <Image
+            src="/images/Phoenix_ES_DADBE4.png"
+            alt="Phoenix Eternal Soul"
+            width={50}
+            height={50}
+            className="object-contain"
+          />
         </div>
       </nav>
 
