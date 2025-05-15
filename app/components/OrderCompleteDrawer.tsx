@@ -30,7 +30,7 @@ export default function OrderCompleteDrawer({ open, onClose }: OrderCompleteDraw
       
       {/* Drawer */}
       <div
-        className="fixed right-0 top-0 h-screen w-[420px] bg-white z-[105] shadow-lg transform transition-transform duration-300 ease-in-out translate-x-0"
+        className="fixed right-0 top-0 h-screen w-full min-w-0 max-w-[100vw] sm:max-w-sm md:max-w-md lg:w-[420px] bg-white z-[105] shadow-lg transform transition-transform duration-300 ease-in-out translate-x-0"
       >
         {/* Close Button */}
         <button 
@@ -43,7 +43,7 @@ export default function OrderCompleteDrawer({ open, onClose }: OrderCompleteDraw
         </button>
 
         {/* Content */}
-        <div className="p-8 h-full flex flex-col items-center justify-center text-center">
+        <div className="p-8 h-full flex flex-col items-center justify-center text-center overflow-y-auto">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
             <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
