@@ -13,19 +13,29 @@ const inter = Inter({ subsets: ['latin'] });
 export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
-  const [videoSource, setVideoSource] = useState('/videos/Website_video.mp4');
+  const [videoSource, setVideoSource] = useState('/videos/home_vid.mp4');
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     // Check if device is mobile
     const checkMobile = () => {
       const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
       const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-      if (mobileRegex.test(userAgent)) {
-        setVideoSource('/videos/Website_video.webm');
-      }
+      const isMobileDevice = mobileRegex.test(userAgent) && window.innerWidth <= 768;
+      console.log('Is Mobile:', isMobileDevice);
+      console.log('Window Width:', window.innerWidth);
+      console.log('User Agent:', userAgent);
+      
+      setIsMobile(isMobileDevice);
+      setVideoSource(isMobileDevice ? '/videos/mobile_home.mp4' : '/videos/home_vid.mp4');
     };
 
     checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   useEffect(() => {
@@ -34,19 +44,19 @@ export default function Home() {
 
     const handleCanPlay = () => {
       setIsVideoLoading(false);
-      video.play().catch(error => {
-        console.error('Error playing video:', error);
-      });
+      // Ensure video is muted for autoplay
+      video.muted = true;
+      const playPromise = video.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.error('Error playing video:', error);
+        });
+      }
     };
 
     video.addEventListener('canplay', handleCanPlay);
     video.load();
-
-    // Ensure muted and try to play programmatically for mobile autoplay
-    video.muted = true;
-    video.play().catch((err) => {
-      console.log('Autoplay error:', err);
-    });
 
     return () => {
       video.removeEventListener('canplay', handleCanPlay);
@@ -56,7 +66,7 @@ export default function Home() {
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
-      video.playbackRate = 0.7;
+      // video.playbackRate = 0.7; // Removed to play at full speed
     }
   }, []);
 
@@ -88,21 +98,8 @@ export default function Home() {
           }
         }
       `}</style>
-      {/* Banner Section */}
-      <div style={{ width: '100%', background: '#DADBE4', height: '150px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '10px' }}>
-        <img 
-          src="/images/Phoenix_ES_1B1F3B.png" 
-          alt="Phoenix Logo" 
-          width={60}
-          height={60}
-          style={{ objectFit: 'contain' }}
-        />
-        <span style={{ fontFamily: 'Bebas Neue, sans-serif', color: '#1B1F3B', fontSize: '2rem', letterSpacing: '0.1em', marginTop: '8px', display: 'block' }}>
-          ETERNAL SOUL CLOTHING
-        </span>
-      </div>
       {/* Top Section */}
-      <div className="relative w-full h-[400px] overflow-hidden flex items-center justify-center">
+      <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: '100vh' }}>
         {isVideoLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-[#1B1F3B]">
             <img 
@@ -115,6 +112,7 @@ export default function Home() {
           </div>
         )}
         <video
+          key={videoSource}
           ref={videoRef}
           autoPlay
           loop
@@ -122,18 +120,33 @@ export default function Home() {
           playsInline
           preload="auto"
           poster="/images/Phoenix_ES_1B1F3B.png"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: 'center 30%' }}
+          className="w-full h-full object-cover"
         >
           <source 
             src={videoSource} 
-            type={videoSource.endsWith('.webm') ? 'video/webm' : 'video/mp4'} 
+            type="video/mp4"
           />
         </video>
       </div>
 
+      {/* Banner Section */}
+      <div className="w-full py-8 md:py-12 lg:py-16 relative" style={{ background: '#1B1F3B' }}>
+        <div className="absolute inset-0 flex items-center">
+          <img 
+            src="/images/Dark_ES.png" 
+            alt="Eternal Soul Background" 
+            className="w-1/3 md:w-1/4 lg:w-1/5 h-auto object-contain opacity-50 ml-4 md:ml-6 lg:ml-8"
+          />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <h2 className="text-center text-[#DADBE4] text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
+            ETERNAL SOUL CLOTHING
+          </h2>
+        </div>
+      </div>
+
       {/* Featured Items Section */}
-      <div style={{ width: '100%', background: '#DADBE4', height: '520px' }}>
+      <div style={{ width: '100%', background: '#DADBE4', height: 'auto', padding: '20px 0' }}>
         <h2 style={{
           color: '#1B1F3B',
           fontFamily: 'Bebas Neue, sans-serif',
@@ -146,11 +159,11 @@ export default function Home() {
         }}>
           FEATURED ITEMS
         </h2>
-        {/* Horizontally Scrollable Service Cards */}
-        <div className="service-cards-container">
+        {/* Grid for mobile, horizontal scroll for desktop */}
+        <div className="grid grid-cols-2 gap-4 md:flex md:flex-row md:overflow-x-auto md:gap-8 md:justify-center md:items-center md:mt-8 md:pb-4 md:px-4">
           {/* Service Card 1 */}
-          <Link href="/shop" style={{ textDecoration: 'none', scrollSnapAlign: 'center' }}>
-            <div style={{ width: '230px', height: '320px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
+          <Link href="/shop" className="block">
+            <div style={{ width: '100%', height: 'auto', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
               <div style={{ width: '100%', height: '30px', background: '#1B1F3B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{
                   fontFamily: 'Lato, sans-serif',
@@ -171,7 +184,7 @@ export default function Home() {
               <img 
                 src="/images/eternal_lotus/eternal_lotus_white_backBG.jpg" 
                 alt="Eternal Lotus White" 
-                style={{ width: '100%', height: '240px', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
+                style={{ width: '100%', height: 'auto', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
               />
               <div style={{
                 width: '100%',
@@ -190,8 +203,8 @@ export default function Home() {
             </div>
           </Link>
           {/* Service Card 2 */}
-          <Link href="/shop" style={{ textDecoration: 'none', scrollSnapAlign: 'center' }}>
-            <div style={{ width: '230px', height: '320px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
+          <Link href="/shop" className="block">
+            <div style={{ width: '100%', height: 'auto', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
               <div style={{ width: '100%', height: '30px', background: '#1B1F3B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{
                   fontFamily: 'Lato, sans-serif',
@@ -212,7 +225,7 @@ export default function Home() {
               <img 
                 src="/images/vow_of_the_eternal/dchocolate.jpg" 
                 alt="ES Phoenix Tee (Customizable)" 
-                style={{ width: '100%', height: '240px', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
+                style={{ width: '100%', height: 'auto', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
               />
               <div style={{
                 width: '100%',
@@ -231,8 +244,8 @@ export default function Home() {
             </div>
           </Link>
           {/* Service Card 3 */}
-          <Link href="/shop" style={{ textDecoration: 'none', scrollSnapAlign: 'center' }}>
-            <div style={{ width: '230px', height: '320px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
+          <Link href="/shop" className="block">
+            <div style={{ width: '100%', height: 'auto', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
               <div style={{ width: '100%', height: '30px', background: '#1B1F3B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{
                   fontFamily: 'Lato, sans-serif',
@@ -253,7 +266,7 @@ export default function Home() {
               <img 
                 src="/images/eternal_collapse/sand.jpg" 
                 alt="ETERNAL COLLAPSE" 
-                style={{ width: '100%', height: '240px', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
+                style={{ width: '100%', height: 'auto', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
               />
               <div style={{
                 width: '100%',
@@ -272,8 +285,8 @@ export default function Home() {
             </div>
           </Link>
           {/* Service Card 4 */}
-          <Link href="/shop" style={{ textDecoration: 'none', scrollSnapAlign: 'center' }}>
-            <div style={{ width: '230px', height: '320px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
+          <Link href="/shop" className="block">
+            <div style={{ width: '100%', height: 'auto', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
               <div style={{ width: '100%', height: '30px', background: '#1B1F3B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{
                   fontFamily: 'Lato, sans-serif',
@@ -294,7 +307,7 @@ export default function Home() {
               <img 
                 src="/images/eternal_awakening/black_back.jpg" 
                 alt="ETERNAL AWAKENING" 
-                style={{ width: '100%', height: '240px', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
+                style={{ width: '100%', height: 'auto', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
               />
               <div style={{
                 width: '100%',
