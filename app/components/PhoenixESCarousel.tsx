@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useCarouselSync } from './CarouselSyncContext';
 
@@ -22,21 +22,41 @@ const PhoenixESCarousel = () => {
     '/images/phoenixES/collection/black_violet.png',
     '/images/phoenixES/collection/black_grey.png',
   ];
-  const { currentIndex, pause, resume } = useCarouselSync();
+  const { currentIndex } = useCarouselSync();
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [displayIndex, setDisplayIndex] = useState(currentIndex);
+
+  useEffect(() => {
+    if (currentIndex !== displayIndex) {
+      setIsTransitioning(true);
+      const timer = setTimeout(() => {
+        setDisplayIndex(currentIndex);
+        setIsTransitioning(false);
+      }, 750);
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, displayIndex]);
 
   return (
-    <div 
-      className="relative w-full h-[400px]"
-      onMouseEnter={pause}
-      onMouseLeave={resume}
-    >
-      <Image
-        src={images[currentIndex % images.length]}
-        alt="Phoenix ES Collection"
-        fill
-        className="object-contain transition-opacity duration-500"
-        priority
-      />
+    <div className="relative w-full h-[300px] perspective-1000">
+      <div className={`relative w-full h-full transition-all duration-600 transform-style-3d ${
+        isTransitioning ? 'rotate-y-180' : 'rotate-y-0'
+      }`}>
+        <Image
+          src={images[displayIndex % images.length]}
+          alt="Phoenix ES Collection"
+          fill
+          className="object-contain backface-hidden"
+          priority
+        />
+        <Image
+          src={images[displayIndex % images.length]}
+          alt="Phoenix ES Collection"
+          fill
+          className="object-contain absolute inset-0 rotate-y-180 backface-hidden"
+          priority
+        />
+      </div>
     </div>
   );
 };
