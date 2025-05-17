@@ -99,7 +99,7 @@ export default function Home() {
         }
       `}</style>
       {/* Top Section */}
-      <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: '100vh' }}>
+      <div className="relative w-full flex items-center justify-center" style={{ height: '100vh' }}>
         {isVideoLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-[#1B1F3B]">
             <img 
@@ -127,209 +127,210 @@ export default function Home() {
             type="video/mp4"
           />
         </video>
-      </div>
-
-      {/* Banner Section */}
-      <div className="w-full py-8 md:py-12 lg:py-16 relative" style={{ background: '#1B1F3B' }}>
-        <div className="absolute inset-0 flex items-center">
-          <img 
-            src="/images/Dark_ES.png" 
-            alt="Eternal Soul Background" 
-            className="w-1/3 md:w-1/4 lg:w-1/5 h-auto object-contain opacity-50 ml-4 md:ml-6 lg:ml-8"
-          />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <h2 className="text-center text-[#DADBE4] text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
-            ETERNAL SOUL CLOTHING
-          </h2>
-        </div>
+        {/* Gradient Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black to-transparent opacity-80"></div>
       </div>
 
       {/* Featured Items Section */}
-      <div style={{ width: '100%', background: '#DADBE4', height: 'auto', padding: '20px 0' }}>
-        <h2 style={{
-          color: '#1B1F3B',
-          fontFamily: 'Bebas Neue, sans-serif',
-          fontSize: '2.5rem',
-          textAlign: 'center',
-          marginTop: '25px',
-          marginBottom: '25px',
-          letterSpacing: '0.1em',
-          fontWeight: 'bold',
-        }}>
-          FEATURED ITEMS
-        </h2>
-        {/* Grid for mobile, horizontal scroll for desktop */}
-        <div className="grid grid-cols-2 gap-4 md:flex md:flex-row md:overflow-x-auto md:gap-8 md:justify-center md:items-center md:mt-8 md:pb-4 md:px-4">
-          {/* Service Card 1 */}
-          <Link href="/shop" className="block">
-            <div style={{ width: '100%', height: 'auto', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
-              <div style={{ width: '100%', height: '30px', background: '#1B1F3B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{
-                  fontFamily: 'Lato, sans-serif',
-                  fontStyle: 'italic',
-                  fontWeight: 600,
-                  color: '#DADBE4',
-                  fontSize: '0.65rem',
-                  letterSpacing: '0.03em',
-                  textAlign: 'center',
+      <div style={{ 
+        width: '100%', 
+        background: 'url(/images/GalaxyBG.png)',
+        backgroundSize: '200% auto',
+        backgroundPosition: 'center top',
+        backgroundRepeat: 'no-repeat',
+        height: 'auto', 
+        padding: '60px 0 20px 0',
+        position: 'relative',
+        marginTop: '-2px',
+        zIndex: 1
+      }}>
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          <h2 style={{
+            color: '#DADBE4',
+            fontFamily: 'Bebas Neue, sans-serif',
+            fontSize: '2.5rem',
+            textAlign: 'center',
+            marginTop: '25px',
+            marginBottom: '25px',
+            letterSpacing: '0.1em',
+            fontWeight: 'bold',
+          }}>
+            FEATURED ITEMS
+          </h2>
+          {/* Grid for mobile, horizontal scroll for desktop */}
+          <div className="grid grid-cols-2 gap-4 md:flex md:flex-row md:overflow-x-auto md:gap-8 md:justify-center md:items-center md:mt-8 md:pb-4 md:px-4">
+            {/* Service Card 1 */}
+            <Link href="/shop" className="block">
+              <div style={{ width: '100%', height: 'auto', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
+                <div style={{ width: '100%', height: '30px', background: '#9F2FFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{
+                    fontFamily: 'Lato, sans-serif',
+                    fontStyle: 'italic',
+                    fontWeight: 600,
+                    color: '#DADBE4',
+                    fontSize: '0.65rem',
+                    letterSpacing: '0.03em',
+                    textAlign: 'center',
+                    width: '100%',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                    ETERNAL LOTUS (BLACK & GREY)
+                  </span>
+                </div>
+                <img 
+                  src="/images/eternal_lotus/eternal_lotus_white_backBG.jpg" 
+                  alt="Eternal Lotus White" 
+                  style={{ width: '100%', height: 'auto', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
+                />
+                <div style={{
                   width: '100%',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}>
-                  ETERNAL LOTUS (BLACK & GREY)
-                </span>
-              </div>
-              <img 
-                src="/images/eternal_lotus/eternal_lotus_white_backBG.jpg" 
-                alt="Eternal Lotus White" 
-                style={{ width: '100%', height: 'auto', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
-              />
-              <div style={{
-                width: '100%',
-                background: '#DADBE4',
-                textAlign: 'center',
-                padding: '10px 0',
-                borderBottomLeftRadius: '16px',
-                borderBottomRightRadius: '16px',
-                fontFamily: 'Bebas Neue, sans-serif',
-                color: '#1B1F3B',
-                fontSize: '1.2rem',
-                fontWeight: 'bold',
-              }}>
-                Shop now
-              </div>
-            </div>
-          </Link>
-          {/* Service Card 2 */}
-          <Link href="/shop" className="block">
-            <div style={{ width: '100%', height: 'auto', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
-              <div style={{ width: '100%', height: '30px', background: '#1B1F3B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{
-                  fontFamily: 'Lato, sans-serif',
-                  fontStyle: 'italic',
-                  fontWeight: 600,
-                  color: '#DADBE4',
-                  fontSize: '0.75rem',
-                  letterSpacing: '0.03em',
+                  background: '#DADBE4',
                   textAlign: 'center',
-                  width: '100%',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+                  padding: '10px 0',
+                  borderBottomLeftRadius: '16px',
+                  borderBottomRightRadius: '16px',
+                  fontFamily: 'Bebas Neue, sans-serif',
+                  color: '#1B1F3B',
+                  fontSize: '1.2rem',
+                  fontWeight: 'bold',
                 }}>
-                  VOW OF THE ETERNAL
-                </span>
+                  Shop now
+                </div>
               </div>
-              <img 
-                src="/images/vow_of_the_eternal/dchocolate.jpg" 
-                alt="ES Phoenix Tee (Customizable)" 
-                style={{ width: '100%', height: 'auto', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
-              />
-              <div style={{
-                width: '100%',
-                background: '#DADBE4',
-                textAlign: 'center',
-                padding: '10px 0',
-                borderBottomLeftRadius: '16px',
-                borderBottomRightRadius: '16px',
-                fontFamily: 'Bebas Neue, sans-serif',
-                color: '#1B1F3B',
-                fontSize: '1.2rem',
-                fontWeight: 'bold',
-              }}>
-                Shop now
-              </div>
-            </div>
-          </Link>
-          {/* Service Card 3 */}
-          <Link href="/shop" className="block">
-            <div style={{ width: '100%', height: 'auto', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
-              <div style={{ width: '100%', height: '30px', background: '#1B1F3B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{
-                  fontFamily: 'Lato, sans-serif',
-                  fontStyle: 'italic',
-                  fontWeight: 600,
-                  color: '#DADBE4',
-                  fontSize: '0.75rem',
-                  letterSpacing: '0.03em',
+            </Link>
+            {/* Service Card 2 */}
+            <Link href="/shop" className="block">
+              <div style={{ width: '100%', height: 'auto', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
+                <div style={{ width: '100%', height: '30px', background: '#9F2FFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{
+                    fontFamily: 'Lato, sans-serif',
+                    fontStyle: 'italic',
+                    fontWeight: 600,
+                    color: '#DADBE4',
+                    fontSize: '0.75rem',
+                    letterSpacing: '0.03em',
+                    textAlign: 'center',
+                    width: '100%',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                    VOW OF THE ETERNAL
+                  </span>
+                </div>
+                <img 
+                  src="/images/vow_of_the_eternal/dchocolate.jpg" 
+                  alt="ES Phoenix Tee (Customizable)" 
+                  style={{ width: '100%', height: 'auto', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
+                />
+                <div style={{
+                  width: '100%',
+                  background: '#DADBE4',
                   textAlign: 'center',
-                  width: '100%',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+                  padding: '10px 0',
+                  borderBottomLeftRadius: '16px',
+                  borderBottomRightRadius: '16px',
+                  fontFamily: 'Bebas Neue, sans-serif',
+                  color: '#1B1F3B',
+                  fontSize: '1.2rem',
+                  fontWeight: 'bold',
                 }}>
-                  ETERNAL COLLAPSE
-                </span>
+                  Shop now
+                </div>
               </div>
-              <img 
-                src="/images/eternal_collapse/sand.jpg" 
-                alt="ETERNAL COLLAPSE" 
-                style={{ width: '100%', height: 'auto', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
-              />
-              <div style={{
-                width: '100%',
-                background: '#DADBE4',
-                textAlign: 'center',
-                padding: '10px 0',
-                borderBottomLeftRadius: '16px',
-                borderBottomRightRadius: '16px',
-                fontFamily: 'Bebas Neue, sans-serif',
-                color: '#1B1F3B',
-                fontSize: '1.2rem',
-                fontWeight: 'bold',
-              }}>
-                Shop now
-              </div>
-            </div>
-          </Link>
-          {/* Service Card 4 */}
-          <Link href="/shop" className="block">
-            <div style={{ width: '100%', height: 'auto', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
-              <div style={{ width: '100%', height: '30px', background: '#1B1F3B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{
-                  fontFamily: 'Lato, sans-serif',
-                  fontStyle: 'italic',
-                  fontWeight: 600,
-                  color: '#DADBE4',
-                  fontSize: '0.75rem',
-                  letterSpacing: '0.03em',
+            </Link>
+            {/* Service Card 3 */}
+            <Link href="/shop" className="block">
+              <div style={{ width: '100%', height: 'auto', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
+                <div style={{ width: '100%', height: '30px', background: '#9F2FFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{
+                    fontFamily: 'Lato, sans-serif',
+                    fontStyle: 'italic',
+                    fontWeight: 600,
+                    color: '#DADBE4',
+                    fontSize: '0.75rem',
+                    letterSpacing: '0.03em',
+                    textAlign: 'center',
+                    width: '100%',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                    ETERNAL COLLAPSE
+                  </span>
+                </div>
+                <img 
+                  src="/images/eternal_collapse/sand.jpg" 
+                  alt="ETERNAL COLLAPSE" 
+                  style={{ width: '100%', height: 'auto', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
+                />
+                <div style={{
+                  width: '100%',
+                  background: '#DADBE4',
                   textAlign: 'center',
-                  width: '100%',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+                  padding: '10px 0',
+                  borderBottomLeftRadius: '16px',
+                  borderBottomRightRadius: '16px',
+                  fontFamily: 'Bebas Neue, sans-serif',
+                  color: '#1B1F3B',
+                  fontSize: '1.2rem',
+                  fontWeight: 'bold',
                 }}>
-                  ETERNAL AWAKENING
-                </span>
+                  Shop now
+                </div>
               </div>
-              <img 
-                src="/images/eternal_awakening/black_back.jpg" 
-                alt="ETERNAL AWAKENING" 
-                style={{ width: '100%', height: 'auto', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
-              />
-              <div style={{
-                width: '100%',
-                background: '#DADBE4',
-                textAlign: 'center',
-                padding: '10px 0',
-                borderBottomLeftRadius: '16px',
-                borderBottomRightRadius: '16px',
-                fontFamily: 'Bebas Neue, sans-serif',
-                color: '#1B1F3B',
-                fontSize: '1.2rem',
-                fontWeight: 'bold',
-              }}>
-                Shop now
+            </Link>
+            {/* Service Card 4 */}
+            <Link href="/shop" className="block">
+              <div style={{ width: '100%', height: 'auto', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
+                <div style={{ width: '100%', height: '30px', background: '#9F2FFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{
+                    fontFamily: 'Lato, sans-serif',
+                    fontStyle: 'italic',
+                    fontWeight: 600,
+                    color: '#DADBE4',
+                    fontSize: '0.75rem',
+                    letterSpacing: '0.03em',
+                    textAlign: 'center',
+                    width: '100%',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                    ETERNAL AWAKENING
+                  </span>
+                </div>
+                <img 
+                  src="/images/eternal_awakening/black_back.jpg" 
+                  alt="ETERNAL AWAKENING" 
+                  style={{ width: '100%', height: 'auto', objectFit: 'cover', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
+                />
+                <div style={{
+                  width: '100%',
+                  background: '#DADBE4',
+                  textAlign: 'center',
+                  padding: '10px 0',
+                  borderBottomLeftRadius: '16px',
+                  borderBottomRightRadius: '16px',
+                  fontFamily: 'Bebas Neue, sans-serif',
+                  color: '#1B1F3B',
+                  fontSize: '1.2rem',
+                  fontWeight: 'bold',
+                }}>
+                  Shop now
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </div>
         </div>
+        {/* Gradient Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent"></div>
       </div>
 
       {/* Eternal Threads Section */}
-      <div style={{ width: '100%', background: '#1B1F3B', padding: '50px 0' }}>
+      <div style={{ width: '100%', background: '#000000', padding: '50px 0' }}>
         <CarouselSyncProvider imageCount={15}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h2 style={{
