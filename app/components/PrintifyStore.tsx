@@ -66,6 +66,38 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [showSwipeIndicator, setShowSwipeIndicator] = useState<Record<string, boolean>>({});
+  const [currentImageStates, setCurrentImageStates] = useState<Record<string, number>>({});
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent, productId: string) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = (productId: string) => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe || isRightSwipe) {
+      setShowSwipeIndicator(prev => ({ ...prev, [productId]: false }));
+      setCurrentImageStates(prev => ({
+        ...prev,
+        [productId]: prev[productId] === 0 ? 1 : 0
+      }));
+    }
+  };
 
   // Notify parent when customization mode changes
   useEffect(() => {
@@ -97,6 +129,7 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
                 product.title === "Eternal Collapse" ||
                 product.title === "Vow of the Eternal" ||
                 product.title === "Eternal Awakening" ||
+                product.title === "Eternal Divide" ||
                 isEternalElegance
               );
             
@@ -228,7 +261,7 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
         });
 
         const combinedEternalSlashProduct: Product = {
-          id: 'eternal-slash-combined',
+          id: 'eternal-divide',
           title: 'Eternal Divide',
           images: [
             // Purple (Violet) combinations
@@ -259,27 +292,7 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
             // White combinations
             { src: '/images/eternal_slash/white_black.jpg' },
             { src: '/images/eternal_slash/white_charcoal.jpg' },
-            { src: '/images/eternal_slash/white_dark_chocolate.jpg' },
-            { src: '/images/eternal_slash/white_forest_green.jpg' },
-            { src: '/images/eternal_slash/white_light_blue.jpg' },
-            { src: '/images/eternal_slash/white_navy.jpg' },
-            { src: '/images/eternal_slash/white_sage.jpg' },
-            { src: '/images/eternal_slash/white_sand.jpg' },
-            // Grey combinations
-            { src: '/images/eternal_slash/grey_black.jpg' },
-            { src: '/images/eternal_slash/grey_charcoal.jpg' },
-            { src: '/images/eternal_slash/grey_forest_green.jpg' },
-            { src: '/images/eternal_slash/grey_light_blue.jpg' },
-            { src: '/images/eternal_slash/grey_navy.jpg' },
-            { src: '/images/eternal_slash/grey_sage.jpg' },
-            { src: '/images/eternal_slash/grey_sand.jpg' },
-            { src: '/images/eternal_slash/grey_white.jpg' },
-            // Black combinations
-            { src: '/images/eternal_slash/black_charcoal.jpg' },
-            { src: '/images/eternal_slash/black_forest_green.jpg' },
-            { src: '/images/eternal_slash/black_light_blue.jpg' },
-            { src: '/images/eternal_slash/black_sand.jpg' },
-            { src: '/images/eternal_slash/black_white.jpg' }
+            { src: '/images/eternal_slash/white_dark_chocolate.jpg' }
           ],
           variants: [
             {
@@ -432,20 +445,61 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
                     setSelectedProduct({ ...product, customizable: false });
                   }
                 }}
+                onTouchStart={(e) => onTouchStart(e, product.id)}
+                onTouchMove={onTouchMove}
+                onTouchEnd={() => onTouchEnd(product.id)}
+                onMouseEnter={() => {
+                  setCurrentImageStates(prev => ({
+                    ...prev,
+                    [product.id]: 1
+                  }));
+                }}
+                onMouseLeave={() => {
+                  setCurrentImageStates(prev => ({
+                    ...prev,
+                    [product.id]: 0
+                  }));
+                }}
               >
                 {/* Main Image */}
                 <img
                   src={product.images[0].src}
                   alt={product.title}
-                  className="w-full h-full object-contain p-2 transition-opacity duration-300 group-hover:opacity-0"
+                  className={`w-full h-full object-contain p-2 transition-opacity duration-300 ${
+                    currentImageStates[product.id] === 1 ? 'opacity-0' : 'opacity-100'
+                  }`}
                 />
                 {/* Hover Image */}
                 {product.images[1] && (
                   <img
                     src={product.images[1].src}
                     alt={`${product.title} - Back View`}
-                    className="absolute inset-0 w-full h-full object-contain p-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    className={`absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-300 ${
+                      currentImageStates[product.id] === 1 ? 'opacity-100' : 'opacity-0'
+                    }`}
                   />
+                )}
+                {/* Image Progress Indicator - Always 2 dots for front/back */}
+                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
+                  <div className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                    currentImageStates[product.id] === 0 ? 'bg-[#9F2FFF]' : 'border border-[#9F2FFF]'
+                  }`} />
+                  <div className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                    currentImageStates[product.id] === 1 ? 'bg-[#9F2FFF]' : 'border border-[#9F2FFF]'
+                  }`} />
+                </div>
+                {/* Swipe Indicator for Mobile */}
+                {showSwipeIndicator[product.id] && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/10 animate-pulse md:hidden">
+                    <div className="flex items-center gap-1.5">
+                      <svg className="w-4 h-4" fill="none" stroke="#9F2FFF" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                      <svg className="w-4 h-4" fill="none" stroke="#9F2FFF" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
