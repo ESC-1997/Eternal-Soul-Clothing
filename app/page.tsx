@@ -134,23 +134,22 @@ export default function Home() {
       {/* Featured Items Section */}
       <div style={{ 
         width: '100%', 
-        background: 'url(/images/GalaxyBG.png)',
-        backgroundSize: '200% auto',
-        backgroundPosition: 'center top',
-        backgroundRepeat: 'no-repeat',
+        background: '#000000',
         height: 'auto', 
-        padding: '60px 0 20px 0',
+        padding: '60px 0 60px 0',
         position: 'relative',
         marginTop: '-2px',
         zIndex: 1
       }}>
+        {/* Gradient Overlay */}
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black to-transparent"></div>
         <div style={{ position: 'relative', zIndex: 2 }}>
           <h2 style={{
             color: '#DADBE4',
             fontFamily: 'Bebas Neue, sans-serif',
             fontSize: '2.5rem',
             textAlign: 'center',
-            marginTop: '25px',
+            marginTop: '0',
             marginBottom: '25px',
             letterSpacing: '0.1em',
             fontWeight: 'bold',
@@ -325,12 +324,17 @@ export default function Home() {
             </Link>
           </div>
         </div>
-        {/* Gradient Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent"></div>
       </div>
 
       {/* Eternal Threads Section */}
-      <div style={{ width: '100%', background: '#000000', padding: '50px 0' }}>
+      <div style={{ 
+        width: '100%', 
+        background: 'url(/images/GalaxyBG.png)',
+        backgroundSize: '200% auto',
+        backgroundPosition: 'center top',
+        backgroundRepeat: 'no-repeat',
+        padding: '70px 0 50px 0' 
+      }}>
         <CarouselSyncProvider imageCount={15}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h2 style={{
