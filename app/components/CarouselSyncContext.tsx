@@ -24,7 +24,7 @@ export const CarouselSyncProvider = ({ children, imageCount = 15 }: { children: 
     if (!isPaused) {
       intervalRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % imageCount);
-      }, 3000);
+      }, 6000);
     }
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
