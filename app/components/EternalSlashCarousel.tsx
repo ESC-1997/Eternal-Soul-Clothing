@@ -32,28 +32,32 @@ const EternalDivideCarousel = () => {
       const timer = setTimeout(() => {
         setDisplayIndex(currentIndex);
         setIsTransitioning(false);
-      }, 750);
+      }, 300);
       return () => clearTimeout(timer);
     }
   }, [currentIndex, displayIndex]);
 
   return (
-    <div className="relative w-full h-[300px] perspective-1000">
-      <div className={`relative w-full h-full transition-all duration-600 transform-style-3d ${
-        isTransitioning ? 'rotate-y-180' : 'rotate-y-0'
-      }`}>
+    <div className="relative w-full h-[300px]">
+      <div className="relative w-full h-full">
         <Image
+          key={displayIndex}
           src={images[displayIndex % images.length]}
-          alt="Eternal Divide Collection"
+          alt="Eternal Slash Collection"
           fill
-          className="object-contain backface-hidden"
+          className={`object-contain transition-all duration-500 ${
+            isTransitioning ? 'opacity-0 blur-lg' : 'opacity-100 blur-0'
+          }`}
           priority
         />
         <Image
-          src={images[displayIndex % images.length]}
-          alt="Eternal Divide Collection"
+          key={`next-${displayIndex}`}
+          src={images[(displayIndex + 1) % images.length]}
+          alt="Eternal Slash Collection"
           fill
-          className="object-contain absolute inset-0 rotate-y-180 backface-hidden"
+          className={`object-contain absolute inset-0 transition-all duration-500 ${
+            isTransitioning ? 'opacity-100 blur-0' : 'opacity-0 blur-lg'
+          }`}
           priority
         />
       </div>
