@@ -533,4 +533,94 @@ export const productVariants: Record<string, Record<string, Record<string, { var
       "5XL": { variant_id: 24171, price: 4800, stock_status: "In Stock" },
     },
   },
+  "682803161b86b39978039d62": {
+    "Black": {
+      "M": { variant_id: 12125, price: 4000, stock_status: "In Stock" },
+      "S": { variant_id: 12126, price: 4000, stock_status: "In Stock" },
+      "L": { variant_id: 12124, price: 4000, stock_status: "In Stock" },
+      "XL": { variant_id: 12127, price: 4000, stock_status: "In Stock" },
+      "2XL": { variant_id: 12128, price: 4000, stock_status: "In Stock" },
+      "3XL": { variant_id: 12129, price: 4250, stock_status: "In Stock" },
+      "4XL": { variant_id: 24039, price: 4250, stock_status: "In Stock" },
+      "5XL": { variant_id: 24171, price: 4250, stock_status: "In Stock" }
+    },
+    "Charcoal": {
+      "M": { variant_id: 11873, price: 4000, stock_status: "In Stock" },
+      "L": { variant_id: 11872, price: 4000, stock_status: "In Stock" },
+      "XL": { variant_id: 11875, price: 4000, stock_status: "In Stock" },
+      "S": { variant_id: 11874, price: 4000, stock_status: "In Stock" },
+      "2XL": { variant_id: 11876, price: 4000, stock_status: "In Stock" },
+      "3XL": { variant_id: 11877, price: 4250, stock_status: "In Stock" },
+      "4XL": { variant_id: 23955, price: 4250, stock_status: "In Stock" },
+      "5XL": { variant_id: 24088, price: 4250, stock_status: "In Stock" }
+    },
+    "Dark Chocolate": {
+      "XL": { variant_id: 11899, price: 4000, stock_status: "In Stock" },
+      "L": { variant_id: 11896, price: 4000, stock_status: "In Stock" },
+      "S": { variant_id: 11898, price: 4000, stock_status: "In Stock" },
+      "M": { variant_id: 11897, price: 4000, stock_status: "In Stock" },
+      "2XL": { variant_id: 11900, price: 4000, stock_status: "In Stock" },
+      "3XL": { variant_id: 11901, price: 4250, stock_status: "In Stock" },
+      "4XL": { variant_id: 23963, price: 4250, stock_status: "In Stock" },
+      "5XL": { variant_id: 24097, price: 4250, stock_status: "In Stock" }
+    },
+    "Sand": {
+      "XL": { variant_id: 12055, price: 4000, stock_status: "In Stock" },
+      "M": { variant_id: 12053, price: 4000, stock_status: "In Stock" },
+      "L": { variant_id: 12052, price: 4000, stock_status: "In Stock" },
+      "S": { variant_id: 12054, price: 4000, stock_status: "In Stock" },
+      "2XL": { variant_id: 12056, price: 4000, stock_status: "In Stock" },
+      "3XL": { variant_id: 12057, price: 4250, stock_status: "In Stock" },
+      "4XL": { variant_id: 24015, price: 4250, stock_status: "In Stock" },
+      "5XL": { variant_id: 24147, price: 4250, stock_status: "In Stock" }
+    },
+    "Violet": {
+      "M": { variant_id: 12095, price: 4000, stock_status: "In Stock" },
+      "S": { variant_id: 12096, price: 4000, stock_status: "In Stock" },
+      "L": { variant_id: 12094, price: 4000, stock_status: "In Stock" },
+      "XL": { variant_id: 12097, price: 4000, stock_status: "In Stock" },
+      "2XL": { variant_id: 12098, price: 4000, stock_status: "In Stock" },
+      "3XL": { variant_id: 12099, price: 4250, stock_status: "In Stock" },
+      "4XL": { variant_id: 24028, price: 4250, stock_status: "In Stock" },
+      "5XL": { variant_id: 24161, price: 4250, stock_status: "In Stock" }
+    }
+  },
+  "6828e9aa1b86b3997803cc3d": {
+    "Army": {
+      "XS": { variant_id: 106106, price: 3500, stock_status: "Out of Stock" },
+      "S": { variant_id: 106107, price: 3500, stock_status: "Out of Stock" },
+      "M": { variant_id: 106108, price: 3500, stock_status: "Out of Stock" },
+      "L": { variant_id: 106109, price: 3500, stock_status: "Out of Stock" },
+      "XL": { variant_id: 106110, price: 3500, stock_status: "Out of Stock" },
+      "2XL": { variant_id: 106111, price: 3500, stock_status: "Out of Stock" },
+      "3XL": { variant_id: 107428, price: 3500, stock_status: "Out of Stock" }
+    },
+    "Black": {
+      "XS": { variant_id: 68542, price: 3500, stock_status: "In Stock" },
+      "S": { variant_id: 68544, price: 3500, stock_status: "In Stock" },
+      "M": { variant_id: 68546, price: 3500, stock_status: "In Stock" },
+      "L": { variant_id: 68548, price: 3500, stock_status: "In Stock" },
+      "XL": { variant_id: 68550, price: 3500, stock_status: "In Stock" },
+      "2XL": { variant_id: 68552, price: 3500, stock_status: "In Stock" },
+      "3XL": { variant_id: 107430, price: 3500, stock_status: "In Stock" }
+    },
+    "Coal": {
+      "XS": { variant_id: 106112, price: 3500, stock_status: "In Stock" },
+      "S": { variant_id: 106113, price: 3500, stock_status: "In Stock" },
+      "M": { variant_id: 106114, price: 3500, stock_status: "In Stock" },
+      "L": { variant_id: 106115, price: 3500, stock_status: "In Stock" },
+      "XL": { variant_id: 106116, price: 3500, stock_status: "In Stock" },
+      "2XL": { variant_id: 106117, price: 3500, stock_status: "In Stock" },
+      "3XL": { variant_id: 107431, price: 3500, stock_status: "Out of Stock" }
+    },
+    "White": {
+      "XS": { variant_id: 68543, price: 3500, stock_status: "In Stock" },
+      "S": { variant_id: 68545, price: 3500, stock_status: "In Stock" },
+      "M": { variant_id: 68547, price: 3500, stock_status: "In Stock" },
+      "L": { variant_id: 68549, price: 3500, stock_status: "In Stock" },
+      "XL": { variant_id: 68551, price: 3500, stock_status: "In Stock" },
+      "2XL": { variant_id: 68553, price: 3500, stock_status: "In Stock" },
+      "3XL": { variant_id: 107437, price: 3500, stock_status: "In Stock" }
+    }
+  },
 }; 
