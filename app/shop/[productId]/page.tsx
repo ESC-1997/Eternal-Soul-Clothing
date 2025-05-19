@@ -75,6 +75,17 @@ const products: Products = {
     variants: [
       { id: '38164', title: 'Small', price: '4000' }
     ]
+  },
+  'the-eternal-snap': {
+    id: '6828ede2465b246fe50cc776',
+    title: 'The Eternal Snap',
+    images: [
+      { src: '/images/eternal_snap/placeholder_front.jpg' },
+      { src: '/images/eternal_snap/placeholder_back.jpg' }
+    ],
+    variants: [
+      { id: '118985', title: 'One size', price: '40' }
+    ]
   }
 };
 
@@ -88,7 +99,7 @@ export default function ProductPage({ params }: { params: { productId: string } 
   return (
     <div className="min-h-screen bg-[#DADBE4]">
       <div className="container mx-auto px-4 py-8">
-        {product.title.toLowerCase().includes('eternal elegance') ? (
+        {(product.title.toLowerCase().includes('eternal elegance') || product.title.toLowerCase().includes('eternal snap')) ? (
           <ProductCustomizer product={product} />
         ) : (
           <ProductViewer product={product} />
