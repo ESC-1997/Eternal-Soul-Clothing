@@ -198,6 +198,24 @@ const VOW_OF_THE_ETERNAL_COLORS = [
   },
 ];
 
+// Eternal Ascension color options
+const ETERNAL_ASCENSION_COLORS = [
+  { name: 'Black', value: 'black', hex: '#000000' },
+  { name: 'Charcoal', value: 'charcoal', hex: '#585559' },
+  { name: 'Dark Chocolate', value: 'dark_chocolate', hex: '#31221D' },
+  { name: 'Sand', value: 'sand', hex: '#DCD2BE' },
+  { name: 'Violet', value: 'violet', hex: '#8381BA' },
+];
+
+// Eternal Ascension color-to-image mapping
+const ETERNAL_ASCENSION_IMAGE_MAP: Record<string, string[]> = {
+  black: ['/images/eternal_ascension/black.jpg', '/images/eternal_ascension/black1.jpg'],
+  sand: ['/images/eternal_ascension/sand.jpg', '/images/eternal_ascension/sand1.jpg'],
+  dark_chocolate: ['/images/eternal_ascension/dark_chocolate.jpg', '/images/eternal_ascension/dark_chocolate1.jpg'],
+  violet: ['/images/eternal_ascension/violet.jpg', '/images/eternal_ascension/violet1.jpg'],
+  charcoal: ['/images/eternal_ascension/charcoal.jpg', '/images/eternal_ascension/charcoal1.jpg'],
+};
+
 // Custom color options and image mapping for Eternally Woven
 const ETERNALLY_WOVEN_COLORS = [
   { name: 'Cardinal Red', value: 'cardinal_red', hex: '#9f1931' },
@@ -245,6 +263,21 @@ const ETERNALLY_WOVEN_IMAGE_MAP: Record<string, { front: string; back: string }>
   },
 };
 
+// Eternal Cut color options
+const ETERNAL_CUT_COLORS = [
+  { name: 'Army', value: 'army', hex: '#4B5320' },
+  { name: 'Black', value: 'black', hex: '#000000' },
+  { name: 'Coal', value: 'coal', hex: '#36454F' },
+  { name: 'White', value: 'white', hex: '#FFFFFF' },
+];
+
+const ETERNAL_CUT_IMAGE_MAP: Record<string, string> = {
+  army: '/images/eternal_cut/army.jpg',
+  black: '/images/eternal_cut/black.jpg',
+  coal: '/images/eternal_cut/coal.jpg',
+  white: '/images/eternal_cut/white.jpg',
+};
+
 export default function ProductViewer({ product }: ProductViewerProps) {
   const [selectedSize, setSelectedSize] = useState<string>('M');
   // Use custom color options for specific products
@@ -252,15 +285,21 @@ export default function ProductViewer({ product }: ProductViewerProps) {
   const isVowOfTheEternal = product.title === 'Vow of the Eternal';
   const isEternalAwakening = product.title === 'Eternal Awakening';
   const isEternallyWoven = product.id === '68268cde04479021a204cf52';
-  const colorOptions = isEternallyWoven
-    ? ETERNALLY_WOVEN_COLORS
-    : isEternalCollapse
-      ? ETERNAL_COLLAPSE_COLORS
-      : isVowOfTheEternal
-        ? VOW_OF_THE_ETERNAL_COLORS
-        : isEternalAwakening
-          ? ETERNAL_AWAKENING_COLORS
-          : COLOR_OPTIONS;
+  const isEternalAscension = product.id === '682803161b86b39978039d62';
+  const isEternalCut = product.id === '6828e9aa1b86b3997803cc3d';
+  const colorOptions = isEternalCut
+    ? ETERNAL_CUT_COLORS
+    : isEternalAscension
+      ? ETERNAL_ASCENSION_COLORS
+      : isEternallyWoven
+        ? ETERNALLY_WOVEN_COLORS
+        : isEternalCollapse
+          ? ETERNAL_COLLAPSE_COLORS
+          : isVowOfTheEternal
+            ? VOW_OF_THE_ETERNAL_COLORS
+            : isEternalAwakening
+              ? ETERNAL_AWAKENING_COLORS
+              : COLOR_OPTIONS;
   const [selectedColor, setSelectedColor] = useState<string>(colorOptions[0].value);
   const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
@@ -288,6 +327,19 @@ export default function ProductViewer({ product }: ProductViewerProps) {
   const getVariantId = () => {
     const productId = product.id;
     const size = selectedSize;
+    if (isEternalCut) {
+      const colorObj = ETERNAL_CUT_COLORS.find(c => c.value === selectedColor);
+      if (!colorObj) {
+        alert('Selected color is not available for this product.');
+        throw new Error('Color mapping failed');
+      }
+      const variant = productVariants[productId]?.[colorObj.name]?.[size];
+      if (variant && typeof variant === 'object' && 'variant_id' in variant) {
+        return variant.variant_id;
+      }
+      alert('Selected color/size is not available.');
+      throw new Error('Variant mapping failed');
+    }
     if (isEternallyWoven) {
       // Map selectedColor value to Printify color name
       const colorName = ETERNALLY_WOVEN_COLORS.find(c => c.value === selectedColor)?.name;
@@ -304,6 +356,19 @@ export default function ProductViewer({ product }: ProductViewerProps) {
         return variant.variant_id;
       }
       return parseInt(product.variants[0].id);
+    }
+    if (isEternalAscension) {
+      const colorObj = ETERNAL_ASCENSION_COLORS.find(c => c.value === selectedColor);
+      if (!colorObj) {
+        alert('Selected color is not available for this product.');
+        throw new Error('Color mapping failed');
+      }
+      const variant = productVariants[productId]?.[colorObj.name]?.[size];
+      if (variant && typeof variant === 'object' && 'variant_id' in variant) {
+        return variant.variant_id;
+      }
+      alert('Selected color/size is not available.');
+      throw new Error('Variant mapping failed');
     }
     const printifyColorName = COLOR_CODE_TO_NAME[selectedColor];
     const variant = productVariants[productId]?.[printifyColorName]?.[size];
@@ -360,12 +425,25 @@ export default function ProductViewer({ product }: ProductViewerProps) {
       const side = currentImageIndex === 0 ? 'front' : 'back';
       return ETERNAL_AWAKENING_IMAGE_MAP[colorKey]?.[side] || ETERNAL_AWAKENING_IMAGE_MAP['black'].front;
     }
+    if (isEternalAscension) {
+      return ETERNAL_ASCENSION_IMAGE_MAP[selectedColor]?.[currentImageIndex] || ETERNAL_ASCENSION_IMAGE_MAP['black'][0];
+    }
+    if (isEternalCut) {
+      return ETERNAL_CUT_IMAGE_MAP[selectedColor] || ETERNAL_CUT_IMAGE_MAP['black'];
+    }
     const suffix = product.title.includes('Purple') ? 'P' : 'BG';
     return `/images/eternal_lotus/eternal_lotus_${selectedColor}_${currentImageIndex === 0 ? 'front' : 'back'}${suffix}.jpg`;
   };
 
   // Determine available sizes for the current product and color
   const getAvailableSizes = () => {
+    if (isEternalCut) {
+      const colorObj = ETERNAL_CUT_COLORS.find(c => c.value === selectedColor);
+      if (colorObj && productVariants[product.id] && productVariants[product.id][colorObj.name]) {
+        return Object.keys(productVariants[product.id][colorObj.name]);
+      }
+      return [];
+    }
     if (isEternalCollapse || isVowOfTheEternal) {
       const productId = isEternalCollapse ? '681acbd3c9285dd17e0dd618' : '681ac79a1207456e76092f23';
       const colorName = colorOptions.find(c => c.value === selectedColor)?.name;
@@ -392,6 +470,11 @@ export default function ProductViewer({ product }: ProductViewerProps) {
 
   // Get stock status for the selected color and size
   const getStockStatus = (size: string) => {
+    if (isEternalCut) {
+      const colorObj = ETERNAL_CUT_COLORS.find(c => c.value === selectedColor);
+      if (!colorObj) return 'In Stock';
+      return productVariants[product.id]?.[colorObj.name]?.[size]?.stock_status || 'In Stock';
+    }
     if (isEternalCollapse || isVowOfTheEternal) {
       const productId = isEternalCollapse ? '681acbd3c9285dd17e0dd618' : '681ac79a1207456e76092f23';
       const colorName = colorOptions.find(c => c.value === selectedColor)?.name;
@@ -400,6 +483,11 @@ export default function ProductViewer({ product }: ProductViewerProps) {
     }
     if (isEternallyWoven) {
       const colorName = ETERNALLY_WOVEN_COLORS.find(c => c.value === selectedColor)?.name;
+      if (!colorName) return 'In Stock';
+      return productVariants[product.id]?.[colorName]?.[size]?.stock_status || 'In Stock';
+    }
+    if (isEternalAscension) {
+      const colorName = ETERNAL_ASCENSION_COLORS.find(c => c.value === selectedColor)?.name;
       if (!colorName) return 'In Stock';
       return productVariants[product.id]?.[colorName]?.[size]?.stock_status || 'In Stock';
     }
@@ -432,6 +520,17 @@ export default function ProductViewer({ product }: ProductViewerProps) {
     }
     if (isEternallyWoven) {
       const colorName = ETERNALLY_WOVEN_COLORS.find(c => c.value === selectedColor)?.name;
+      if (
+        productVariants[product.id] &&
+        colorName &&
+        productVariants[product.id][colorName] &&
+        productVariants[product.id][colorName][selectedSize]
+      ) {
+        return productVariants[product.id][colorName][selectedSize].price / 100;
+      }
+    }
+    if (isEternalAscension) {
+      const colorName = ETERNAL_ASCENSION_COLORS.find(c => c.value === selectedColor)?.name;
       if (
         productVariants[product.id] &&
         colorName &&
