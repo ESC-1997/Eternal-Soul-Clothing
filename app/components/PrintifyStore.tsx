@@ -429,6 +429,68 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
   return (
     <>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4 lg:gap-6 p-2 md:p-4">
+        {/* Eternally Woven Product Card */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[200px] md:max-w-[240px] mx-auto h-[280px] md:h-[320px] flex flex-col">
+          <div className="cursor-pointer h-[160px] md:h-[200px] flex items-center justify-center bg-gray-50 relative group"
+            onClick={() => {
+              setSelectedProduct({
+                id: '68268cde04479021a204cf52',
+                title: 'Eternally Woven',
+                images: [
+                  { src: '/images/Eternally Woven/white_back.jpg' },
+                  { src: '/images/Eternally Woven/white_front.jpg' }
+                ],
+                variants: [
+                  { id: 'default', title: 'Starting at', price: '4000' }
+                ]
+              });
+              onCustomizationModeChange(false);
+              onViewModeChange(true);
+            }}
+          >
+            {/* Main Image */}
+            <img
+              src="/images/Eternally Woven/white_back.jpg"
+              alt="Eternally Woven"
+              className="w-full h-full object-contain p-2 transition-opacity duration-300 group-hover:opacity-0"
+            />
+            {/* Hover Image */}
+            <img
+              src="/images/Eternally Woven/white_front.jpg"
+              alt="Eternally Woven - Front View"
+              className="absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+            />
+            {/* Image Progress Indicator - Always 2 dots for front/back */}
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#9F2FFF]" />
+              <div className="w-1.5 h-1.5 rounded-full border border-[#9F2FFF]" />
+            </div>
+          </div>
+          <div className="p-2 flex flex-col flex-grow">
+            <h3 className="text-xs md:text-sm font-semibold text-gray-900 mb-1 line-clamp-2 flex-grow">Eternally Woven</h3>
+            <p className="text-xs md:text-sm text-gray-600 mb-2">$40.00</p>
+          </div>
+          <button
+            className="w-full bg-gray-900 text-white py-2 px-3 rounded-none text-xs md:text-sm hover:bg-gray-800 transition-colors"
+            onClick={() => {
+              setSelectedProduct({
+                id: '68268cde04479021a204cf52',
+                title: 'Eternally Woven',
+                images: [
+                  { src: '/images/Eternally Woven/white_back.jpg' },
+                  { src: '/images/Eternally Woven/white_front.jpg' }
+                ],
+                variants: [
+                  { id: 'default', title: 'Starting at', price: '4000' }
+                ]
+              });
+              onCustomizationModeChange(false);
+              onViewModeChange(true);
+            }}
+          >
+            View Options
+          </button>
+        </div>
         {products.map((product) => (
           <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[200px] md:max-w-[240px] mx-auto h-[280px] md:h-[320px] flex flex-col">
             {product.images[0] && (
