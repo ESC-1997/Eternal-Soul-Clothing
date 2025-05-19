@@ -720,6 +720,70 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
             View Options
           </button>
         </div>
+        {/* The Eternal Snap (Eternal Cap) Product Card */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[320px] md:max-w-[380px] mx-auto h-[400px] md:h-[460px] flex flex-col">
+          <div className="cursor-pointer h-[220px] md:h-[280px] flex items-center justify-center bg-gray-50 relative group"
+            onClick={() => {
+              setSelectedProduct({
+                id: 'eternal-snap',
+                title: 'The Eternal Snap',
+                images: [
+                  { src: '/images/eternal_cap/red_white3.jpg' },
+                  { src: '/images/eternal_cap/red_white2.jpg' }
+                ],
+                variants: [
+                  { id: 'default', title: 'One size', price: '4000' }
+                ],
+                customizable: true
+              });
+              onCustomizationModeChange(true);
+              onViewModeChange(false);
+            }}
+          >
+            {/* Main Image */}
+            <img
+              src="/images/eternal_cap/red_white3.jpg"
+              alt="The Eternal Snap"
+              className="w-full h-full object-contain p-2 transition-opacity duration-300 group-hover:opacity-0"
+            />
+            {/* Hover Image */}
+            <img
+              src="/images/eternal_cap/red_white2.jpg"
+              alt="The Eternal Snap - Hover"
+              className="absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+            />
+            {/* Image Progress Indicator - Always 2 dots for front/back */}
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#9F2FFF]" />
+              <div className="w-1.5 h-1.5 rounded-full border border-[#9F2FFF]" />
+            </div>
+          </div>
+          <div className="p-2 flex flex-col flex-grow">
+            <h3 className="text-xs md:text-sm font-semibold text-gray-900 mb-1 line-clamp-2 flex-grow">The Eternal Snap</h3>
+            <p className="text-xs md:text-sm text-gray-600 mb-2">$40.00</p>
+          </div>
+          <button
+            className="w-full bg-gray-900 text-white py-2 px-3 rounded-none text-xs md:text-sm hover:bg-gray-800 transition-colors"
+            onClick={() => {
+              setSelectedProduct({
+                id: 'eternal-snap',
+                title: 'The Eternal Snap',
+                images: [
+                  { src: '/images/eternal_cap/red_white3.jpg' },
+                  { src: '/images/eternal_cap/red_white2.jpg' }
+                ],
+                variants: [
+                  { id: 'default', title: 'One size', price: '4000' }
+                ],
+                customizable: true
+              });
+              onCustomizationModeChange(true);
+              onViewModeChange(false);
+            }}
+          >
+            Customize
+          </button>
+        </div>
         {/* Product Grid */}
         {products.map((product) => (
           <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[320px] md:max-w-[380px] mx-auto h-[400px] md:h-[460px] flex flex-col">
