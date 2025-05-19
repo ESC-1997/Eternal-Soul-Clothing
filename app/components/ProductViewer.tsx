@@ -198,19 +198,69 @@ const VOW_OF_THE_ETERNAL_COLORS = [
   },
 ];
 
+// Custom color options and image mapping for Eternally Woven
+const ETERNALLY_WOVEN_COLORS = [
+  { name: 'Cardinal Red', value: 'cardinal_red', hex: '#9f1931' },
+  { name: 'Charcoal', value: 'charcoal', hex: '#585559' },
+  { name: 'Indigo Blue', value: 'indigo_blue', hex: '#476579' },
+  { name: 'Natural', value: 'natural', hex: '#FFF6E3' },
+  { name: 'Sage', value: 'sage', hex: '#b1e0c0' },
+  { name: 'Sand', value: 'sand', hex: '#DCD2BE' },
+  { name: 'Stone Blue', value: 'stone_blue', hex: '#7BA4DB' },
+  { name: 'White', value: 'white', hex: '#ffffff' },
+];
+
+const ETERNALLY_WOVEN_IMAGE_MAP: Record<string, { front: string; back: string }> = {
+  cardinal_red: {
+    front: '/images/Eternally Woven/red_front.jpg',
+    back: '/images/Eternally Woven/red_back.jpg',
+  },
+  charcoal: {
+    front: '/images/Eternally Woven/charcoal_front.jpg',
+    back: '/images/Eternally Woven/charcoal_back.jpg',
+  },
+  indigo_blue: {
+    front: '/images/Eternally Woven/iblue_front.jpg',
+    back: '/images/Eternally Woven/iblue_back.jpg',
+  },
+  natural: {
+    front: '/images/Eternally Woven/natural_front.jpg',
+    back: '/images/Eternally Woven/natural_back.jpg',
+  },
+  sage: {
+    front: '/images/Eternally Woven/sage_front.jpg',
+    back: '/images/Eternally Woven/sage_back.jpg',
+  },
+  sand: {
+    front: '/images/Eternally Woven/sand_front.jpg',
+    back: '/images/Eternally Woven/sand_back.jpg',
+  },
+  stone_blue: {
+    front: '/images/Eternally Woven/sblue_front.jpg',
+    back: '/images/Eternally Woven/sblue_back.jpg',
+  },
+  white: {
+    front: '/images/Eternally Woven/white_front.jpg',
+    back: '/images/Eternally Woven/white_back.jpg',
+  },
+};
+
 export default function ProductViewer({ product }: ProductViewerProps) {
   const [selectedSize, setSelectedSize] = useState<string>('M');
   // Use custom color options for specific products
   const isEternalCollapse = product.title === 'Eternal Collapse';
   const isVowOfTheEternal = product.title === 'Vow of the Eternal';
   const isEternalAwakening = product.title === 'Eternal Awakening';
-  const colorOptions = isEternalCollapse
-    ? ETERNAL_COLLAPSE_COLORS
-    : isVowOfTheEternal
-      ? VOW_OF_THE_ETERNAL_COLORS
-      : isEternalAwakening
-        ? ETERNAL_AWAKENING_COLORS
-        : COLOR_OPTIONS;
+  const isEternallyWoven = product.id === '68268cde04479021a204cf52';
+  const colorOptions = isEternallyWoven
+    ? ETERNALLY_WOVEN_COLORS
+    : isEternalCollapse
+      ? ETERNAL_COLLAPSE_COLORS
+      : isVowOfTheEternal
+        ? VOW_OF_THE_ETERNAL_COLORS
+        : isEternalAwakening
+          ? ETERNAL_AWAKENING_COLORS
+          : COLOR_OPTIONS;
   const [selectedColor, setSelectedColor] = useState<string>(colorOptions[0].value);
   const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
@@ -236,11 +286,26 @@ export default function ProductViewer({ product }: ProductViewerProps) {
   }, []);
 
   const getVariantId = () => {
-    const printifyColorName = COLOR_CODE_TO_NAME[selectedColor];
     const productId = product.id;
     const size = selectedSize;
-    
-    // Find the variant ID in the productVariants mapping
+    if (isEternallyWoven) {
+      // Map selectedColor value to Printify color name
+      const colorName = ETERNALLY_WOVEN_COLORS.find(c => c.value === selectedColor)?.name;
+      const variant = colorName && productVariants[productId]?.[colorName]?.[size];
+      if (variant && typeof variant === 'object' && 'variant_id' in variant) {
+        return variant.variant_id;
+      }
+      return parseInt(product.variants[0].id);
+    }
+    if (isEternalAwakening) {
+      const colorName = ETERNAL_AWAKENING_COLORS.find(c => c.value === selectedColor)?.name;
+      const variant = colorName && productVariants[productId]?.[colorName]?.[size];
+      if (variant && typeof variant === 'object' && 'variant_id' in variant) {
+        return variant.variant_id;
+      }
+      return parseInt(product.variants[0].id);
+    }
+    const printifyColorName = COLOR_CODE_TO_NAME[selectedColor];
     const variant = productVariants[productId]?.[printifyColorName]?.[size];
     return variant?.variant_id || parseInt(product.variants[0].id);
   };
@@ -249,11 +314,14 @@ export default function ProductViewer({ product }: ProductViewerProps) {
     try {
       setIsAddingToCart(true);
       const variantId = getVariantId();
+      const colorName = isEternalAwakening
+        ? ETERNAL_AWAKENING_COLORS.find(c => c.value === selectedColor)?.name || selectedColor
+        : selectedColor;
       addItem({
         id: product.id,
         variantId: variantId,
         name: product.title,
-        color: selectedColor,
+        color: colorName,
         logo: 'default',
         size: selectedSize,
         price: getCurrentPrice(),
@@ -272,8 +340,13 @@ export default function ProductViewer({ product }: ProductViewerProps) {
     setCurrentImageIndex(currentImageIndex === 0 ? 1 : 0);
   };
 
-  // Custom image logic for Eternal Collapse, Vow of the Eternal, and Eternal Awakening
+  // Custom image logic for Eternally Woven
   const getImagePath = () => {
+    if (isEternallyWoven) {
+      const colorKey = selectedColor;
+      const side = currentImageIndex === 0 ? 'front' : 'back';
+      return ETERNALLY_WOVEN_IMAGE_MAP[colorKey]?.[side] || ETERNALLY_WOVEN_IMAGE_MAP['white'].back;
+    }
     if (isEternalCollapse) {
       const colorObj = ETERNAL_COLLAPSE_COLORS.find(c => c.value === selectedColor);
       return colorObj ? colorObj.images[currentImageIndex] : ETERNAL_COLLAPSE_COLORS[0].images[0];
@@ -300,9 +373,18 @@ export default function ProductViewer({ product }: ProductViewerProps) {
         return Object.keys(productVariants[productId][colorName]);
       }
     }
-    // Default sizes - put XS at the beginning for Eternal Awakening
     if (isEternalAwakening) {
       return ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'];
+    }
+    if (isEternallyWoven) {
+      // Use Printify color name for lookup
+      const colorName = ETERNALLY_WOVEN_COLORS.find(c => c.value === selectedColor)?.name;
+      const sizes = colorName && productVariants[product.id] && productVariants[product.id][colorName]
+        ? Object.keys(productVariants[product.id][colorName])
+        : ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'];
+      return sizes.includes('XS')
+        ? ['XS', ...sizes.filter(s => s !== 'XS')]
+        : sizes;
     }
     return ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', 'XS'];
   };
@@ -315,6 +397,11 @@ export default function ProductViewer({ product }: ProductViewerProps) {
       const colorName = colorOptions.find(c => c.value === selectedColor)?.name;
       if (!colorName) return 'In Stock';
       return productVariants[productId]?.[colorName]?.[size]?.stock_status || 'In Stock';
+    }
+    if (isEternallyWoven) {
+      const colorName = ETERNALLY_WOVEN_COLORS.find(c => c.value === selectedColor)?.name;
+      if (!colorName) return 'In Stock';
+      return productVariants[product.id]?.[colorName]?.[size]?.stock_status || 'In Stock';
     }
     return 'In Stock';
   };
@@ -335,7 +422,6 @@ export default function ProductViewer({ product }: ProductViewerProps) {
       }
     }
     if (isEternalAwakening) {
-      // Price logic for Eternal Awakening
       if (['3XL', '4XL', '5XL'].includes(selectedSize)) {
         return 48.00;
       } else if (selectedSize === '2XL') {
@@ -344,7 +430,17 @@ export default function ProductViewer({ product }: ProductViewerProps) {
         return 45.00;
       }
     }
-    // Default price logic
+    if (isEternallyWoven) {
+      const colorName = ETERNALLY_WOVEN_COLORS.find(c => c.value === selectedColor)?.name;
+      if (
+        productVariants[product.id] &&
+        colorName &&
+        productVariants[product.id][colorName] &&
+        productVariants[product.id][colorName][selectedSize]
+      ) {
+        return productVariants[product.id][colorName][selectedSize].price / 100;
+      }
+    }
     return parseInt(product.variants[0].price) / 100;
   };
   const currentPrice = getCurrentPrice();
