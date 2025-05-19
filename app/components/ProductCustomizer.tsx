@@ -175,6 +175,29 @@ const ES_LOGO_COLOR_TO_PRODUCT_ID: Record<string, string> = {
   violet: '681fe068ebfdaacb650ca1d7'
 };
 
+// Mapping from UI hat color value to eternalSnapVariants/Images mapping key
+const SNAP_COLOR_UI_TO_MAPPING: Record<string, string> = {
+  black: 'Black',
+  black_charcoal_gray: 'Black/Charcoal gray/Charcoal gray',
+  black_gray_gray: 'Black/Gray/Gray',
+  black_red_red: 'Black/Red/Red',
+  red_black_black: 'Red/Black/Black',
+  white: 'White',
+  black_white_white: 'Black/White/White',
+  charcoal_white: 'Charcoal/White', // if needed
+};
+
+// Mapping from UI hat color value to button background (solid or split)
+const SNAP_COLOR_UI_TO_STYLE: Record<string, React.CSSProperties> = {
+  black: { background: '#000000' },
+  black_charcoal_gray: { background: 'linear-gradient(90deg, #36454F 50%, #000000 50%)' },
+  black_gray_gray: { background: 'linear-gradient(90deg, #808080 50%, #000000 50%)' },
+  black_red_red: { background: 'linear-gradient(90deg, #FF0000 50%, #000000 50%)' },
+  red_black_black: { background: 'linear-gradient(90deg, #000000 50%, #FF0000 50%)' },
+  white: { background: '#FFFFFF' },
+  black_white_white: { background: 'linear-gradient(90deg, #000000 50%, #FFFFFF 50%)' },
+};
+
 // Replace productVariants import type with ProductVariantsType
 const productVariantsTyped: ProductVariantsType = productVariants;
 
@@ -196,21 +219,143 @@ const ES_VALID_SHIRT_COLORS: Record<string, string[]> = {
   midnight_indigo: ['charcoal', 'light_blue', 'sage', 'sand', 'stone_blue', 'white'],
 };
 
+// The Eternal Snap color and logo options
+const SNAP_SHIRT_COLORS: ColorOption[] = [
+  { name: 'Black', value: 'black', hex: '#000000' },
+  { name: 'Black/Charcoal gray/Charcoal gray', value: 'black_charcoal_gray', hex: '#36454F' },
+  { name: 'Black/Gray/Gray', value: 'black_gray_gray', hex: '#808080' },
+  { name: 'Black/Red/Red', value: 'black_red_red', hex: '#FF0000' },
+  { name: 'Red/Black/Black', value: 'red_black_black', hex: '#FF0000' },
+  { name: 'White', value: 'white', hex: '#FFFFFF' },
+  { name: 'Black/White/White', value: 'black_white_white', hex: '#FFFFFF' },
+];
+
+const SNAP_LOGO_COLORS: ColorOption[] = [
+  { name: 'White', value: 'white', hex: '#FFFFFF' },
+  { name: 'Black', value: 'black', hex: '#000000' },
+];
+
+// Eternal Snap logo color to product ID mapping
+const SNAP_LOGO_COLOR_TO_PRODUCT_ID: Record<string, string> = {
+  white: '6828ef61ecd9db648306e954',
+  black: '6828ede2465b246fe50cc776',
+};
+
+// Eternal Snap variants mapping
+const eternalSnapVariants = {
+  '6828ef61ecd9db648306e954': { // White Logo
+    'Black': {
+      'One size': { variant_id: 118985, price: 40, stock_status: 'In Stock' },
+    },
+    'Black/Charcoal gray/Charcoal gray': {
+      'One size': { variant_id: 118987, price: 40, stock_status: 'In Stock' },
+    },
+    'Black/Gray/Gray': {
+      'One size': { variant_id: 118988, price: 40, stock_status: 'In Stock' },
+    },
+    'Black/Red/Red': {
+      'One size': { variant_id: 118989, price: 40, stock_status: 'In Stock' },
+    },
+    'Red/Black/Black': {
+      'One size': { variant_id: 119000, price: 40, stock_status: 'In Stock' },
+    },
+  },
+  '6828ede2465b246fe50cc776': { // Black Logo
+    'White': {
+      'One size': { variant_id: 119001, price: 40, stock_status: 'In Stock' },
+    },
+    'Black/Gray/Gray': {
+      'One size': { variant_id: 118988, price: 40, stock_status: 'In Stock' },
+    },
+    'Black/Red/Red': {
+      'One size': { variant_id: 118989, price: 40, stock_status: 'In Stock' },
+    },
+    'Black/White/White': {
+      'One size': { variant_id: 118990, price: 40, stock_status: 'In Stock' },
+    },
+  },
+};
+
+// Eternal Snap (Eternal Cap) image mapping
+const eternalSnapImages: {
+  [productId: string]: {
+    [variantId: string]: string[];
+  };
+} = {
+  '6828ede2465b246fe50cc776': {
+    '119001': [
+      '/images/eternal_cap/white_black1.jpg',
+      '/images/eternal_cap/white_black2.jpg',
+      '/images/eternal_cap/white_black3.jpg',
+    ],
+    '118988': [
+      '/images/eternal_cap/grey_black1.jpg',
+      '/images/eternal_cap/grey_black2.jpg',
+      '/images/eternal_cap/grey_black3.jpg',
+    ],
+    '118989': [
+      '/images/eternal_cap/red_black1.jpg',
+      '/images/eternal_cap/red_black2.jpg',
+      '/images/eternal_cap/red_black3.jpg',
+    ],
+    '118990': [
+      '/images/eternal_cap/white_black_duo1.jpg',
+      '/images/eternal_cap/white_black_duo2.jpg',
+      '/images/eternal_cap/white_black_duo3.jpg',
+    ],
+  },
+  '6828ef61ecd9db648306e954': {
+    '118985': [
+      '/images/eternal_cap/black_white1.jpg',
+      '/images/eternal_cap/black_white2.jpg',
+      '/images/eternal_cap/black_white3.jpg',
+    ],
+    '118987': [
+      '/images/eternal_cap/charcoal_white1.jpg',
+      '/images/eternal_cap/charcoal_white2.jpg',
+      '/images/eternal_cap/charcoal_white3.jpg',
+    ],
+    '118988': [
+      '/images/eternal_cap/grey_white1.jpg',
+      '/images/eternal_cap/grey_white2.jpg',
+      '/images/eternal_cap/grey_white3.jpg',
+    ],
+    '118989': [
+      '/images/eternal_cap/red_white1.jpg',
+      '/images/eternal_cap/red_white2.jpg',
+      '/images/eternal_cap/red_white3.jpg',
+    ],
+    '119000': [
+      '/images/eternal_cap/black_white_duo1.jpg',
+      '/images/eternal_cap/black_white_duo2.jpg',
+      '/images/eternal_cap/black_white_duo3.jpg',
+    ],
+  },
+};
+
+// For The Eternal Snap, define invalid combinations by logo and hat color value
+const SNAP_INVALID_COMBOS: Array<{ logo: string; hat: string }> = [
+  { logo: 'white', hat: 'black_white_white' }, // hat color 7
+  { logo: 'black', hat: 'red_black_black' },   // hat color 5
+  { logo: 'black', hat: 'black_charcoal_gray' } // hat color 2
+];
+
 export default function ProductCustomizer({ product }: ProductCustomizerProps) {
   const isEternalElegance = product.title.toLowerCase().includes('eternal elegance');
   const isEternalDivide = product.title.toLowerCase().includes('eternal divide');
+  const isEternalSnap = product.title.toLowerCase().includes('eternal snap');
   
   // Use correct color options
   const shirtColors = isEternalElegance 
     ? EE_SHIRT_COLORS 
     : isEternalDivide 
       ? ES_SHIRT_COLORS 
-      : SHIRT_COLORS;
+      : isEternalSnap ? SNAP_SHIRT_COLORS : SHIRT_COLORS;
   const logoColors = isEternalElegance 
     ? EE_LOGO_COLORS 
     : isEternalDivide 
       ? ES_LOGO_COLORS 
-      : LOGO_COLORS;
+      : isEternalSnap ? SNAP_LOGO_COLORS : LOGO_COLORS;
   const [selectedShirtColor, setSelectedShirtColor] = useState<ColorOption>(shirtColors[0]);
   const [selectedLogoColor, setSelectedLogoColor] = useState<ColorOption>(logoColors[0]);
   const [selectedSize, setSelectedSize] = useState<string>('M');
@@ -221,7 +366,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Use correct variant mapping
-  const productVariantsTyped: ProductVariantsType = isEternalElegance ? eternalEleganceVariants : isEternalDivide ? eternalSlashVariants : productVariants;
+  const productVariantsTyped: ProductVariantsType = isEternalElegance ? eternalEleganceVariants : isEternalDivide ? eternalSlashVariants : isEternalSnap ? eternalSnapVariants : productVariants;
 
   const logoKey = selectedLogoColor.value;
   // Use the mapped product ID for productVariants lookup
@@ -229,7 +374,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
     ? EE_LOGO_COLOR_TO_PRODUCT_ID[logoKey]
     : isEternalDivide
       ? ES_LOGO_COLOR_TO_PRODUCT_ID[logoKey]
-      : LOGO_COLOR_TO_PRODUCT_ID[logoKey] || Object.keys(productVariantsTyped)[0];
+      : isEternalSnap ? SNAP_LOGO_COLOR_TO_PRODUCT_ID[logoKey] : LOGO_COLOR_TO_PRODUCT_ID[logoKey] || Object.keys(productVariantsTyped)[0];
   const colorKey = selectedShirtColor.value;
   // Use the correct color name format for variants lookup
   const colorName = isEternalDivide ? colorKey : SHIRT_COLOR_CODE_TO_NAME[colorKey] || colorKey;
@@ -240,7 +385,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
     ? eternalEleganceVariants 
     : isEternalDivide 
       ? eternalSlashVariants 
-      : productVariantsTyped;
+      : isEternalSnap ? eternalSnapVariants : productVariantsTyped;
 
   // Type assertion to handle the variants data
   const typedVariantsData = variantsData as ProductVariantsType;
@@ -306,6 +451,22 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
         validCombination: ES_VALID_SHIRT_COLORS[logoColor]?.includes(selectedShirtColor.value)
       });
     }
+  } else if (isEternalSnap) {
+    // Use the mapping to get the correct color key for lookups
+    const mappingColorKey = SNAP_COLOR_UI_TO_MAPPING[selectedShirtColor.value] || selectedShirtColor.value;
+    let variantId: string | undefined = undefined;
+    const snapVariants = (eternalSnapVariants as Record<string, any>)[productId];
+    if (snapVariants && snapVariants[mappingColorKey]) {
+      const sizeKeys = Object.keys(snapVariants[mappingColorKey]);
+      if (sizeKeys.length > 0) {
+        variantId = snapVariants[mappingColorKey][sizeKeys[0]].variant_id.toString();
+      }
+    }
+    if (variantId && eternalSnapImages[productId] && eternalSnapImages[productId][variantId]) {
+      images = eternalSnapImages[productId][variantId];
+    } else {
+      images = [];
+    }
   } else {
     const imageBase = `/images/phoenixES/${selectedShirtColor.value}_${selectedLogoColor.value}`;
     images = [
@@ -347,7 +508,67 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
     }
   }, [selectedLogoColor, isEternalDivide]);
 
+  // In the color selection button rendering for shirtColors (hat colors), filter out invalid combos for The Eternal Snap:
+  const filteredShirtColors = isEternalSnap
+    ? validShirtColors.filter(color =>
+        !SNAP_INVALID_COMBOS.some(combo =>
+          combo.logo === selectedLogoColor.value && combo.hat === color.value
+        )
+      )
+    : validShirtColors;
+
+  // In the logo color selection, filter out invalid combos for The Eternal Snap as well
+  const filteredLogoColors = isEternalSnap
+    ? validLogoColors.filter(color =>
+        !SNAP_INVALID_COMBOS.some(combo =>
+          combo.hat === selectedShirtColor.value && combo.logo === color.value
+        )
+      )
+    : validLogoColors;
+
+  // For The Eternal Snap, always use the mapped productId and variantId for cart
+  let snapCartProductId = productId;
+  let snapCartVariantId: number | undefined = undefined;
+  if (isEternalSnap) {
+    const mappingColorKey = SNAP_COLOR_UI_TO_MAPPING[selectedShirtColor.value] || selectedShirtColor.value;
+    const snapVariants = (eternalSnapVariants as Record<string, any>)[productId];
+    if (snapVariants && snapVariants[mappingColorKey]) {
+      const sizeKeys = Object.keys(snapVariants[mappingColorKey]);
+      if (sizeKeys.length > 0) {
+        snapCartVariantId = snapVariants[mappingColorKey][sizeKeys[0]].variant_id;
+      }
+    }
+  }
+
+  // Compute the correct price for The Eternal Snap
+  const snapPrice = isEternalSnap && variant ? variant.price : 40;
+
   const handleAddToCart = async () => {
+    // For The Eternal Snap, use snapCartProductId and snapCartVariantId
+    if (isEternalSnap && snapCartVariantId) {
+      try {
+        setIsAddingToCart(true);
+        setError(null);
+        addItem({
+          id: snapCartProductId,
+          variantId: snapCartVariantId,
+          name: product.title,
+          color: selectedShirtColor.value,
+          logo: selectedLogoColor.value,
+          size: 'One size',
+          price: snapPrice,
+          quantity: 1,
+          image: images[0],
+        });
+        setIsCartOpen(true);
+        setSuccessMessage('Product added to cart!');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setIsAddingToCart(false);
+      }
+      return;
+    }
     if (!variant) return;
     try {
       setIsAddingToCart(true);
@@ -359,7 +580,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
         color: colorKey,
         logo: logoKey,
         size: sizeKey,
-        price: variant.price / 100,
+        price: snapPrice,
         quantity: 1,
         image: images[0],
       });
@@ -373,6 +594,44 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
   };
 
   const handleCustomize = async (shirtColor: string, logoColor: string, size: string) => {
+    // For The Eternal Snap, use snapCartProductId and snapCartVariantId
+    if (isEternalSnap) {
+      const mappingColorKey = SNAP_COLOR_UI_TO_MAPPING[shirtColor] || shirtColor;
+      const snapVariants = (eternalSnapVariants as Record<string, any>)[productId];
+      let variantId: number | undefined = undefined;
+      if (snapVariants && snapVariants[mappingColorKey]) {
+        const sizeKeys = Object.keys(snapVariants[mappingColorKey]);
+        if (sizeKeys.length > 0) {
+          variantId = snapVariants[mappingColorKey][sizeKeys[0]].variant_id;
+        }
+      }
+      if (variantId) {
+        try {
+          setIsAddingToCart(true);
+          setError(null);
+          addItem({
+            id: productId,
+            variantId: variantId,
+            name: product.title,
+            color: shirtColor,
+            logo: logoColor,
+            size: 'One size',
+            price: snapPrice,
+            quantity: 1,
+            image: images[0],
+          });
+          setIsCartOpen(true);
+          setSuccessMessage('Product added to cart!');
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'An error occurred');
+        } finally {
+          setIsAddingToCart(false);
+        }
+      } else {
+        setError('No variant found for selected options');
+      }
+      return;
+    }
     try {
       setIsAddingToCart(true);
       setError(null);
@@ -414,7 +673,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
           color: shirtColor,
           logo: logoColor,
           size: size,
-          price: variant.price / 100,
+          price: snapPrice,
           quantity: 1,
           image: images[0],
         });
@@ -444,7 +703,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
         color: shirtColor,
         logo: logoColor,
         size: size,
-        price: variant.price / 100,
+        price: snapPrice,
         quantity: 1,
         image: images[0],
       });
@@ -492,7 +751,9 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
           <div className="mb-4 flex items-center gap-4">
             <div className="inline-block px-4 py-2 rounded" style={{ background: '#15803D' }}>
               <span className="text-white font-semibold">
-                Price: ${(parseInt(product.variants[0].price) / 100).toFixed(2)}
+                Price: {isEternalSnap
+                  ? `$${snapPrice.toFixed(2)}`
+                  : `$${(parseInt(product.variants[0].price) / 100).toFixed(2)}`}
               </span>
             </div>
             <div className="text-green-700 font-medium">
@@ -501,11 +762,11 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
           </div>
         )}
 
-        {/* Shirt Color Selection */}
+        {/* Shirt Color Selection (renamed to Hat Color for Eternal Snap) */}
         <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2 text-gray-900">Shirt Color</h3>
+          <h3 className="text-lg font-semibold mb-2 text-gray-900">{isEternalSnap ? 'Hat Color' : 'Shirt Color'}</h3>
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {validShirtColors.map((color) => (
+            {filteredShirtColors.map((color) => (
               <button
                 key={color.value}
                 className={`w-10 h-10 rounded-full border-2 flex-shrink-0 ${
@@ -513,7 +774,11 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
                     ? 'border-gray-900'
                     : 'border-transparent'
                 }`}
-                style={{ backgroundColor: color.hex }}
+                style={
+                  isEternalSnap
+                    ? SNAP_COLOR_UI_TO_STYLE[color.value] || { backgroundColor: color.hex }
+                    : { backgroundColor: color.hex }
+                }
                 onClick={() => setSelectedShirtColor(color)}
                 title={color.name}
               />
@@ -525,7 +790,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2 text-gray-900">Logo Color</h3>
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {validLogoColors.map((color) => (
+            {filteredLogoColors.map((color) => (
               <button
                 key={color.value}
                 className={`w-10 h-10 rounded-full border-2 flex-shrink-0 ${
@@ -541,24 +806,28 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
           </div>
         </div>
 
-        {/* Size Selection */}
+        {/* Size Selection (static for Eternal Snap) */}
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2 text-gray-900">Size</h3>
-          <select
-            value={selectedSize}
-            onChange={handleSizeChange}
-            className="w-full p-2 border rounded text-gray-900"
-          >
-            {availableSizes.map((size) => (
-              <option
-                key={size}
-                value={size}
-                disabled={getStockStatus(size) === 'Out of Stock'}
-              >
-                {size} {getStockStatus(size) === 'Out of Stock' ? '(Out of Stock)' : ''}
-              </option>
-            ))}
-          </select>
+          {isEternalSnap ? (
+            <div className="w-full p-2 border rounded text-gray-900 bg-gray-100">One Size</div>
+          ) : (
+            <select
+              value={selectedSize}
+              onChange={handleSizeChange}
+              className="w-full p-2 border rounded text-gray-900"
+            >
+              {availableSizes.map((size) => (
+                <option
+                  key={size}
+                  value={size}
+                  disabled={getStockStatus(size) === 'Out of Stock'}
+                >
+                  {size} {getStockStatus(size) === 'Out of Stock' ? '(Out of Stock)' : ''}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Add to Cart Button */}
@@ -595,7 +864,9 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
               <div className="flex items-center gap-4">
                 <div className="px-4 py-2 rounded" style={{ background: '#15803D' }}>
                   <span className="text-white font-semibold">
-                    Price: ${(parseInt(product.variants[0].price) / 100).toFixed(2)}
+                    Price: {isEternalSnap
+                      ? `$${snapPrice.toFixed(2)}`
+                      : `$${(parseInt(product.variants[0].price) / 100).toFixed(2)}`}
                   </span>
                 </div>
                 <div className="text-green-700 font-medium">
@@ -607,11 +878,11 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
 
           {/* Right Column - Customization Options */}
           <div className="space-y-6 mt-24">
-            {/* Shirt Color Selection */}
+            {/* Shirt Color Selection (renamed to Hat Color for Eternal Snap) */}
             <div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900">Shirt Color</h3>
+              <h3 className="text-xl font-semibold mb-3 text-gray-900">{isEternalSnap ? 'Hat Color' : 'Shirt Color'}</h3>
               <div className="flex flex-wrap gap-3">
-                {validShirtColors.map((color) => (
+                {filteredShirtColors.map((color) => (
                   <button
                     key={color.value}
                     className={`w-12 h-12 rounded-full border-2 ${
@@ -619,7 +890,11 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
                         ? 'border-gray-900'
                         : 'border-transparent'
                     }`}
-                    style={{ backgroundColor: color.hex }}
+                    style={
+                      isEternalSnap
+                        ? SNAP_COLOR_UI_TO_STYLE[color.value] || { backgroundColor: color.hex }
+                        : { backgroundColor: color.hex }
+                    }
                     onClick={() => setSelectedShirtColor(color)}
                     title={color.name}
                   />
@@ -631,7 +906,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
             <div>
               <h3 className="text-xl font-semibold mb-3 text-gray-900">Logo Color</h3>
               <div className="flex flex-wrap gap-3">
-                {validLogoColors.map((color) => (
+                {filteredLogoColors.map((color) => (
                   <button
                     key={color.value}
                     className={`w-12 h-12 rounded-full border-2 ${
@@ -647,24 +922,28 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
               </div>
             </div>
 
-            {/* Size Selection */}
+            {/* Size Selection (static for Eternal Snap) */}
             <div>
               <h3 className="text-xl font-semibold mb-3 text-gray-900">Size</h3>
-              <select
-                value={selectedSize}
-                onChange={handleSizeChange}
-                className="w-full p-2 border rounded text-gray-900"
-              >
-                {availableSizes.map((size) => (
-                  <option
-                    key={size}
-                    value={size}
-                    disabled={getStockStatus(size) === 'Out of Stock'}
-                  >
-                    {size} {getStockStatus(size) === 'Out of Stock' ? '(Out of Stock)' : ''}
-                  </option>
-                ))}
-              </select>
+              {isEternalSnap ? (
+                <div className="w-full p-2 border rounded text-gray-900 bg-gray-100">One Size</div>
+              ) : (
+                <select
+                  value={selectedSize}
+                  onChange={handleSizeChange}
+                  className="w-full p-2 border rounded text-gray-900"
+                >
+                  {availableSizes.map((size) => (
+                    <option
+                      key={size}
+                      value={size}
+                      disabled={getStockStatus(size) === 'Out of Stock'}
+                    >
+                      {size} {getStockStatus(size) === 'Out of Stock' ? '(Out of Stock)' : ''}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             {/* Add to Cart Button */}
