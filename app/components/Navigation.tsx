@@ -28,21 +28,20 @@ export default function Navigation() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-[101] bg-[#1B1F3B] p-2 rounded-md"
+        className="lg:hidden fixed top-4 left-4 z-[101] bg-black p-2 rounded-md"
       >
         <div className="w-6 h-0.5 bg-white mb-1.5"></div>
         <div className="w-6 h-0.5 bg-white mb-1.5"></div>
         <div className="w-6 h-0.5 bg-white"></div>
       </button>
 
-      {/* Navigation Menu */}
+      {/* Mobile Navigation Menu */}
       <nav 
-        className={`fixed left-0 top-0 h-screen z-[100] transition-all duration-300 ease-in-out
-          ${isOpen ? 'w-24' : 'w-0 lg:w-24'}`} 
-        style={{ background: 'linear-gradient(to bottom, #9F2FFF, #1B1F3B)' }}
+        className={`fixed left-0 top-0 h-screen z-[100] transition-all duration-300 ease-in-out bg-black
+          ${isOpen ? 'w-24' : 'w-0'} lg:w-0 lg:opacity-0 lg:pointer-events-none`} 
       >
         <div 
-          className={`flex flex-col p-1.5 ${!isOpen && '!hidden lg:!flex'} overflow-hidden pt-8 lg:pt-0`}
+          className={`flex flex-col p-1.5 ${!isOpen && '!hidden'} overflow-hidden pt-8`}
         >
           <div className="flex justify-center mb-4">
             <Link 
@@ -104,25 +103,6 @@ export default function Navigation() {
               </button>
             </Link>
 
-            {/* Always show Profile button */}
-            <button
-              className="group flex flex-col items-center"
-              onClick={() => router.push('/profile')}
-            >
-              <div className="flex justify-center">
-                <Image
-                  src="/images/Profile.png"
-                  alt="Profile"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                />
-              </div>
-              <span className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
-                Profile
-              </span>
-            </button>
-
             <Link 
               href="/resources" 
               className="group flex flex-col items-center"
@@ -142,30 +122,23 @@ export default function Navigation() {
               </button>
             </Link>
 
-            {/* Cart Button */}
             <div className="flex flex-col items-center space-y-1 mt-auto">
               <button 
                 onClick={() => setIsCartOpen(true)}
-                className="flex flex-col items-center w-full hover:bg-gray-700 transition-colors rounded p-1.5"
+                className="flex items-center text-white hover:text-gray-300 transition-colors"
               >
-                <div className="flex justify-center">
-                  <Image
-                    src="/images/Cart.png"
-                    alt="Cart"
-                    width={35}
-                    height={35}
-                    className="object-contain"
-                  />
-                </div>
-                <span className="text-white text-sm">
-                  Cart
-                </span>
+                <Image
+                  src="/images/Cart.png"
+                  alt="Cart"
+                  width={24}
+                  height={24}
+                  className="object-contain"
+                />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Phoenix Logo at very bottom */}
         <div className="absolute bottom-8 left-0 right-0 flex justify-center">
           <Image
             src="/images/Phoenix_ES_DADBE4.png"
@@ -176,6 +149,70 @@ export default function Navigation() {
           />
         </div>
       </nav>
+
+      {/* Desktop Navigation Menu */}
+      <nav className="hidden lg:block fixed top-0 left-0 right-0 z-[100] bg-black">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="w-[200px]"></div> {/* Spacer to balance the right side */}
+
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <Link href="/" className="flex items-center">
+                <Image
+                  src="/images/Phoenix_ES_DADBE4.png"
+                  alt="Phoenix Eternal Soul"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
+              </Link>
+            </div>
+
+            <div className="flex items-center">
+              <div className="flex items-center space-x-8">
+                <Link href="/collections" className="text-white hover:text-gray-300 transition-colors">
+                  Collections
+                </Link>
+                <Link href="/shop" className="text-white hover:text-gray-300 transition-colors">
+                  Shop
+                </Link>
+                <Link href="/resources" className="text-white hover:text-gray-300 transition-colors">
+                  Resources
+                </Link>
+              </div>
+              <div className="flex items-center space-x-4 ml-8">
+                <button
+                  onClick={() => router.push('/profile')}
+                  className="flex items-center text-white hover:text-gray-300 transition-colors"
+                >
+                  <Image
+                    src="/images/Profile.png"
+                    alt="Profile"
+                    width={28}
+                    height={28}
+                    className="object-contain"
+                  />
+                </button>
+                <button 
+                  onClick={() => setIsCartOpen(true)}
+                  className="flex items-center text-white hover:text-gray-300 transition-colors"
+                >
+                  <Image
+                    src="/images/Cart.png"
+                    alt="Cart"
+                    width={24}
+                    height={24}
+                    className="object-contain"
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Add padding to main content to account for fixed header on desktop */}
+      <div className="hidden lg:block h-16"></div>
 
       {/* Cart Panel */}
       <div 
