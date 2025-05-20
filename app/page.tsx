@@ -71,7 +71,26 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col">
+    <main className="min-h-screen bg-[#1B1F3B]">
+      {/* Unclosable Modal */}
+      <div className="fixed inset-0 z-[200] bg-[#1B1F3B] flex flex-col items-center justify-center px-4">
+        <div className="max-w-2xl w-full text-center">
+          <Image
+            src="/images/Phoenix_ES_DADBE4.png"
+            alt="Phoenix Eternal Soul"
+            width={200}
+            height={200}
+            className="mx-auto mb-8"
+          />
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 text-[#DADBE4]" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
+            COMING SOON
+          </h1>
+          <p className="text-lg md:text-xl text-[#DADBE4] font-light" style={{ fontFamily: 'Lato, sans-serif' }}>
+            Our collection is being crafted with care. Hang tight, the wait is almost over!
+          </p>
+        </div>
+      </div>
+
       <style jsx global>{`
         .service-cards-container {
           display: flex;
