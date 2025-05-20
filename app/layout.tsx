@@ -27,7 +27,7 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <CartProvider>
           <Navigation />
-          <div className="lg:ml-24">
+          <div>
             {children}
           </div>
         </CartProvider>
