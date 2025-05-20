@@ -378,6 +378,11 @@ export default function ProductViewer({ product }: ProductViewerProps) {
   const handleAddToCart = async () => {
     try {
       setIsAddingToCart(true);
+      // Check stock status before proceeding
+      if (getStockStatus(selectedSize) === 'Out of Stock') {
+        alert('This variant is out of stock and cannot be added to the cart.');
+        return;
+      }
       const variantId = getVariantId();
       const colorName = isEternalAwakening
         ? ETERNAL_AWAKENING_COLORS.find(c => c.value === selectedColor)?.name || selectedColor
@@ -556,24 +561,42 @@ export default function ProductViewer({ product }: ProductViewerProps) {
             className="object-contain"
             priority
           />
-          {/* Front/Back View Toggle */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 bg-white/80 rounded-full p-1">
-            <button
-              onClick={() => setCurrentImageIndex(0)}
-              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                currentImageIndex === 0 ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              Front
-            </button>
-            <button
-              onClick={() => setCurrentImageIndex(1)}
-              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                currentImageIndex === 1 ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              Back
-            </button>
+          {/* Front/Back View Thumbnails */}
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 bg-white/80 rounded-full p-1.5">
+            {[0, 1].map((idx) => (
+              <img
+                key={idx}
+                src={(() => {
+                  if (isEternallyWoven) {
+                    const colorKey = selectedColor;
+                    return ETERNALLY_WOVEN_IMAGE_MAP[colorKey]?.[idx === 0 ? 'front' : 'back'] || ETERNALLY_WOVEN_IMAGE_MAP['white'].back;
+                  }
+                  if (isEternalCollapse) {
+                    const colorObj = ETERNAL_COLLAPSE_COLORS.find(c => c.value === selectedColor);
+                    return colorObj ? colorObj.images[idx] : ETERNAL_COLLAPSE_COLORS[0].images[0];
+                  }
+                  if (isVowOfTheEternal) {
+                    const colorObj = VOW_OF_THE_ETERNAL_COLORS.find(c => c.value === selectedColor);
+                    return colorObj ? colorObj.images[idx] : VOW_OF_THE_ETERNAL_COLORS[0].images[0];
+                  }
+                  if (isEternalAwakening) {
+                    const colorKey = selectedColor;
+                    return ETERNAL_AWAKENING_IMAGE_MAP[colorKey]?.[idx === 0 ? 'front' : 'back'] || ETERNAL_AWAKENING_IMAGE_MAP['black'].front;
+                  }
+                  if (isEternalAscension) {
+                    return ETERNAL_ASCENSION_IMAGE_MAP[selectedColor]?.[idx] || ETERNAL_ASCENSION_IMAGE_MAP['black'][0];
+                  }
+                  if (isEternalCut) {
+                    return ETERNAL_CUT_IMAGE_MAP[selectedColor] || ETERNAL_CUT_IMAGE_MAP['black'];
+                  }
+                  const suffix = product.title.includes('Purple') ? 'P' : 'BG';
+                  return `/images/eternal_lotus/eternal_lotus_${selectedColor}_${idx === 0 ? 'front' : 'back'}${suffix}.jpg`;
+                })()}
+                alt={idx === 0 ? 'Front' : 'Back'}
+                className={`w-12 h-12 object-contain rounded-lg cursor-pointer border-2 ${currentImageIndex === idx ? 'border-gray-900' : 'border-transparent'}`}
+                onClick={() => setCurrentImageIndex(idx)}
+              />
+            ))}
           </div>
         </div>
         {/* Price and Stock Status */}
@@ -647,7 +670,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
         {/* Add Share Button */}
         <div className="flex justify-center">
           <ShareButton 
-            productId={product.title.toLowerCase().replace(/\s+/g, '-')} 
+            productId={isEternalAscension ? 'eternal-ascension' : product.title.toLowerCase().replace(/\s+/g, '-')} 
             productTitle={product.title} 
           />
         </div>
@@ -664,24 +687,42 @@ export default function ProductViewer({ product }: ProductViewerProps) {
                 alt={product.title}
                 className="w-full h-full object-contain"
               />
-              {/* Front/Back View Toggle */}
+              {/* Front/Back View Thumbnails */}
               <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 bg-white/80 rounded-full p-1.5">
-                <button
-                  onClick={() => setCurrentImageIndex(0)}
-                  className={`px-4 py-1.5 rounded-full text-base font-medium transition-colors ${
-                    currentImageIndex === 0 ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  Front View
-                </button>
-                <button
-                  onClick={() => setCurrentImageIndex(1)}
-                  className={`px-4 py-1.5 rounded-full text-base font-medium transition-colors ${
-                    currentImageIndex === 1 ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  Back View
-                </button>
+                {[0, 1].map((idx) => (
+                  <img
+                    key={idx}
+                    src={(() => {
+                      if (isEternallyWoven) {
+                        const colorKey = selectedColor;
+                        return ETERNALLY_WOVEN_IMAGE_MAP[colorKey]?.[idx === 0 ? 'front' : 'back'] || ETERNALLY_WOVEN_IMAGE_MAP['white'].back;
+                      }
+                      if (isEternalCollapse) {
+                        const colorObj = ETERNAL_COLLAPSE_COLORS.find(c => c.value === selectedColor);
+                        return colorObj ? colorObj.images[idx] : ETERNAL_COLLAPSE_COLORS[0].images[0];
+                      }
+                      if (isVowOfTheEternal) {
+                        const colorObj = VOW_OF_THE_ETERNAL_COLORS.find(c => c.value === selectedColor);
+                        return colorObj ? colorObj.images[idx] : VOW_OF_THE_ETERNAL_COLORS[0].images[0];
+                      }
+                      if (isEternalAwakening) {
+                        const colorKey = selectedColor;
+                        return ETERNAL_AWAKENING_IMAGE_MAP[colorKey]?.[idx === 0 ? 'front' : 'back'] || ETERNAL_AWAKENING_IMAGE_MAP['black'].front;
+                      }
+                      if (isEternalAscension) {
+                        return ETERNAL_ASCENSION_IMAGE_MAP[selectedColor]?.[idx] || ETERNAL_ASCENSION_IMAGE_MAP['black'][0];
+                      }
+                      if (isEternalCut) {
+                        return ETERNAL_CUT_IMAGE_MAP[selectedColor] || ETERNAL_CUT_IMAGE_MAP['black'];
+                      }
+                      const suffix = product.title.includes('Purple') ? 'P' : 'BG';
+                      return `/images/eternal_lotus/eternal_lotus_${selectedColor}_${idx === 0 ? 'front' : 'back'}${suffix}.jpg`;
+                    })()}
+                    alt={idx === 0 ? 'Front' : 'Back'}
+                    className={`w-12 h-12 object-contain rounded-lg cursor-pointer border-2 ${currentImageIndex === idx ? 'border-gray-900' : 'border-transparent'}`}
+                    onClick={() => setCurrentImageIndex(idx)}
+                  />
+                ))}
               </div>
             </div>
             {product.variants[0] && (
@@ -757,7 +798,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
             {/* Add Share Button */}
             <div className="flex justify-center">
               <ShareButton 
-                productId={product.title.toLowerCase().replace(/\s+/g, '-')} 
+                productId={isEternalAscension ? 'eternal-ascension' : product.title.toLowerCase().replace(/\s+/g, '-')} 
                 productTitle={product.title} 
               />
             </div>
