@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCart } from '../../../context/CartContext';
+import { useCart } from '@/app/context/CartContext';
 
 interface Product {
   id: string;
@@ -106,12 +106,14 @@ export default function EternalAscensionHoodiePage() {
 
     addItem({
       id: product.id,
-      variantId: selectedVariant.id,
+      variantId: parseInt(selectedVariant.id),
       name: product.title,
       size: selectedSize,
+      color: selectedColor,
       price: Number(selectedVariant.price),
       quantity: 1,
-      image: product.images[selectedImage].src
+      image: product.images[selectedImage].src,
+      logo: 'default'
     });
 
     setAddedToCart(true);
