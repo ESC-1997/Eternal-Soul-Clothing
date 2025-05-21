@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useCart } from '../../../context/CartContext';
 
 interface Product {
   id: string;
@@ -13,81 +14,63 @@ interface Product {
     id: string;
     title: string;
     price: string;
+    size: string;
+    color: string;
   }[];
 }
 
-export default function WomensCollection() {
-  const [womenProducts, setWomenProducts] = useState<Product[]>([]);
-  const [unisexProducts, setUnisexProducts] = useState<Product[]>([]);
+export default function EternallyCozySweatpantsPage() {
+  const { addItem } = useCart();
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchProduct = async () => {
       try {
-        // Fetch products from Printify API
         const response = await fetch('/api/printify/products');
         if (!response.ok) {
           throw new Error('Failed to fetch products from Printify');
         }
-        const printifyProducts = await response.json();
-
-        // Filter for women's products
-        const womenItems = printifyProducts.filter((product: any) => 
-          (product.title.toLowerCase().includes('women') || 
-          product.title.toLowerCase().includes('womens') ||
-          product.title.toLowerCase().includes('biker shorts') ||
-          product.title.toLowerCase().includes('sports bra') ||
-          product.id === '6829030f8de41e64de032e9b')  // Eternal Ascension Women's Cropped Hoodie
+        const products = await response.json();
+        
+        // Find the sweatpants product
+        const foundProduct = products.find((p: any) => 
+          p.title.toLowerCase().includes('eternally cozy sweatpants')
         );
-
-        // Filter for unisex products
-        const unisexItems = printifyProducts.filter((product: any) => 
-          product.title.toLowerCase().includes('eternally woven') ||
-          product.id === '682803161b86b39978039d62'  // Eternal Ascension T-shirt
-        );
-
-        console.log('Product filtering:', {
-          womenItems: womenItems.map((p: { id: string; title: string }) => ({ id: p.id, title: p.title })),
-          unisexItems: unisexItems.map((p: { id: string; title: string }) => ({ id: p.id, title: p.title }))
-        });
+        
+        if (!foundProduct) {
+          throw new Error('Sweatpants product not found');
+        }
 
         // Transform the product data
-        const transformedWomenProducts = womenItems.map((product: any) => ({
-          id: product.id,
-          title: product.title,
-          images: product.images.map((img: any) => ({ src: img.src })),
-          variants: product.variants
-            .filter((variant: any) => variant.is_enabled)
-            .map((variant: any) => ({
+        const transformedProduct: Product = {
+          id: foundProduct.id,
+          title: foundProduct.title,
+          images: foundProduct.images.map((img: any) => ({ 
+            src: img.src
+          })),
+          variants: foundProduct.variants.map((variant: any) => {
+            // Parse the variant title to extract size
+            const size = variant.title.split(' / ')[0];
+            return {
               id: variant.id,
               title: variant.title,
-              price: Number((variant.price / 100).toFixed(2))
-            }))
-        }));
+              price: (variant.price / 100).toFixed(2),
+              size: size || variant.title,
+              color: 'Black' // Default color since we're removing color selection
+            };
+          })
+        };
 
-        const transformedUnisexProducts = unisexItems.map((product: any) => ({
-          id: product.id,
-          title: product.title,
-          images: product.images.map((img: any) => ({ src: img.src })),
-          variants: product.variants
-            .filter((variant: any) => variant.is_enabled)
-            .map((variant: any) => ({
-              id: variant.id,
-              title: variant.title,
-              price: Number((variant.price / 100).toFixed(2))
-            }))
-        }));
-
-        console.log('Eternally Woven product variants after filtering:', 
-          transformedUnisexProducts.map((product: any) => ({
-            title: product.title,
-            variants: product.variants
-          }))
-        );
-
-        setWomenProducts(transformedWomenProducts);
-        setUnisexProducts(transformedUnisexProducts);
+        setProduct(transformedProduct);
+        // Set initial selections
+        const uniqueSizes = Array.from(new Set(transformedProduct.variants.map(v => v.size)));
+        setSelectedSize(uniqueSizes[0]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -95,8 +78,42 @@ export default function WomensCollection() {
       }
     };
 
-    fetchProducts();
+    fetchProduct();
   }, []);
+
+  const handleAddToCart = async () => {
+    if (!product || !selectedSize) return;
+
+    setIsAddingToCart(true);
+    try {
+      const selectedVariant = product.variants.find(
+        v => v.size === selectedSize
+      );
+
+      if (!selectedVariant) {
+        throw new Error('Selected variant not found');
+      }
+
+      addItem({
+        id: product.id,
+        name: product.title,
+        color: 'Black',
+        size: selectedSize,
+        price: parseFloat(selectedVariant.price),
+        quantity: 1,
+        image: product.images[selectedImage].src,
+        variantId: parseInt(selectedVariant.id),
+        logo: 'default'
+      });
+
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 2000);
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -106,129 +123,155 @@ export default function WomensCollection() {
     );
   }
 
-  if (error) {
+  if (error || !product) {
     return (
       <div className="text-center text-red-600 p-4">
-        Error: {error}
+        Error: {error || 'Product not found'}
       </div>
     );
   }
 
+  const uniqueSizes = Array.from(new Set(product.variants.map(v => v.size)));
+  const selectedVariant = product.variants.find(
+    v => v.size === selectedSize
+  );
+
   return (
-    <div className="w-full">
-      <div className="flex justify-center py-8">
-        <Image
-          src="/images/Phoenix_ES_DADBE4.png"
-          alt="Eternal Soul Women's Collection"
-          width={200}
-          height={200}
-          className="object-contain"
-        />
-      </div>
-
-      {/* First Banner Section */}
-      <div className="bg-white py-4 mb-8">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-['Bebas_Neue'] text-[#1B1F3B] tracking-wider text-center">
-            TAILORED FOR HER
-          </h2>
+    <main className="min-h-screen bg-[#2C2F36]">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Back Button */}
+        <div className="mb-8">
+          <Link 
+            href="/shop/mens"
+            className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
+          >
+            <svg 
+              className="w-5 h-5 mr-2" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+              />
+            </svg>
+            Back to Products
+          </Link>
         </div>
-      </div>
-      
-      {/* Women's Products Scroll Container */}
-      <div className="relative px-4">
-        <div className="overflow-x-auto pb-8 scrollbar-hide">
-          <div className="flex space-x-6 min-w-min">
-            {womenProducts.map((product) => (
-              <div key={product.id} className="flex-none w-[300px] group">
-                <div className="bg-white rounded-lg overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 h-[450px]">
-                  <Link 
-                    href={
-                      product.title.toLowerCase().includes('sports bra')
-                        ? '/shop/women/sports-bra'
-                        : product.title.toLowerCase().includes('biker shorts') && product.title.toLowerCase().includes('violet')
-                        ? '/shop/women/biker-shorts-violet'
-                        : product.title.toLowerCase().includes('biker shorts') && product.title.toLowerCase().includes('black')
-                        ? '/shop/women/biker-shorts-black'
-                        : product.title.toLowerCase().includes('eternal vibe') && product.title.toLowerCase().includes('leggings')
-                        ? '/shop/women/eternal-vibe-leggings'
-                        : product.id === '6829030f8de41e64de032e9b'  // Eternal Ascension Hoodie
-                        ? '/shop/women/eternal-ascension-hoodie'
-                        : `/shop/women/${product.id}`
-                    }
-                    className="group"
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Product Images */}
+          <div className="space-y-4">
+            <div className="relative aspect-square bg-white rounded-lg overflow-hidden">
+              <Image
+                src={product.images[selectedImage].src}
+                alt={product.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            </div>
+            {/* Thumbnail gallery */}
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {product.images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImage(index)}
+                  className={`relative flex-shrink-0 w-20 aspect-square rounded-lg overflow-hidden ${
+                    selectedImage === index ? 'ring-2 ring-white' : ''
+                  }`}
+                >
+                  <Image
+                    src={image.src}
+                    alt={`${product.title} - View ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Product Info */}
+          <div className="text-white space-y-6">
+            <h1 className="text-3xl font-bold">{product.title}</h1>
+            <p className="text-2xl">${selectedVariant?.price}</p>
+            
+            {/* Size Selection */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Size</h3>
+              <div className="grid grid-cols-6 gap-2">
+                {uniqueSizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`px-4 py-2 border rounded-lg ${
+                      selectedSize === size
+                        ? 'border-white bg-white text-[#2C2F36]'
+                        : 'border-gray-600 hover:border-white'
+                    }`}
                   >
-                    <div className="relative h-[350px]">
-                      <Image
-                        src={product.images[0].src}
-                        alt={product.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{product.title}</h3>
-                      <p className="text-base text-gray-600">${product.variants[0].price}</p>
-                    </div>
-                  </Link>
-                </div>
+                    {size}
+                  </button>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              disabled={!selectedSize || isAddingToCart}
+              className={`w-full py-3 rounded-lg font-semibold transition-all duration-300 relative overflow-hidden
+                ${!selectedSize || isAddingToCart
+                  ? 'bg-gray-500 cursor-not-allowed'
+                  : addedToCart
+                    ? 'bg-green-600 text-white scale-105'
+                    : 'bg-white text-[#2C2F36] hover:bg-gray-200'
+                }`}
+            >
+              <span className={`transition-opacity duration-300 ${addedToCart ? 'opacity-0' : 'opacity-100'}`}>
+                {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+              </span>
+              <span className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+                addedToCart ? 'opacity-100' : 'opacity-0'
+              }`}>
+                <span className="flex items-center gap-2">
+                  <svg 
+                    className="w-5 h-5" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M5 13l4 4L19 7" 
+                    />
+                  </svg>
+                  Added to Cart!
+                </span>
+              </span>
+            </button>
+
+            {/* Product Description */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Description</h3>
+              <p className="text-gray-300">
+                The Eternally Cozy Sweatpants are the perfect blend of comfort and style. 
+                Made with premium, soft fabric, these sweatpants feature a relaxed fit and 
+                elastic waistband for maximum comfort. The tapered leg design and ribbed cuffs 
+                provide a modern, athletic look while maintaining the cozy feel you love. 
+                Perfect for lounging, workouts, or casual everyday wear.
+              </p>
+            </div>
           </div>
         </div>
-        
-        {/* Gradient Overlays for Scroll Indication */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#2C2F36] to-transparent pointer-events-none"></div>
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#2C2F36] to-transparent pointer-events-none"></div>
       </div>
-
-      {/* Second Banner Section */}
-      <div className="bg-white py-4 mt-12 mb-8">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-['Bebas_Neue'] text-[#1B1F3B] tracking-wider text-center">
-            UNIFIED FIT (UNISEX)
-          </h2>
-        </div>
-      </div>
-
-      {/* Unified Fit Products */}
-      <div className="relative px-4">
-        <div className="overflow-x-auto pb-8 scrollbar-hide">
-          <div className="flex space-x-6 min-w-min">
-            {unisexProducts.map((product) => (
-              <div key={product.id} className="flex-none w-[300px] group">
-                <div className="bg-white rounded-lg overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 h-[450px]">
-                  <Link
-                    href={product.title.toLowerCase().includes('eternally woven') 
-                      ? '/shop/unisex/eternally-woven'
-                      : product.id === '682803161b86b39978039d62'  // Eternal Ascension T-shirt
-                      ? '/shop/unisex/eternal-ascension'
-                      : `/shop/product/${product.id}`}
-                    className="group"
-                  >
-                    <div className="relative h-[350px]">
-                      <Image
-                        src={product.images[0].src}
-                        alt={product.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{product.title}</h3>
-                      <p className="text-base text-gray-600">${product.variants[0].price}</p>
-                    </div>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Gradient Overlays for Scroll Indication */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#2C2F36] to-transparent pointer-events-none"></div>
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#2C2F36] to-transparent pointer-events-none"></div>
-      </div>
-    </div>
+    </main>
   );
 } 
