@@ -163,8 +163,16 @@ export default function WomensCollection() {
                         src={product.images[0].src}
                         alt={product.title}
                         fill
-                        className="object-cover"
+                        className="object-cover transition-opacity duration-300 group-hover:opacity-0"
                       />
+                      {product.images[1] && (
+                        <Image
+                          src={product.images[1].src}
+                          alt={`${product.title} - alternate view`}
+                          fill
+                          className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        />
+                      )}
                     </div>
                     <div className="p-4">
                       <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{product.title}</h3>
@@ -211,8 +219,16 @@ export default function WomensCollection() {
                         src={product.images[0].src}
                         alt={product.title}
                         fill
-                        className="object-cover"
+                        className="object-cover transition-opacity duration-300 group-hover:opacity-0"
                       />
+                      {product.images[1] && (
+                        <Image
+                          src={product.images[1].src}
+                          alt={`${product.title} - alternate view`}
+                          fill
+                          className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        />
+                      )}
                     </div>
                     <div className="p-4">
                       <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{product.title}</h3>
