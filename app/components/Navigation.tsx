@@ -2,355 +2,416 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCart } from '../../../context/CartContext';
+import { usePathname, useRouter } from 'next/navigation';
+import { useCart } from '../context/CartContext';
+import React from 'react';
+import StripeProvider from './StripeProvider';
+import CheckoutForm from './CheckoutForm';
+import OrderCompleteDrawer from './OrderCompleteDrawer';
 
-interface Product {
-  id: string;
-  title: string;
-  images: {
-    src: string;
-  }[];
-  variants: {
-    id: string;
-    title: string;
-    price: string;
-    size: string;
-    color: string;
-  }[];
-}
+export default function Navigation() {
+  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const { items: cartItems, subtotal, removeItem, updateQuantity, clearCart, isCartOpen, setIsCartOpen } = useCart();
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isOrderComplete, setIsOrderComplete] = useState(false);
+  const [discount, setDiscount] = useState(0);
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
-  const { addItem } = useCart();
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [addedToCart, setAddedToCart] = useState(false);
-
-  // Color to image index mapping
-  const colorImageMap: { [key: string]: number } = {
-    'Black': 0,
-    'Peach': 2,
-    'Military Green': 4,
-    'Storm': 6
-  };
-
+  // Close menu when route changes
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await fetch('/api/printify/products');
-        if (!response.ok) {
-          throw new Error('Failed to fetch products from Printify');
-        }
-        const products = await response.json();
-        
-        // Find the specific product by ID
-        const foundProduct = products.find((p: any) => p.id === params.slug);
-        
-        if (!foundProduct) {
-          throw new Error('Product not found');
-        }
-
-        // Debug: Log the complete raw product data
-        console.log('Complete raw product data:', foundProduct);
-
-        // Transform the product data and parse variants
-        const transformedProduct: Product = {
-          id: foundProduct.id,
-          title: foundProduct.title,
-          images: foundProduct.images.map((img: any) => ({ 
-            src: img.src
-          })),
-          variants: foundProduct.variants.map((variant: any) => {
-            // Parse the variant title to extract size and color
-            const [size, color] = variant.title.split(' / ');
-            return {
-              id: variant.id,
-              title: variant.title,
-              price: (variant.price / 100).toFixed(2),
-              size: size || variant.title,
-              color: color || variant.title
-            };
-          })
-        };
-
-        // Debug: Log the transformed product data
-        console.log('Transformed product data:', {
-          title: transformedProduct.title,
-          images: transformedProduct.images,
-          variants: transformedProduct.variants
-        });
-
-        setProduct(transformedProduct);
-        // Set initial selections
-        const uniqueSizes = Array.from(new Set(transformedProduct.variants.map(v => v.size)));
-        const uniqueColors = Array.from(new Set(transformedProduct.variants.map(v => v.color)));
-        setSelectedSize(uniqueSizes[0]);
-        setSelectedColor(uniqueColors[0]);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProduct();
-  }, [params.slug]);
-
-  // Update selected image when color changes
-  useEffect(() => {
-    if (product && selectedColor) {
-      // Debug: Log the color matching attempt
-      console.log('Attempting to match color:', {
-        selectedColor,
-        colorImageMap,
-        mappedIndex: colorImageMap[selectedColor]
-      });
-
-      // Get the image index from our mapping
-      const imageIndex = colorImageMap[selectedColor];
-      
-      // If we have a mapping for this color, use it
-      if (typeof imageIndex === 'number' && imageIndex < product.images.length) {
-        setSelectedImage(imageIndex);
-        
-        // Debug: Log the image change
-        console.log('Image change:', {
-          selectedColor,
-          imageIndex,
-          newImage: product.images[imageIndex]
-        });
-      }
-    }
-  }, [selectedColor, product]);
-
-  // Get the selected variant based on size and color
-  const selectedVariant = product?.variants.find(
-    v => v.size === selectedSize && v.color === selectedColor
-  );
-
-  const handleAddToCart = () => {
-    if (!product || !selectedSize || !selectedColor) return;
-
-    const selectedVariant = product.variants.find(
-      v => v.size === selectedSize && v.color === selectedColor
-    );
-
-    if (!selectedVariant) return;
-
-    setIsAddingToCart(true);
-    setAddedToCart(true);
-    
-    try {
-      addItem({
-        id: product.id,
-        name: product.title,
-        color: selectedColor,
-        logo: 'default',
-        size: selectedSize,
-        price: parseFloat(selectedVariant.price),
-        quantity: 1,
-        image: product.images[selectedImage].src,
-        variantId: parseInt(selectedVariant.id)
-      });
-
-      // Reset the success state after 2 seconds
-      setTimeout(() => {
-        setAddedToCart(false);
-      }, 2000);
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-    } finally {
-      setIsAddingToCart(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#2C2F36] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-      </div>
-    );
-  }
-
-  if (error || !product) {
-    return (
-      <div className="min-h-screen bg-[#2C2F36] flex items-center justify-center">
-        <h1 className="text-white text-2xl">{error || 'Product not found'}</h1>
-      </div>
-    );
-  }
-
-  // Get unique sizes and colors
-  const uniqueSizes = Array.from(new Set(product.variants.map(v => v.size)));
-  const uniqueColors = Array.from(new Set(product.variants.map(v => v.color)));
+    setIsOpen(false);
+  }, [pathname]);
 
   return (
-    <main className="min-h-screen bg-[#2C2F36]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
-        {/* Back Button */}
-        <div className="mb-4 sm:mb-6">
-          <Link 
-            href="/shop/women" 
-            className="inline-flex items-center text-white hover:text-gray-300 text-sm sm:text-base"
-          >
-            <svg 
-              className="w-4 h-4 sm:w-5 sm:h-5 mr-2" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="lg:hidden fixed top-4 left-4 z-[101] bg-black p-2 rounded-md"
+      >
+        <div className="w-6 h-0.5 bg-white mb-1.5"></div>
+        <div className="w-6 h-0.5 bg-white mb-1.5"></div>
+        <div className="w-6 h-0.5 bg-white"></div>
+      </button>
+
+      {/* Mobile Navigation Menu */}
+      <nav 
+        className={`fixed left-0 top-0 h-screen z-[100] transition-all duration-300 ease-in-out bg-black
+          ${isOpen ? 'w-24' : 'w-0'} lg:w-0 lg:opacity-0 lg:pointer-events-none`} 
+      >
+        <div 
+          className={`flex flex-col p-1.5 ${!isOpen && '!hidden'} overflow-hidden pt-8`}
+        >
+          <div className="flex justify-center mb-4">
+            <Link 
+              href="/" 
+              className="relative group block cursor-pointer"
+              onClick={() => setIsOpen(false)}
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M10 19l-7-7m0 0l7-7m-7 7h18" 
-              />
-            </svg>
-            Back to Products
-          </Link>
-        </div>
+              <div className="flex flex-col items-center mt-7">
+                <Image
+                  src="/images/Home.png"
+                  alt="Phoenix Eternal Soul"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
+                <div className="text-white px-1.5 py-0 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center mt-2">
+                  Home
+                </div>
+              </div>
+            </Link>
+          </div>
+          
+          <div className="flex flex-col items-center space-y-5 mt-2">
+            <Link 
+              href="/collections" 
+              className="group flex flex-col items-center"
+              onClick={() => setIsOpen(false)}
+            >
+              <div className="flex justify-center">
+                <Image
+                  src="/images/T_Shirt.png"
+                  alt="T-Shirt"
+                  width={35}
+                  height={35}
+                  className="object-contain"
+                />
+              </div>
+              <button className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
+                Collections
+              </button>
+            </Link>
 
-        {/* Navigation - More compact on mobile */}
-        <nav className="flex justify-center gap-2 sm:gap-4 mb-4 sm:mb-8 text-sm sm:text-base">
-          <Link href="/shop" className="text-white hover:text-gray-300">Shop All</Link>
-          <Link href="/shop/mens" className="text-white hover:text-gray-300">Mens</Link>
-          <Link href="/shop/women" className="text-white hover:text-gray-300">Women's</Link>
-        </nav>
+            <Link 
+              href="/shop" 
+              className="group flex flex-col items-center relative"
+              onClick={() => setIsOpen(false)}
+            >
+              <div className="flex justify-center">
+                <Image
+                  src="/images/Shop.png"
+                  alt="Shop"
+                  width={35}
+                  height={35}
+                  className="object-contain"
+                />
+              </div>
+              <button className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
+                Shop
+              </button>
+            </Link>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
-          {/* Product Images - Full width on mobile */}
-          <div className="space-y-3 sm:space-y-4">
-            <div className="relative aspect-square bg-white rounded-lg overflow-hidden">
-              <Image
-                src={product.images[selectedImage].src}
-                alt={`${product.title} - ${selectedColor}`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-              />
-            </div>
-            {/* Thumbnail gallery - Scrollable on mobile */}
-            <div className="flex gap-2 sm:gap-4 overflow-x-auto pb-2 sm:pb-0">
-              {product.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`relative flex-shrink-0 w-16 sm:w-20 aspect-square rounded-lg overflow-hidden ${
-                    selectedImage === index ? 'ring-2 ring-white' : ''
-                  }`}
+            <Link 
+              href="/resources" 
+              className="group flex flex-col items-center"
+              onClick={() => setIsOpen(false)}
+            >
+              <div className="flex justify-center">
+                <Image
+                  src="/images/about.png"
+                  alt="Resources"
+                  width={35}
+                  height={35}
+                  className="object-contain"
+                />
+              </div>
+              <button className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
+                Resources
+              </button>
+            </Link>
+
+            <div className="flex flex-col items-center space-y-1 mt-auto">
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  <Image
-                    src={image.src}
-                    alt={`${product.title} - View ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 64px, 80px"
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
                   />
-                </button>
-              ))}
+                </svg>
+                {cartItems.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#9F2FFF] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-bounce">
+                    {cartItems.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0)}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Product Info - Stacked on mobile */}
-          <div className="text-white space-y-4 sm:space-y-6">
-            <h1 className="text-2xl sm:text-3xl font-bold">{product.title}</h1>
-            <p className="text-xl sm:text-2xl">${selectedVariant?.price}</p>
-            
-            {/* Size Selection - Grid layout for better mobile spacing */}
-            <div className="space-y-2">
-              <h3 className="text-base sm:text-lg font-semibold">Size</h3>
-              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                {uniqueSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-2 sm:px-4 py-2 text-sm sm:text-base border rounded-lg ${
-                      selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center">
+          <Image
+            src="/images/Phoenix_ES_DADBE4.png"
+            alt="Phoenix Eternal Soul"
+            width={50}
+            height={50}
+            className="object-contain"
+          />
+        </div>
+      </nav>
+
+      {/* Desktop Navigation Menu */}
+      <nav className="hidden lg:block fixed top-0 left-0 right-0 z-[100] bg-black">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="w-[200px]"></div> {/* Spacer to balance the right side */}
+
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <Link href="/" className="flex items-center">
+                <Image
+                  src="/images/Phoenix_ES_DADBE4.png"
+                  alt="Phoenix Eternal Soul"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
+              </Link>
             </div>
 
-            {/* Color Selection - Grid layout for better mobile spacing */}
-            <div className="space-y-2">
-              <h3 className="text-base sm:text-lg font-semibold">Color</h3>
-              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                {uniqueColors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`px-2 sm:px-4 py-2 text-sm sm:text-base border rounded-lg ${
-                      selectedColor === color
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
-                    }`}
-                  >
-                    {color}
-                  </button>
-                ))}
+            <div className="flex items-center">
+              <div className="flex items-center space-x-8">
+                <Link href="/collections" className="text-white hover:text-gray-300 transition-colors">
+                  Collections
+                </Link>
+                <Link href="/shop" className="text-white hover:text-gray-300 transition-colors">
+                  Shop
+                </Link>
+                <Link href="/resources" className="text-white hover:text-gray-300 transition-colors">
+                  Resources
+                </Link>
               </div>
-            </div>
-
-            {/* Add to Cart Button - Full width on mobile */}
-            <button 
-              onClick={handleAddToCart}
-              disabled={!selectedSize || !selectedColor || isAddingToCart}
-              className={`w-full py-3 rounded-lg font-semibold transition-all duration-300 relative overflow-hidden
-                ${!selectedSize || !selectedColor || isAddingToCart
-                  ? 'bg-gray-500 cursor-not-allowed'
-                  : addedToCart
-                    ? 'bg-green-600 text-white scale-105'
-                    : 'bg-white text-[#2C2F36] hover:bg-gray-200'
-                }`}
-            >
-              <span className={`transition-opacity duration-300 ${addedToCart ? 'opacity-0' : 'opacity-100'}`}>
-                {isAddingToCart ? 'Adding...' : 'Add to Cart'}
-              </span>
-              <span className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
-                addedToCart ? 'opacity-100' : 'opacity-0'
-              }`}>
-                <span className="flex items-center gap-2">
-                  <svg 
-                    className="w-5 h-5" 
-                    fill="none" 
-                    stroke="currentColor" 
+              <div className="flex items-center space-x-4 ml-8">
+                <button
+                  onClick={() => router.push('/profile')}
+                  className="flex items-center text-white hover:text-gray-300 transition-colors"
+                >
+                  <Image
+                    src="/images/Profile.png"
+                    alt="Profile"
+                    width={28}
+                    height={28}
+                    className="object-contain"
+                  />
+                </button>
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
                     viewBox="0 0 24 24"
+                    stroke="currentColor"
                   >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M5 13l4 4L19 7" 
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
                     />
                   </svg>
-                  Added to Cart!
-                </span>
-              </span>
-            </button>
-
-            {/* Product Description - Adjusted text size for mobile */}
-            <div className="space-y-2 sm:space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold">Description</h3>
-              <p className="text-sm sm:text-base text-gray-300">
-                The Eternal Ascension Women's Cropped Hoodie is a modern take on classic comfort. 
-                Featuring a cropped silhouette and premium materials, this hoodie combines style 
-                with functionality. Perfect for everyday wear or as a statement piece in your 
-                collection.
-              </p>
+                  {cartItems.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#9F2FFF] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-bounce">
+                      {cartItems.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0)}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Add padding to main content to account for fixed header on desktop */}
+      <div className="hidden lg:block h-16"></div>
+
+      {/* Cart Panel */}
+      <div 
+        className={`fixed right-0 top-0 h-screen w-full min-w-0 max-w-[100vw] sm:max-w-sm md:max-w-md lg:w-96 bg-white z-[102] transform transition-transform duration-300 ease-in-out
+          ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        <div className="p-6 h-full flex flex-col overflow-y-auto">
+          {/* Cart Header */}
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Shopping Cart</h2>
+            <button 
+              onClick={() => setIsCartOpen(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Cart Content */}
+          <div className="flex-grow overflow-y-auto">
+            {cartItems.length === 0 ? (
+              <p className="text-gray-500 text-center">Your cart is empty</p>
+            ) : (
+              <div className="space-y-4">
+                {cartItems.map(item => (
+                  <div key={item.id + item.size + item.color + item.logo} className="flex items-center gap-3 border-b pb-3">
+                    {item.image && (
+                      <img src={item.image} alt={item.name} className="w-16 h-16 object-contain rounded" />
+                    )}
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-900">{item.name}</div>
+                      <div className="text-xs text-gray-600">{item.size} | {item.color} | {item.logo}</div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateQuantity(
+                              item.id,
+                              item.size,
+                              item.color,
+                              item.logo,
+                              Math.max(1, item.quantity - 1)
+                            )
+                          }
+                          className="px-2 py-1 rounded bg-gray-200 text-[#1B1F3B] font-bold"
+                          aria-label="Decrease quantity"
+                        >
+                          −
+                        </button>
+                        <input
+                          type="number"
+                          min={1}
+                          value={item.quantity}
+                          readOnly
+                          className="w-10 border rounded p-1 text-center text-sm"
+                          style={{ color: '#1B1F3B' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateQuantity(
+                              item.id,
+                              item.size,
+                              item.color,
+                              item.logo,
+                              item.quantity + 1
+                            )
+                          }
+                          className="px-2 py-1 rounded bg-gray-200 text-[#1B1F3B] font-bold"
+                          aria-label="Increase quantity"
+                        >
+                          +
+                        </button>
+                        {/* Remove button to the right of quantity */}
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.id, item.size, item.color, item.logo)}
+                          className="ml-2 p-1 hover:bg-red-100 rounded"
+                          aria-label="Remove item"
+                        >
+                          <img src="/images/trash.png" alt="Remove" className="w-7 h-7" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="font-semibold text-gray-900">${(item.price * item.quantity).toFixed(2)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Cart Footer */}
+          <div className="border-t pt-4 mt-4">
+            {/* Subtotal Section */}
+            <div className="flex justify-between items-center mb-2 px-2 py-2 rounded" style={{ background: '#DADBE4' }}>
+              <span className="font-semibold text-[#1B1F3B]">Subtotal</span>
+              <span className="font-semibold text-[#1B1F3B]">${subtotal.toFixed(2)}</span>
+            </div>
+            {/* Discount Section - Only show if there's a discount */}
+            {discount > 0 && (
+              <div className="flex justify-between items-center mb-2 px-2 py-2">
+                <span className="text-green-600">Discount</span>
+                <span className="text-green-600">-${discount.toFixed(2)}</span>
+              </div>
+            )}
+            {/* Total Section */}
+            <div className="flex justify-between items-center mb-4 px-2 py-2 bg-[#B054FF] rounded">
+              <span className="font-bold text-lg text-white">Total</span>
+              <span className="font-bold text-lg text-white">${(subtotal - discount).toFixed(2)}</span>
+            </div>
+            <button className="w-full bg-gray-900 text-white py-3 rounded hover:bg-gray-800 transition-colors flex items-center justify-center gap-2" onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }}>
+              <span className="text-lg font-semibold">Checkout</span>
+              <img src="/images/checkout.png" alt="Checkout" className="w-10 h-13 ml-1s" />
+            </button>
+            {cartItems.length > 0 && (
+              <button className="w-full mt-2 text-xs text-gray-500 hover:underline" onClick={clearCart}>
+                Clear Cart
+              </button>
+            )}
           </div>
         </div>
       </div>
-    </main>
+
+      {/* Checkout Panel */}
+      <StripeProvider>
+        <div
+          className={`fixed right-0 top-0 h-screen w-full min-w-0 max-w-[100vw] sm:max-w-sm md:max-w-md lg:w-[420px] bg-white z-[103] shadow-lg transform transition-transform duration-300 ease-in-out
+            ${isCheckoutOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        >
+          <div className="p-8 h-full flex flex-col overflow-y-auto">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">Checkout</h2>
+              <button
+                onClick={() => setIsCheckoutOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <CheckoutForm 
+              subtotal={subtotal} 
+              clearCart={clearCart} 
+              setIsCheckoutOpen={setIsCheckoutOpen}
+              setIsOrderComplete={setIsOrderComplete}
+            />
+          </div>
+        </div>
+      </StripeProvider>
+
+      {/* Order Complete Drawer */}
+      <OrderCompleteDrawer 
+        open={isOrderComplete} 
+        onClose={() => setIsOrderComplete(false)} 
+      />
+
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-[99] lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Overlay for cart */}
+      {isCartOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-[101]"
+          onClick={() => setIsCartOpen(false)}
+        />
+      )}
+    </>
   );
 } 
