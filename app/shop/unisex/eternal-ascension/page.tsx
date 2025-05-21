@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCart } from '../../../context/CartContext';
+import { useCart } from '@/app/context/CartContext';
 
 interface Product {
   id: string;
@@ -20,7 +20,7 @@ interface Product {
   }[];
 }
 
-export default function EternalAscensionHoodiePage() {
+export default function EternalAscensionPage() {
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -39,19 +39,19 @@ export default function EternalAscensionHoodiePage() {
         }
         const products = await response.json();
         
-        // Find the Eternal Ascension Hoodie by ID
-        const eternalAscensionHoodie = products.find((p: any) => 
-          p.id === '6829030f8de41e64de032e9b'
+        // Find the Eternal Ascension T-shirt by ID
+        const eternalAscension = products.find((p: any) => 
+          p.id === '682803161b86b39978039d62'
         );
 
-        if (!eternalAscensionHoodie) {
+        if (!eternalAscension) {
           throw new Error('Product not found');
         }
 
-        console.log('Raw Eternal Ascension Hoodie product:', {
-          title: eternalAscensionHoodie.title,
-          id: eternalAscensionHoodie.id,
-          variants: eternalAscensionHoodie.variants.map((v: any) => ({
+        console.log('Raw Eternal Ascension product:', {
+          title: eternalAscension.title,
+          id: eternalAscension.id,
+          variants: eternalAscension.variants.map((v: any) => ({
             title: v.title,
             is_enabled: v.is_enabled,
             price: v.price
@@ -60,11 +60,11 @@ export default function EternalAscensionHoodiePage() {
 
         // Transform the product data
         const transformedProduct: Product = {
-          id: eternalAscensionHoodie.id,
-          title: eternalAscensionHoodie.title,
-          description: "The Eternal Ascension Women's Cropped Hoodie combines style and comfort in a modern silhouette. This premium hoodie features a cropped fit, perfect for layering or wearing on its own. Made with high-quality materials, it offers both warmth and breathability, making it an essential piece for your wardrobe.",
-          images: eternalAscensionHoodie.images.map((img: any) => ({ src: img.src })),
-          variants: eternalAscensionHoodie.variants
+          id: eternalAscension.id,
+          title: eternalAscension.title,
+          description: "The Eternal Ascension T-Shirt embodies the perfect blend of comfort and style. This premium unisex t-shirt features a modern fit and is crafted from high-quality materials, making it an essential addition to your wardrobe. The design represents a journey of growth and transformation, making it more than just a piece of clothing.",
+          images: eternalAscension.images.map((img: any) => ({ src: img.src })),
+          variants: eternalAscension.variants
             .filter((variant: any) => {
               console.log('Checking variant:', {
                 title: variant.title,
@@ -106,12 +106,14 @@ export default function EternalAscensionHoodiePage() {
 
     addItem({
       id: product.id,
-      variantId: selectedVariant.id,
+      variantId: parseInt(selectedVariant.id),
       name: product.title,
       size: selectedSize,
+      color: selectedColor,
       price: Number(selectedVariant.price),
       quantity: 1,
-      image: product.images[selectedImage].src
+      image: product.images[selectedImage].src,
+      logo: 'default'
     });
 
     setAddedToCart(true);
