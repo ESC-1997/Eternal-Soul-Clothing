@@ -30,6 +30,14 @@ export default function EternalAscensionHoodiePage() {
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
 
+  // Color to image index mapping
+  const colorImageMap: { [key: string]: number } = {
+    'Black': 0,
+    'Peach': 2,
+    'Military Green': 4,
+    'Storm': 6
+  };
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -226,16 +234,23 @@ export default function EternalAscensionHoodiePage() {
 
             {/* Color Selection */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Select Color</h3>
-              <div className="flex flex-wrap gap-3">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <div className="grid grid-cols-4 gap-4">
                 {availableColors.map((color) => (
                   <button
                     key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`px-6 py-2 rounded-lg border-2 transition-all ${
+                    onClick={() => {
+                      setSelectedColor(color);
+                      // Update the selected image based on the color
+                      const imageIndex = colorImageMap[color];
+                      if (imageIndex !== undefined) {
+                        setSelectedImage(imageIndex);
+                      }
+                    }}
+                    className={`p-4 border rounded-lg transition-colors ${
                       selectedColor === color
                         ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-white hover:border-white/50'
+                        : 'border-gray-600 hover:border-white'
                     }`}
                   >
                     {color}
