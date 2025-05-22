@@ -17,6 +17,7 @@ interface Product {
     price: number;
     size: string;
     color: string;
+    is_enabled: boolean;
   }[];
 }
 
@@ -29,6 +30,15 @@ export default function EternalAscensionPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
+
+  // Color to image index mapping
+  const colorImageMap: { [key: string]: number } = {
+    'Violet': 0,
+    'Black': 2,
+    'Sand': 4,
+    'Dark Chocolate': 6,
+    'Charcoal': 8
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -48,16 +58,6 @@ export default function EternalAscensionPage() {
           throw new Error('Product not found');
         }
 
-        console.log('Raw Eternal Ascension product:', {
-          title: eternalAscension.title,
-          id: eternalAscension.id,
-          variants: eternalAscension.variants.map((v: any) => ({
-            title: v.title,
-            is_enabled: v.is_enabled,
-            price: v.price
-          }))
-        });
-
         // Transform the product data
         const transformedProduct: Product = {
           id: eternalAscension.id,
@@ -65,27 +65,36 @@ export default function EternalAscensionPage() {
           description: "The Eternal Ascension T-Shirt embodies the perfect blend of comfort and style. This premium unisex t-shirt features a modern fit and is crafted from high-quality materials, making it an essential addition to your wardrobe. The design represents a journey of growth and transformation, making it more than just a piece of clothing.",
           images: eternalAscension.images.map((img: any) => ({ src: img.src })),
           variants: eternalAscension.variants
-            .filter((variant: any) => {
-              console.log('Checking variant:', {
-                title: variant.title,
-                is_enabled: variant.is_enabled
-              });
-              return variant.is_enabled;
-            })
+            .filter((variant: any) => variant.is_enabled)
             .map((variant: any) => {
-              const [size, color] = variant.title.split(' / ');
+              const [color, size] = variant.title.split(' / ');
               return {
                 id: variant.id,
                 title: variant.title,
                 price: Number((variant.price / 100).toFixed(2)),
-                size: size.trim(),
-                color: color.trim()
+                size: size?.trim() || variant.title,
+                color: color?.trim() || 'Black',
+                is_enabled: variant.is_enabled
               };
             })
         };
 
-        console.log('Transformed product variants:', transformedProduct.variants);
         setProduct(transformedProduct);
+        
+        // Get unique enabled colors and sizes
+        const uniqueColors = Array.from(new Set(
+          transformedProduct.variants
+            .filter(v => v.is_enabled)
+            .map(v => v.color)
+        ));
+        const uniqueSizes = Array.from(new Set(
+          transformedProduct.variants
+            .filter(v => v.is_enabled)
+            .map(v => v.size)
+        ));
+        
+        setSelectedSize(uniqueSizes[0]);
+        setSelectedColor(uniqueColors[0]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -202,20 +211,19 @@ export default function EternalAscensionPage() {
           {/* Product Details */}
           <div className="text-white space-y-6">
             <h1 className="text-3xl font-bold">{product.title}</h1>
-            <p className="text-xl">${product.variants[0].price.toFixed(2)}</p>
             
             {/* Size Selection */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Select Size</h3>
-              <div className="flex flex-wrap gap-3">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <div className="grid grid-cols-4 gap-4">
                 {availableSizes.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`px-6 py-2 rounded-lg border-2 transition-all ${
+                    className={`p-4 border rounded-lg transition-colors ${
                       selectedSize === size
                         ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-white hover:border-white/50'
+                        : 'border-gray-600 hover:border-white'
                     }`}
                   >
                     {size}
@@ -226,16 +234,23 @@ export default function EternalAscensionPage() {
 
             {/* Color Selection */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Select Color</h3>
-              <div className="flex flex-wrap gap-3">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
+              <div className="grid grid-cols-4 gap-4">
                 {availableColors.map((color) => (
                   <button
                     key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`px-6 py-2 rounded-lg border-2 transition-all ${
+                    onClick={() => {
+                      setSelectedColor(color);
+                      // Update the selected image based on the color
+                      const imageIndex = colorImageMap[color];
+                      if (imageIndex !== undefined) {
+                        setSelectedImage(imageIndex);
+                      }
+                    }}
+                    className={`p-4 border rounded-lg transition-colors ${
                       selectedColor === color
                         ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-white hover:border-white/50'
+                        : 'border-gray-600 hover:border-white'
                     }`}
                   >
                     {color}
@@ -244,18 +259,22 @@ export default function EternalAscensionPage() {
               </div>
             </div>
 
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              disabled={!selectedSize || !selectedColor}
-              className={`w-full py-3 px-6 rounded-lg text-lg font-semibold transition-all ${
-                selectedSize && selectedColor
-                  ? 'bg-white text-[#2C2F36] hover:bg-white/90'
-                  : 'bg-gray-600 cursor-not-allowed'
-              }`}
-            >
-              {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
-            </button>
+            <div className="pt-6">
+              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
+                ${product.variants[0].price.toFixed(2)}
+              </p>
+              <button
+                onClick={handleAddToCart}
+                disabled={!selectedSize || !selectedColor}
+                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
+                  !selectedSize || !selectedColor
+                    ? 'bg-gray-600 cursor-not-allowed'
+                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
+                }`}
+              >
+                {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+              </button>
+            </div>
 
             {/* Description */}
             <div className="space-y-2">
