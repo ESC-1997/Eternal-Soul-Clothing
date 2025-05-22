@@ -118,7 +118,7 @@ export default function WomensCollection() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full pt-8">
       <div className="flex justify-center py-8">
         <Image
           src="/images/Phoenix_ES_DADBE4.png"
@@ -155,6 +155,8 @@ export default function WomensCollection() {
                         ? '/shop/women/biker-shorts-black'
                         : product.title.toLowerCase().includes('eternal vibe') && product.title.toLowerCase().includes('leggings')
                         ? '/shop/women/eternal-vibe-leggings'
+                        : product.title.toLowerCase().includes('eternal tank')
+                        ? '/shop/women/eternal-tank'
                         : product.id === '6829030f8de41e64de032e9b'  // Eternal Ascension Hoodie
                         ? '/shop/women/eternal-ascension-hoodie'
                         : `/shop/women/${product.id}`
