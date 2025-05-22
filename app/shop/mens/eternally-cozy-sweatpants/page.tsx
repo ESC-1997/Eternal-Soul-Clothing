@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCart } from '../../../context/CartContext';
+import { useCart } from '@/app/context/CartContext';
 
 interface Product {
   id: string;
@@ -16,12 +16,15 @@ interface Product {
     price: string;
     size: string;
     color: string;
+    is_enabled: boolean;
+    is_available: boolean;
   }[];
 }
 
 export default function EternallyCozySweatpantsPage() {
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,6 +50,16 @@ export default function EternallyCozySweatpantsPage() {
           throw new Error('Sweatpants product not found');
         }
 
+        console.log('Found product:', JSON.stringify({
+          title: foundProduct.title,
+          variants: foundProduct.variants.map((v: any) => ({
+            title: v.title,
+            is_enabled: v.is_enabled,
+            is_available: v.is_available,
+            price: v.price
+          }))
+        }, null, 2));
+
         // Transform the product data
         const transformedProduct: Product = {
           id: foundProduct.id,
@@ -54,24 +67,52 @@ export default function EternallyCozySweatpantsPage() {
           images: foundProduct.images.map((img: any) => ({ 
             src: img.src
           })),
-          variants: foundProduct.variants.map((variant: any) => {
-            // Parse the variant title to extract size
-            const size = variant.title.split(' / ')[0];
-            return {
-              id: variant.id,
-              title: variant.title,
-              price: (variant.price / 100).toFixed(2),
-              size: size || variant.title,
-              color: 'Black' // Default color since we're removing color selection
-            };
-          })
+          variants: foundProduct.variants
+            .filter((variant: any) => {
+              console.log('Checking variant:', JSON.stringify({
+                title: variant.title,
+                is_enabled: variant.is_enabled,
+                is_available: variant.is_available
+              }, null, 2));
+              return variant.is_enabled;
+            })
+            .map((variant: any) => {
+              // Parse the variant title to extract color and size
+              const [color, size] = variant.title.split(' / ');
+              return {
+                id: variant.id,
+                title: variant.title,
+                price: (variant.price / 100).toFixed(2),
+                size: size,
+                color: color,
+                is_enabled: variant.is_enabled,
+                is_available: variant.is_available
+              };
+            })
         };
+
+        console.log('Transformed product:', JSON.stringify({
+          title: transformedProduct.title,
+          variants: transformedProduct.variants
+        }, null, 2));
 
         setProduct(transformedProduct);
         // Set initial selections
-        const uniqueSizes = Array.from(new Set(transformedProduct.variants.map(v => v.size)));
-        setSelectedSize(uniqueSizes[0]);
+        const uniqueSizes = Array.from(new Set(
+          transformedProduct.variants
+            .filter(v => v.is_enabled)
+            .map(v => v.size)
+        ));
+
+        console.log('Unique sizes:', JSON.stringify(uniqueSizes, null, 2));
+        
+        if (uniqueSizes.length > 0) {
+          setSelectedSize(uniqueSizes[0]);
+        } else {
+          console.error('No enabled sizes found');
+        }
       } catch (err) {
+        console.error('Error in fetchProduct:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
@@ -82,22 +123,26 @@ export default function EternallyCozySweatpantsPage() {
   }, []);
 
   const handleAddToCart = async () => {
-    if (!product || !selectedSize) return;
+    if (!product || !selectedSize || !selectedColor) return;
 
     setIsAddingToCart(true);
     try {
       const selectedVariant = product.variants.find(
-        v => v.size === selectedSize
+        v => v.size === selectedSize && v.color === selectedColor
       );
 
       if (!selectedVariant) {
         throw new Error('Selected variant not found');
       }
 
+      if (!selectedVariant.is_available) {
+        throw new Error('Selected variant is out of stock');
+      }
+
       addItem({
         id: product.id,
         name: product.title,
-        color: 'Black',
+        color: selectedColor,
         size: selectedSize,
         price: parseFloat(selectedVariant.price),
         quantity: 1,
@@ -131,10 +176,48 @@ export default function EternallyCozySweatpantsPage() {
     );
   }
 
-  const uniqueSizes = Array.from(new Set(product.variants.map(v => v.size)));
+  // Get unique enabled colors
+  const uniqueColors = Array.from(new Set(
+    product.variants
+      .filter(v => v.is_enabled)
+      .map(v => v.color)
+  )).sort();
+
+  // Get unique enabled sizes
+  const uniqueSizes = Array.from(new Set(
+    product.variants
+      .filter(v => v.is_enabled)
+      .map(v => v.size)
+  )).sort((a, b) => {
+    const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', '2XL'];
+    return sizeOrder.indexOf(a) - sizeOrder.indexOf(b);
+  });
+
+  console.log('Rendering with:', JSON.stringify({
+    uniqueColors,
+    uniqueSizes,
+    selectedColor,
+    selectedSize,
+    variants: product.variants.map(v => ({
+      size: v.size,
+      color: v.color,
+      is_enabled: v.is_enabled,
+      is_available: v.is_available
+    }))
+  }, null, 2));
+
   const selectedVariant = product.variants.find(
-    v => v.size === selectedSize
+    v => v.size === selectedSize && v.color === selectedColor
   );
+
+  const isVariantAvailable = selectedVariant?.is_available ?? false;
+
+  console.log('Selected variant:', JSON.stringify({
+    selectedColor,
+    selectedSize,
+    selectedVariant,
+    isVariantAvailable
+  }, null, 2));
 
   return (
     <main className="min-h-screen bg-[#2C2F36]">
@@ -198,18 +281,37 @@ export default function EternallyCozySweatpantsPage() {
 
           {/* Product Info */}
           <div className="text-white space-y-6">
-            <h1 className="text-3xl font-bold">{product.title}</h1>
-            <p className="text-2xl">${selectedVariant?.price}</p>
+            <h1 className="text-4xl font-['Bebas_Neue'] tracking-wider">{product.title}</h1>
             
+            {/* Color Selection */}
+            <div className="space-y-4">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
+              <div className="grid grid-cols-4 gap-4">
+                {uniqueColors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`p-4 border rounded-lg transition-colors ${
+                      selectedColor === color
+                        ? 'border-white bg-white text-[#2C2F36]'
+                        : 'border-gray-600 hover:border-white'
+                    }`}
+                  >
+                    {color}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Size Selection */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Size</h3>
-              <div className="grid grid-cols-6 gap-2">
+            <div className="space-y-4">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <div className="grid grid-cols-4 gap-4">
                 {uniqueSizes.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`px-4 py-2 border rounded-lg ${
+                    className={`p-4 border rounded-lg transition-colors ${
                       selectedSize === size
                         ? 'border-white bg-white text-[#2C2F36]'
                         : 'border-gray-600 hover:border-white'
@@ -221,53 +323,24 @@ export default function EternallyCozySweatpantsPage() {
               </div>
             </div>
 
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              disabled={!selectedSize || isAddingToCart}
-              className={`w-full py-3 rounded-lg font-semibold transition-all duration-300 relative overflow-hidden
-                ${!selectedSize || isAddingToCart
-                  ? 'bg-gray-500 cursor-not-allowed'
-                  : addedToCart
-                    ? 'bg-green-600 text-white scale-105'
-                    : 'bg-white text-[#2C2F36] hover:bg-gray-200'
-                }`}
-            >
-              <span className={`transition-opacity duration-300 ${addedToCart ? 'opacity-0' : 'opacity-100'}`}>
-                {isAddingToCart ? 'Adding...' : 'Add to Cart'}
-              </span>
-              <span className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
-                addedToCart ? 'opacity-100' : 'opacity-0'
-              }`}>
-                <span className="flex items-center gap-2">
-                  <svg 
-                    className="w-5 h-5" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M5 13l4 4L19 7" 
-                    />
-                  </svg>
-                  Added to Cart!
-                </span>
-              </span>
-            </button>
-
-            {/* Product Description */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Description</h3>
-              <p className="text-gray-300">
-                The Eternally Cozy Sweatpants are the perfect blend of comfort and style. 
-                Made with premium, soft fabric, these sweatpants feature a relaxed fit and 
-                elastic waistband for maximum comfort. The tapered leg design and ribbed cuffs 
-                provide a modern, athletic look while maintaining the cozy feel you love. 
-                Perfect for lounging, workouts, or casual everyday wear.
+            <div className="pt-6">
+              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
+                ${selectedVariant?.price}
               </p>
+              {!isVariantAvailable && (
+                <p className="text-red-500 mb-4">Out of Stock</p>
+              )}
+              <button
+                onClick={handleAddToCart}
+                disabled={isAddingToCart || !selectedSize || !selectedColor || !isVariantAvailable}
+                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
+                  isAddingToCart || !selectedSize || !selectedColor || !isVariantAvailable
+                    ? 'bg-gray-600 cursor-not-allowed'
+                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
+                }`}
+              >
+                {isAddingToCart ? 'Adding...' : addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+              </button>
             </div>
           </div>
         </div>
