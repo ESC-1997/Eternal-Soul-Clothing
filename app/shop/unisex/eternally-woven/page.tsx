@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCart } from '../../../context/CartContext';
+import { useCart } from '@/app/context/CartContext';
 
 interface Product {
   id: string;
@@ -29,6 +29,15 @@ export default function EternallyWovenPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
+
+  // Color to image index mapping
+  const colorImageMap: { [key: string]: number } = {
+    'Violet': 0,
+    'Black': 2,
+    'Sand': 4,
+    'Dark Chocolate': 6,
+    'Charcoal': 8
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -202,40 +211,25 @@ export default function EternallyWovenPage() {
           {/* Product Details */}
           <div className="text-white space-y-6">
             <h1 className="text-3xl font-bold">{product.title}</h1>
-            <p className="text-xl">${product.variants[0].price.toFixed(2)}</p>
             
-            {/* Size Selection */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Select Size</h3>
-              <div className="flex flex-wrap gap-3">
-                {availableSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-6 py-2 rounded-lg border-2 transition-all ${
-                      selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-white hover:border-white/50'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Color Selection */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Select Color</h3>
-              <div className="flex flex-wrap gap-3">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
+              <div className="grid grid-cols-4 gap-4">
                 {availableColors.map((color) => (
                   <button
                     key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`px-6 py-2 rounded-lg border-2 transition-all ${
+                    onClick={() => {
+                      setSelectedColor(color);
+                      const imageIndex = colorImageMap[color];
+                      if (imageIndex !== undefined) {
+                        setSelectedImage(imageIndex);
+                      }
+                    }}
+                    className={`p-4 border rounded-lg transition-colors ${
                       selectedColor === color
                         ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-white hover:border-white/50'
+                        : 'border-gray-600 hover:border-white'
                     }`}
                   >
                     {color}
@@ -244,18 +238,42 @@ export default function EternallyWovenPage() {
               </div>
             </div>
 
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              disabled={!selectedSize || !selectedColor}
-              className={`w-full py-3 px-6 rounded-lg text-lg font-semibold transition-all ${
-                selectedSize && selectedColor
-                  ? 'bg-white text-[#2C2F36] hover:bg-white/90'
-                  : 'bg-gray-600 cursor-not-allowed'
-              }`}
-            >
-              {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
-            </button>
+            {/* Size Selection */}
+            <div className="space-y-4">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <div className="grid grid-cols-4 gap-4">
+                {availableSizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`p-4 border rounded-lg transition-colors ${
+                      selectedSize === size
+                        ? 'border-white bg-white text-[#2C2F36]'
+                        : 'border-gray-600 hover:border-white'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-6">
+              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
+                ${product.variants[0].price.toFixed(2)}
+              </p>
+              <button
+                onClick={handleAddToCart}
+                disabled={!selectedSize || !selectedColor}
+                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
+                  !selectedSize || !selectedColor
+                    ? 'bg-gray-600 cursor-not-allowed'
+                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
+                }`}
+              >
+                {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+              </button>
+            </div>
 
             {/* Description */}
             <div className="space-y-2">
