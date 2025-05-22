@@ -189,16 +189,16 @@ export default function EternalLotusBlackGrey() {
             
             {/* Size Selection */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Select Size</h3>
-              <div className="flex flex-wrap gap-3">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
+              <div className="grid grid-cols-4 gap-4">
                 {availableSizes.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`px-6 py-2 rounded-lg border-2 transition-all ${
+                    className={`p-4 border rounded-lg transition-colors ${
                       selectedSize === size
                         ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-white hover:border-white/50'
+                        : 'border-gray-600 hover:border-white'
                     }`}
                   >
                     {size}
@@ -209,16 +209,16 @@ export default function EternalLotusBlackGrey() {
 
             {/* Color Selection */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Select Color</h3>
-              <div className="flex flex-wrap gap-3">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <div className="grid grid-cols-4 gap-4">
                 {availableColors.map((color) => (
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
-                    className={`px-6 py-2 rounded-lg border-2 transition-all ${
+                    className={`p-4 border rounded-lg transition-colors ${
                       selectedColor === color
                         ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-white hover:border-white/50'
+                        : 'border-gray-600 hover:border-white'
                     }`}
                   >
                     {color}
@@ -227,18 +227,22 @@ export default function EternalLotusBlackGrey() {
               </div>
             </div>
 
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              disabled={!selectedSize || !selectedColor}
-              className={`w-full py-3 rounded-lg transition-all ${
-                !selectedSize || !selectedColor
-                  ? 'bg-gray-500 cursor-not-allowed'
-                  : 'bg-white text-[#2C2F36] hover:bg-gray-100'
-              }`}
-            >
-              {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
-            </button>
+            <div className="pt-6">
+              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
+                ${product.variants[0].price.toFixed(2)}
+              </p>
+              <button
+                onClick={handleAddToCart}
+                disabled={!selectedSize || !selectedColor}
+                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
+                  !selectedSize || !selectedColor
+                    ? 'bg-gray-600 cursor-not-allowed'
+                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
+                }`}
+              >
+                {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+              </button>
+            </div>
 
             {/* Product Description */}
             <div className="mt-8">
