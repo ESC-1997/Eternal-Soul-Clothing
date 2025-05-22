@@ -233,29 +233,9 @@ export default function EternalRebirth() {
           <div className="text-white space-y-6">
             <h1 className="text-4xl font-['Bebas_Neue'] tracking-wider">{product.title}</h1>
             
-            {/* Color Selection */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
-              <div className="grid grid-cols-4 gap-4">
-                {uniqueColors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`p-4 border rounded-lg transition-colors ${
-                      selectedColor === color
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
-                    }`}
-                  >
-                    {color}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Size Selection */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
               <div className="grid grid-cols-4 gap-4">
                 {uniqueSizes.map((size) => (
                   <button
@@ -268,6 +248,26 @@ export default function EternalRebirth() {
                     }`}
                   >
                     {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Color Selection */}
+            <div className="space-y-4">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <div className="grid grid-cols-4 gap-4">
+                {uniqueColors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`p-4 border rounded-lg transition-colors ${
+                      selectedColor === color
+                        ? 'border-white bg-white text-[#2C2F36]'
+                        : 'border-gray-600 hover:border-white'
+                    }`}
+                  >
+                    {color}
                   </button>
                 ))}
               </div>
