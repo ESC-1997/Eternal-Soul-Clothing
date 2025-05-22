@@ -40,20 +40,23 @@ export default function MensCollection() {
 
         // Filter for specific products by name
         const allowedProducts = [
-          'Eternally Cozy Sweatpants'
+          'Eternally Cozy Sweatpants',
+          'Eternal Rebirth',
+          'Eternal Cut',
+          'Vow of The Eternal'
         ];
 
         console.log('Filtering products...');
         const filteredProducts = printifyProducts.filter((product: any) => {
           const isAllowed = allowedProducts.some(name => {
-            const matches = product.title.includes(name);
+            const matches = product.title.toLowerCase().includes(name.toLowerCase());
             console.log(`Checking "${product.title}" against "${name}": ${matches}`);
             return matches;
           });
           return isAllowed;
         });
 
-        console.log('Filtered products count:', filteredProducts.length);
+        console.log('Filtered products:', filteredProducts.map((p: { title: string }) => p.title));
 
         // Transform Printify products to match our Product interface
         const transformedProducts = filteredProducts.map((product: any) => ({
@@ -127,36 +130,71 @@ export default function MensCollection() {
           className="object-contain"
         />
       </div>
+
+      {/* Banner Section */}
+      <div className="bg-[#DADBE4] py-4 mb-4">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-['Bebas_Neue'] text-[#1B1F3B] tracking-wider text-center">
+            ESSENTIALS
+          </h2>
+        </div>
+      </div>
       
       {/* Product Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 px-4 py-8">
-        {products.map((product) => (
-          <div key={product.id} className="group">
-            <div className="bg-white rounded-lg overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 h-[400px] md:h-[450px]">
-              <Link 
-                href={
-                  product.title.toLowerCase().includes('eternally cozy sweatpants')
-                    ? '/shop/mens/eternally-cozy-sweatpants'
-                    : `/shop/mens/${product.id}`
-                }
-                className="group"
-              >
-                <div className="relative h-[280px] md:h-[350px]">
-                  <Image
-                    src={product.images[0].src}
-                    alt={product.title}
-                    fill
-                    className="object-cover"
-                  />
+      <div className="relative px-4">
+        <div className="overflow-x-auto pb-8 scrollbar-hide">
+          <div className="flex space-x-6 min-w-min">
+            {products.map((product) => (
+              <div key={product.id} className="flex-none w-[300px] group">
+                <div className="bg-white rounded-lg overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 h-[450px]">
+                  <Link 
+                    href={
+                      product.title.toLowerCase().includes('eternally cozy sweatpants')
+                        ? '/shop/mens/eternally-cozy-sweatpants'
+                        : product.title.toLowerCase().includes('eternal rebirth')
+                        ? '/shop/mens/eternal-rebirth'
+                        : product.title.toLowerCase().includes('eternal cut')
+                        ? '/shop/mens/eternal-cut'
+                        : product.title.toLowerCase().includes('vow of the eternal')
+                        ? '/shop/mens/vow-of-the-eternal'
+                        : `/shop/mens/${product.id}`
+                    }
+                    className="group"
+                  >
+                    <div className="relative h-[350px]">
+                      <Image
+                        src={product.images[0].src}
+                        alt={product.title}
+                        fill
+                        className="object-cover transition-opacity duration-300 group-hover:opacity-0"
+                      />
+                      {product.images[1] && (
+                        <Image
+                          src={product.images[1].src}
+                          alt={`${product.title} - alternate view`}
+                          fill
+                          className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        />
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{product.title}</h3>
+                      <p className="text-base text-gray-600">
+                        {product.title.toLowerCase().includes('vow of the eternal')
+                          ? '$40.00'
+                          : `$${product.variants[0].price}`}
+                      </p>
+                    </div>
+                  </Link>
                 </div>
-                <div className="p-3 md:p-4">
-                  <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-1 md:mb-2 line-clamp-2">{product.title}</h3>
-                  <p className="text-sm md:text-base text-gray-600">${product.variants[0].price}</p>
-                </div>
-              </Link>
-            </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+        
+        {/* Gradient Overlays for Scroll Indication */}
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#2C2F36] to-transparent pointer-events-none"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#2C2F36] to-transparent pointer-events-none"></div>
       </div>
     </div>
   );
