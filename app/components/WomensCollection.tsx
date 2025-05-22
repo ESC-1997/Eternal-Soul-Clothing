@@ -2,73 +2,95 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCart } from '@/app/context/CartContext';
 
 interface Product {
   id: string;
   title: string;
-  description: string;
   images: {
     src: string;
   }[];
   variants: {
     id: string;
     title: string;
-    price: number;
-    size: string;
-    color: string;
+    price: string;
   }[];
 }
 
-export default function EternalLotusBlackGrey() {
-  const { addItem } = useCart();
-  const [selectedSize, setSelectedSize] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [product, setProduct] = useState<Product | null>(null);
+export default function WomensCollection() {
+  const [womenProducts, setWomenProducts] = useState<Product[]>([]);
+  const [unisexProducts, setUnisexProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProducts = async () => {
       try {
+        // Fetch products from Printify API
         const response = await fetch('/api/printify/products');
         if (!response.ok) {
-          throw new Error('Failed to fetch products');
+          throw new Error('Failed to fetch products from Printify');
         }
-        const products = await response.json();
-        
-        const eternalLotusProduct = products.find((p: any) => 
-          p.title.toLowerCase().includes('eternal lotus') && 
-          p.title.toLowerCase().includes('black & grey')
+        const printifyProducts = await response.json();
+
+        // Filter for women's products
+        const womenItems = printifyProducts.filter((product: any) => 
+          (product.title.toLowerCase().includes('women') || 
+          product.title.toLowerCase().includes('womens') ||
+          product.title.toLowerCase().includes('biker shorts') ||
+          product.title.toLowerCase().includes('sports bra') ||
+          product.id === '6829030f8de41e64de032e9b') &&  // Eternal Ascension Women's Cropped Hoodie
+          !product.title.toLowerCase().includes('eternal lotus')  // Exclude Eternal Lotus products
         );
 
-        if (!eternalLotusProduct) {
-          throw new Error('Product not found');
-        }
+        // Filter for unisex products
+        const unisexItems = printifyProducts.filter((product: any) => 
+          (product.title.toLowerCase().includes('eternally woven') ||
+          (product.title.toLowerCase().includes('eternal lotus') && 
+           !product.title.toLowerCase().includes('plush throw blanket')) ||
+          product.id === '682803161b86b39978039d62')  // Eternal Ascension T-shirt
+        );
+
+        console.log('Product filtering:', {
+          womenItems: womenItems.map((p: { id: string; title: string }) => ({ id: p.id, title: p.title })),
+          unisexItems: unisexItems.map((p: { id: string; title: string }) => ({ id: p.id, title: p.title }))
+        });
 
         // Transform the product data
-        const transformedProduct: Product = {
-          id: eternalLotusProduct.id,
-          title: eternalLotusProduct.title,
-          description: "The Eternal Lotus collection embodies the perfect blend of artistic expression and everyday comfort. Each piece features our signature lotus design, symbolizing purity and enlightenment. Made with premium materials and crafted for durability, these pieces are designed to be both statement pieces and wardrobe staples.",
-          images: eternalLotusProduct.images.map((img: any) => ({ src: img.src })),
-          variants: eternalLotusProduct.variants
+        const transformedWomenProducts = womenItems.map((product: any) => ({
+          id: product.id,
+          title: product.title,
+          images: product.images.map((img: any) => ({ src: img.src })),
+          variants: product.variants
             .filter((variant: any) => variant.is_enabled)
-            .map((variant: any) => {
-              const [size, color] = variant.title.split(' / ');
-              return {
-                id: variant.id,
-                title: variant.title,
-                price: Number((variant.price / 100).toFixed(2)),
-                size: size.trim(),
-                color: color.trim()
-              };
-            })
-        };
+            .map((variant: any) => ({
+              id: variant.id,
+              title: variant.title,
+              price: Number((variant.price / 100).toFixed(2))
+            }))
+        }));
 
-        setProduct(transformedProduct);
+        const transformedUnisexProducts = unisexItems.map((product: any) => ({
+          id: product.id,
+          title: product.title,
+          images: product.images.map((img: any) => ({ src: img.src })),
+          variants: product.variants
+            .filter((variant: any) => variant.is_enabled)
+            .map((variant: any) => ({
+              id: variant.id,
+              title: variant.title,
+              price: Number((variant.price / 100).toFixed(2))
+            }))
+        }));
+
+        console.log('Eternally Woven product variants after filtering:', 
+          transformedUnisexProducts.map((product: any) => ({
+            title: product.title,
+            variants: product.variants
+          }))
+        );
+
+        setWomenProducts(transformedWomenProducts);
+        setUnisexProducts(transformedUnisexProducts);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -76,178 +98,160 @@ export default function EternalLotusBlackGrey() {
       }
     };
 
-    fetchProduct();
+    fetchProducts();
   }, []);
-
-  const handleAddToCart = () => {
-    if (!product || !selectedSize || !selectedColor) return;
-
-    const selectedVariant = product.variants.find(
-      v => v.size === selectedSize && v.color === selectedColor
-    );
-    if (!selectedVariant) return;
-
-    addItem({
-      id: product.id,
-      variantId: Number(selectedVariant.id),
-      name: product.title,
-      size: selectedSize,
-      color: selectedColor,
-      price: Number(selectedVariant.price),
-      quantity: 1,
-      image: product.images[selectedImage].src,
-      logo: product.images[0].src
-    });
-
-    setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 2000);
-  };
-
-  // Get unique colors and sizes
-  const availableColors = product ? Array.from(new Set(product.variants.map(v => v.color))) : [];
-  const availableSizes = product ? Array.from(new Set(product.variants.map(v => v.size))) : [];
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
       </div>
     );
   }
 
-  if (error || !product) {
+  if (error) {
     return (
       <div className="text-center text-red-600 p-4">
-        Error: {error || 'Product not found'}
+        Error: {error}
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#2C2F36]">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Back Button */}
-        <div className="mb-8">
-          <Link 
-            href="/shop/women"
-            className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
-          >
-            <svg 
-              className="w-5 h-5 mr-2" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M10 19l-7-7m0 0l7-7m-7 7h18" 
-              />
-            </svg>
-            Back to Products
-          </Link>
-        </div>
+    <div className="w-full">
+      <div className="flex justify-center py-8">
+        <Image
+          src="/images/Phoenix_ES_DADBE4.png"
+          alt="Eternal Soul Women's Collection"
+          width={200}
+          height={200}
+          className="object-contain"
+        />
+      </div>
 
-        {/* Product Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Product Images */}
-          <div className="space-y-4">
-            <div className="relative h-[500px] bg-white rounded-lg overflow-hidden">
-              <Image
-                src={product.images[selectedImage].src}
-                alt={product.title}
-                fill
-                className="object-cover"
-              />
-            </div>
-            {/* Thumbnail Gallery */}
-            <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
-              {product.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`relative flex-none w-20 h-20 rounded-lg overflow-hidden ${
-                    selectedImage === index ? 'ring-2 ring-white' : ''
-                  }`}
-                >
-                  <Image
-                    src={image.src}
-                    alt={`${product.title} - Image ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Product Details */}
-          <div className="text-white space-y-6">
-            <h1 className="text-3xl font-bold">{product.title}</h1>
-            <p className="text-xl">${product.variants[0].price.toFixed(2)}</p>
-            
-            {/* Size Selection */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Select Size</h3>
-              <div className="flex flex-wrap gap-3">
-                {availableSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-6 py-2 rounded-lg border-2 transition-all ${
-                      selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-white hover:border-white/50'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Color Selection */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Select Color</h3>
-              <div className="flex flex-wrap gap-3">
-                {availableColors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`px-6 py-2 rounded-lg border-2 transition-all ${
-                      selectedColor === color
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-white hover:border-white/50'
-                    }`}
-                  >
-                    {color}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              disabled={!selectedSize || !selectedColor}
-              className={`w-full py-3 rounded-lg transition-all ${
-                !selectedSize || !selectedColor
-                  ? 'bg-gray-500 cursor-not-allowed'
-                  : 'bg-white text-[#2C2F36] hover:bg-gray-100'
-              }`}
-            >
-              {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
-            </button>
-
-            {/* Product Description */}
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold mb-2">Description</h3>
-              <p className="text-gray-300">{product.description}</p>
-            </div>
-          </div>
+      {/* First Banner Section */}
+      <div className="bg-[#DADBE4] py-4 mb-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-['Bebas_Neue'] text-[#1B1F3B] tracking-wider text-center">
+            TAILORED FOR HER
+          </h2>
         </div>
       </div>
-    </main>
+      
+      {/* Women's Products Scroll Container */}
+      <div className="relative px-4">
+        <div className="overflow-x-auto pb-8 scrollbar-hide">
+          <div className="flex space-x-6 min-w-min">
+            {womenProducts.map((product) => (
+              <div key={product.id} className="flex-none w-[300px] group">
+                <div className="bg-white rounded-lg overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 h-[450px]">
+                  <Link 
+                    href={
+                      product.title.toLowerCase().includes('sports bra')
+                        ? '/shop/women/sports-bra'
+                        : product.title.toLowerCase().includes('biker shorts') && product.title.toLowerCase().includes('violet')
+                        ? '/shop/women/biker-shorts-violet'
+                        : product.title.toLowerCase().includes('biker shorts') && product.title.toLowerCase().includes('black')
+                        ? '/shop/women/biker-shorts-black'
+                        : product.title.toLowerCase().includes('eternal vibe') && product.title.toLowerCase().includes('leggings')
+                        ? '/shop/women/eternal-vibe-leggings'
+                        : product.id === '6829030f8de41e64de032e9b'  // Eternal Ascension Hoodie
+                        ? '/shop/women/eternal-ascension-hoodie'
+                        : `/shop/women/${product.id}`
+                    }
+                    className="group"
+                  >
+                    <div className="relative h-[350px]">
+                      <Image
+                        src={product.images[0].src}
+                        alt={product.title}
+                        fill
+                        className="object-cover transition-opacity duration-300 group-hover:opacity-0"
+                      />
+                      {product.images[1] && (
+                        <Image
+                          src={product.images[1].src}
+                          alt={`${product.title} - alternate view`}
+                          fill
+                          className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        />
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{product.title}</h3>
+                      <p className="text-base text-gray-600">${product.variants[0].price}</p>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Gradient Overlays for Scroll Indication */}
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#2C2F36] to-transparent pointer-events-none"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#2C2F36] to-transparent pointer-events-none"></div>
+      </div>
+
+      {/* Second Banner Section */}
+      <div className="bg-[#DADBE4] py-4 mt-12 mb-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-['Bebas_Neue'] text-[#1B1F3B] tracking-wider text-center">
+            UNIFIED FIT (UNISEX)
+          </h2>
+        </div>
+      </div>
+
+      {/* Unified Fit Products */}
+      <div className="relative px-4">
+        <div className="overflow-x-auto pb-8 scrollbar-hide">
+          <div className="flex space-x-6 min-w-min">
+            {unisexProducts.map((product) => (
+              <div key={product.id} className="flex-none w-[300px] group">
+                <div className="bg-white rounded-lg overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 h-[450px]">
+                  <Link
+                    href={product.title.toLowerCase().includes('eternally woven') 
+                      ? '/shop/unisex/eternally-woven'
+                      : product.title.toLowerCase().includes('eternal lotus') && product.title.toLowerCase().includes('black & grey')
+                      ? '/shop/unisex/eternal-lotus-B&G'
+                      : product.id === '6813de3b9fb67dd986004dc8'  // Eternal Lotus Purple Flower Graphic Tee
+                      ? '/shop/unisex/eternal-lotus-purple'
+                      : product.id === '682803161b86b39978039d62'  // Eternal Ascension T-shirt
+                      ? '/shop/unisex/eternal-ascension'
+                      : `/shop/product/${product.id}`}
+                    className="group"
+                  >
+                    <div className="relative h-[350px]">
+                      <Image
+                        src={product.images[0].src}
+                        alt={product.title}
+                        fill
+                        className="object-cover transition-opacity duration-300 group-hover:opacity-0"
+                      />
+                      {product.images[1] && (
+                        <Image
+                          src={product.images[1].src}
+                          alt={`${product.title} - alternate view`}
+                          fill
+                          className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        />
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{product.title}</h3>
+                      <p className="text-base text-gray-600">${product.variants[0].price}</p>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Gradient Overlays for Scroll Indication */}
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#2C2F36] to-transparent pointer-events-none"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#2C2F36] to-transparent pointer-events-none"></div>
+      </div>
+    </div>
   );
 } 
