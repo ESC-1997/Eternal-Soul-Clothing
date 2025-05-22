@@ -43,7 +43,8 @@ export default function MensCollection() {
           'Eternally Cozy Sweatpants',
           'Eternal Rebirth',
           'Eternal Cut',
-          'Vow of The Eternal'
+          'Vow of The Eternal',
+          'Eternal Awakening'
         ];
 
         console.log('Filtering products...');
@@ -157,6 +158,8 @@ export default function MensCollection() {
                         ? '/shop/mens/eternal-cut'
                         : product.title.toLowerCase().includes('vow of the eternal')
                         ? '/shop/mens/vow-of-the-eternal'
+                        : product.title.toLowerCase().includes('eternal awakening')
+                        ? '/shop/mens/eternal-awakening'
                         : `/shop/mens/${product.id}`
                     }
                     className="group"
@@ -182,6 +185,8 @@ export default function MensCollection() {
                       <p className="text-base text-gray-600">
                         {product.title.toLowerCase().includes('vow of the eternal')
                           ? '$40.00'
+                          : product.title.toLowerCase().includes('eternal awakening')
+                          ? '$45.00'
                           : `$${product.variants[0].price}`}
                       </p>
                     </div>
