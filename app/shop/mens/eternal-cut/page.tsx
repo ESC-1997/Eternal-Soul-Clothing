@@ -58,7 +58,7 @@ export default function EternalCut() {
           variants: foundProduct.variants
             .filter((variant: any) => variant.is_enabled) // Only include enabled variants
             .map((variant: any) => {
-              const [size, color] = variant.title.split(' / ');
+              const [color, size] = variant.title.split(' / ');
               return {
                 id: variant.id,
                 title: variant.title,
