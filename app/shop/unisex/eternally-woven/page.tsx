@@ -30,15 +30,6 @@ export default function EternallyWovenPage() {
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  // Color to image index mapping
-  const colorImageMap: { [key: string]: number } = {
-    'Violet': 0,
-    'Black': 2,
-    'Sand': 4,
-    'Dark Chocolate': 6,
-    'Charcoal': 8
-  };
-
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -57,15 +48,6 @@ export default function EternallyWovenPage() {
           throw new Error('Product not found');
         }
 
-        console.log('Raw Eternally Woven product:', {
-          title: eternallyWoven.title,
-          variants: eternallyWoven.variants.map((v: any) => ({
-            title: v.title,
-            is_enabled: v.is_enabled,
-            price: v.price
-          }))
-        });
-
         // Transform the product data
         const transformedProduct: Product = {
           id: eternallyWoven.id,
@@ -73,15 +55,9 @@ export default function EternallyWovenPage() {
           description: "The Eternally Woven collection represents the perfect fusion of comfort and style. These pieces are designed to be versatile, durable, and suitable for any occasion. Made with premium materials and featuring our signature design elements, each item in this collection is crafted to be a timeless addition to your wardrobe.",
           images: eternallyWoven.images.map((img: any) => ({ src: img.src })),
           variants: eternallyWoven.variants
-            .filter((variant: any) => {
-              console.log('Checking variant:', {
-                title: variant.title,
-                is_enabled: variant.is_enabled
-              });
-              return variant.is_enabled;
-            })
+            .filter((variant: any) => variant.is_enabled)
             .map((variant: any) => {
-              const [size, color] = variant.title.split(' / ');
+              const [color, size] = variant.title.split(' / ');
               return {
                 id: variant.id,
                 title: variant.title,
@@ -91,8 +67,6 @@ export default function EternallyWovenPage() {
               };
             })
         };
-
-        console.log('Transformed product variants:', transformedProduct.variants);
 
         setProduct(transformedProduct);
       } catch (err) {
@@ -132,6 +106,9 @@ export default function EternallyWovenPage() {
   // Get unique colors and sizes
   const availableColors = product ? Array.from(new Set(product.variants.map(v => v.color))) : [];
   const availableSizes = product ? Array.from(new Set(product.variants.map(v => v.size))) : [];
+
+  console.log('Available colors:', availableColors);
+  console.log('Product variants:', product?.variants);
 
   if (loading) {
     return (
@@ -208,9 +185,9 @@ export default function EternallyWovenPage() {
             </div>
           </div>
 
-          {/* Product Details */}
+          {/* Product Info */}
           <div className="text-white space-y-6">
-            <h1 className="text-3xl font-bold">{product.title}</h1>
+            <h1 className="text-4xl font-['Bebas_Neue'] tracking-wider">{product.title}</h1>
             
             {/* Color Selection */}
             <div className="space-y-4">
@@ -221,10 +198,8 @@ export default function EternallyWovenPage() {
                     key={color}
                     onClick={() => {
                       setSelectedColor(color);
-                      const imageIndex = colorImageMap[color];
-                      if (imageIndex !== undefined) {
-                        setSelectedImage(imageIndex);
-                      }
+                      const imageIndex = availableColors.indexOf(color);
+                      setSelectedImage(imageIndex);
                     }}
                     className={`p-4 border rounded-lg transition-colors ${
                       selectedColor === color
