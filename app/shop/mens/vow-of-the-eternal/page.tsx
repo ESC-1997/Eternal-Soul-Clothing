@@ -58,7 +58,7 @@ export default function VowOfTheEternal() {
           variants: foundProduct.variants
             .filter((variant: any) => variant.is_enabled) // Only include enabled variants
             .map((variant: any) => {
-              const [size, color] = variant.title.split(' / ');
+              const [color, size] = variant.title.split(' / ');
               return {
                 id: variant.id,
                 title: variant.title,
@@ -233,29 +233,9 @@ export default function VowOfTheEternal() {
           <div className="text-white space-y-6">
             <h1 className="text-4xl font-['Bebas_Neue'] tracking-wider">{product.title}</h1>
             
-            {/* Size Selection */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
-              <div className="grid grid-cols-4 gap-4">
-                {uniqueSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`p-4 border rounded-lg transition-colors ${
-                      selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Color Selection */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
               <div className="grid grid-cols-4 gap-4">
                 {uniqueColors.map((color) => (
                   <button
@@ -268,6 +248,26 @@ export default function VowOfTheEternal() {
                     }`}
                   >
                     {color}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Size Selection */}
+            <div className="space-y-4">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <div className="grid grid-cols-4 gap-4">
+                {uniqueSizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`p-4 border rounded-lg transition-colors ${
+                      selectedSize === size
+                        ? 'border-white bg-white text-[#2C2F36]'
+                        : 'border-gray-600 hover:border-white'
+                    }`}
+                  >
+                    {size}
                   </button>
                 ))}
               </div>
