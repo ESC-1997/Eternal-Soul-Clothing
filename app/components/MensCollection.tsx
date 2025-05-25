@@ -53,7 +53,8 @@ export default function MensCollection() {
           'Eternal Collapse',
           'Eternal Swords',
           'Baseball Tee',
-          'Eternally Untainted'
+          'Eternally Untainted',
+          'Eternal Shadow'
         ];
 
         console.log('Filtering products...');
@@ -264,6 +265,8 @@ export default function MensCollection() {
                         ? '/shop/mens/baseball-tee'
                         : product.title.toLowerCase().includes('eternally untainted')
                         ? '/shop/mens/eternally-untainted'
+                        : product.title.toLowerCase().includes('eternal shadow')
+                        ? '/shop/mens/eternal-shadow'
                         : `/shop/mens/${product.id}`
                     }
                     className="group"
