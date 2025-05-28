@@ -34,6 +34,7 @@ interface Product {
 interface PrintifyStoreProps {
   onCustomizationModeChange: (isCustomizing: boolean) => void;
   onViewModeChange: (isViewing: boolean) => void;
+  onProductSelect: (product: Product) => void;
 }
 
 // Add this mapping at the top of the file
@@ -59,7 +60,11 @@ function getLogoColorFromProductId(productId: string, productType: 'ee' | 'es' =
   return productType === 'ee' ? EE_PRODUCT_ID_TO_LOGO_COLOR[productId] || '' : ES_PRODUCT_ID_TO_LOGO_COLOR[productId] || '';
 }
 
-export default function PrintifyStore({ onCustomizationModeChange, onViewModeChange }: PrintifyStoreProps) {
+export default function PrintifyStore({ 
+  onCustomizationModeChange, 
+  onViewModeChange,
+  onProductSelect 
+}: PrintifyStoreProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -120,8 +125,11 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
         }
         const data = await response.json();
         
-        // Debug: Log all product titles
-        console.log('All products:', data.map((p: Product) => p.title));
+        // Debug: Log all product titles and IDs in a more readable format
+        console.log('=== ALL PRODUCTS FROM API ===');
+        data.forEach((p: Product) => {
+          console.log(`Title: "${p.title}" (ID: ${p.id})`);
+        });
         
         const filteredProducts = data.filter(
           (product: Product) => {
@@ -130,28 +138,31 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
               product.id !== "681449c6b03bb3ed0c01a685" && // Remove the original Phoenix Logo
               (
                 product.title === "Eternal Lotus (Black & Grey)" || 
-                product.title === "Eternal Lotus - Purple Floral Graphic Tee " ||
+                product.title === "Eternal Lotus - Purple Floral Graphic Tee" ||
                 product.title === "Eternal Collapse" ||
                 product.title === "Vow of the Eternal" ||
                 product.title === "Eternal Awakening" ||
                 product.title === "Eternal Divide" ||
+                product.title === "Eternal Glow" ||
                 isEternalElegance
               );
             
-            // Debug: Log each product's title, isEternalElegance, and whether it's included
-            console.log(`Product: '${product.title}', isEternalElegance: ${isEternalElegance}, Included: ${shouldInclude}`);
-            
-            // Debug: Log variant data for Eternal Awakening
-            if (product.title === "Eternal Awakening") {
-              console.log('Eternal Awakening variants in frontend:', product.variants);
-            }
+            // Debug: Log each product's filtering decision
+            console.log(`=== FILTERING DECISION ===`);
+            console.log(`Product: "${product.title}" (ID: ${product.id})`);
+            console.log(`Is Eternal Elegance: ${isEternalElegance}`);
+            console.log(`Should Include: ${shouldInclude}`);
+            console.log(`Reason: ${shouldInclude ? 'Matches filter criteria' : 'Does not match filter criteria'}`);
             
             return shouldInclude;
           }
         );
 
-        // Debug: Log filtered products
-        console.log('Filtered products:', filteredProducts.map((p: Product) => p.title));
+        // Debug: Log final filtered products
+        console.log('=== FINAL FILTERED PRODUCTS ===');
+        filteredProducts.forEach((p: Product) => {
+          console.log(`Title: "${p.title}" (ID: ${p.id})`);
+        });
 
         // Filter out customizable products and Eternal Elegance products for regularProducts
         const regularProducts = filteredProducts.filter(
@@ -371,7 +382,7 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
           combinedCustomizableProduct, // ES Phoenix Logo
           combinedEternalEleganceProduct, // Eternal Elegance (single listing)
           combinedEternalSlashProduct, // Eternal Slash (single listing)
-          ...regularProducts // Only non-Eternal Elegance, non-customizable products
+          // Remove regularProducts to only show customizable items
         ]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -392,6 +403,11 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+  };
+
+  const handleCustomizeClick = (product: Product) => {
+    onProductSelect(product);
+    onCustomizationModeChange(true);
   };
 
   if (loading) {
@@ -422,10 +438,8 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
           </svg>
           Back to Products
         </button>
-        {selectedProduct.customizable ? (
+        {selectedProduct.customizable && (
           <ProductCustomizer product={selectedProduct} />
-        ) : (
-          <ProductViewer product={selectedProduct} />
         )}
       </div>
     );
@@ -433,363 +447,13 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 md:gap-4 lg:gap-6 p-2 md:p-4">
-        {/* Eternally Woven Product Card */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[320px] md:max-w-[380px] mx-auto h-[400px] md:h-[460px] flex flex-col">
-          <div className="cursor-pointer h-[220px] md:h-[280px] flex items-center justify-center bg-gray-50 relative group"
-            onClick={() => {
-              setSelectedProduct({
-                id: '68268cde04479021a204cf52',
-                title: 'Eternally Woven',
-                images: [
-                  { src: '/images/Eternally Woven/white_back.jpg' },
-                  { src: '/images/Eternally Woven/white_front.jpg' }
-                ],
-                variants: [
-                  { id: 'default', title: 'Starting at', price: '4000' }
-                ]
-              });
-              onCustomizationModeChange(false);
-              onViewModeChange(true);
-            }}
-          >
-            {/* Main Image */}
-            <img
-              src="/images/Eternally Woven/white_back.jpg"
-              alt="Eternally Woven"
-              className="w-full h-full object-contain p-2 transition-opacity duration-300 group-hover:opacity-0"
-            />
-            {/* Hover Image */}
-            <img
-              src="/images/Eternally Woven/white_front.jpg"
-              alt="Eternally Woven - Front View"
-              className="absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
-            />
-            {/* Image Progress Indicator - Always 2 dots for front/back */}
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#9F2FFF]" />
-              <div className="w-1.5 h-1.5 rounded-full border border-[#9F2FFF]" />
-            </div>
-          </div>
-          <div className="p-2 flex flex-col flex-grow">
-            <h3 className="text-xs md:text-sm font-semibold text-gray-900 mb-1 line-clamp-2 flex-grow">Eternally Woven</h3>
-            <p className="text-xs md:text-sm text-gray-600 mb-2">$40.00</p>
-          </div>
-          <button
-            className="w-full bg-gray-900 text-white py-2 px-3 rounded-none text-xs md:text-sm hover:bg-gray-800 transition-colors"
-            onClick={() => {
-              setSelectedProduct({
-                id: '68268cde04479021a204cf52',
-                title: 'Eternally Woven',
-                images: [
-                  { src: '/images/Eternally Woven/white_back.jpg' },
-                  { src: '/images/Eternally Woven/white_front.jpg' }
-                ],
-                variants: [
-                  { id: 'default', title: 'Starting at', price: '4000' }
-                ]
-              });
-              onCustomizationModeChange(false);
-              onViewModeChange(true);
-            }}
-          >
-            View Options
-          </button>
-        </div>
-        {/* Eternal Ascension Product Card */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[320px] md:max-w-[380px] mx-auto h-[400px] md:h-[460px] flex flex-col">
-          <div className="cursor-pointer h-[220px] md:h-[280px] flex items-center justify-center bg-gray-50 relative group"
-            onClick={() => {
-              setSelectedProduct({
-                id: '682803161b86b39978039d62',
-                title: 'Eternal Ascension',
-                images: [
-                  { src: '/images/eternal_ascension/violet.jpg' },
-                  { src: '/images/eternal_ascension/violet1.jpg' }
-                ],
-                variants: [
-                  { id: '12125', title: 'Black M', price: '4000' },
-                  { id: '12126', title: 'Black S', price: '4000' },
-                  { id: '12124', title: 'Black L', price: '4000' },
-                  { id: '12127', title: 'Black XL', price: '4000' },
-                  { id: '12128', title: 'Black 2XL', price: '4000' },
-                  { id: '12129', title: 'Black 3XL', price: '4250' },
-                  { id: '24039', title: 'Black 4XL', price: '4250' },
-                  { id: '24171', title: 'Black 5XL', price: '4250' },
-                  { id: '11873', title: 'Charcoal M', price: '4000' },
-                  { id: '11872', title: 'Charcoal L', price: '4000' },
-                  { id: '11875', title: 'Charcoal XL', price: '4000' },
-                  { id: '11874', title: 'Charcoal S', price: '4000' },
-                  { id: '11876', title: 'Charcoal 2XL', price: '4000' },
-                  { id: '11877', title: 'Charcoal 3XL', price: '4250' },
-                  { id: '23955', title: 'Charcoal 4XL', price: '4250' },
-                  { id: '24088', title: 'Charcoal 5XL', price: '4250' },
-                  { id: '11899', title: 'Dark Chocolate XL', price: '4000' },
-                  { id: '11896', title: 'Dark Chocolate L', price: '4000' },
-                  { id: '11898', title: 'Dark Chocolate S', price: '4000' },
-                  { id: '11897', title: 'Dark Chocolate M', price: '4000' },
-                  { id: '11900', title: 'Dark Chocolate 2XL', price: '4000' },
-                  { id: '11901', title: 'Dark Chocolate 3XL', price: '4250' },
-                  { id: '23963', title: 'Dark Chocolate 4XL', price: '4250' },
-                  { id: '24097', title: 'Dark Chocolate 5XL', price: '4250' },
-                  { id: '12055', title: 'Sand XL', price: '4000' },
-                  { id: '12053', title: 'Sand M', price: '4000' },
-                  { id: '12052', title: 'Sand L', price: '4000' },
-                  { id: '12054', title: 'Sand S', price: '4000' },
-                  { id: '12056', title: 'Sand 2XL', price: '4000' },
-                  { id: '12057', title: 'Sand 3XL', price: '4250' },
-                  { id: '24015', title: 'Sand 4XL', price: '4250' },
-                  { id: '24147', title: 'Sand 5XL', price: '4250' },
-                  { id: '12095', title: 'Violet M', price: '4000' },
-                  { id: '12096', title: 'Violet S', price: '4000' },
-                  { id: '12094', title: 'Violet L', price: '4000' },
-                  { id: '12097', title: 'Violet XL', price: '4000' },
-                  { id: '12098', title: 'Violet 2XL', price: '4000' },
-                  { id: '12099', title: 'Violet 3XL', price: '4250' },
-                  { id: '24028', title: 'Violet 4XL', price: '4250' },
-                  { id: '24161', title: 'Violet 5XL', price: '4250' }
-                ],
-                colorMappings: [
-                  { shirtColor: 'Black', logoColor: '', size: 'M', variantId: 12125, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: 'S', variantId: 12126, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: 'L', variantId: 12124, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: 'XL', variantId: 12127, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: '2XL', variantId: 12128, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: '3XL', variantId: 12129, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: '4XL', variantId: 24039, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: '5XL', variantId: 24171, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: 'M', variantId: 11873, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: 'L', variantId: 11872, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: 'XL', variantId: 11875, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: 'S', variantId: 11874, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: '2XL', variantId: 11876, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: '3XL', variantId: 11877, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: '4XL', variantId: 23955, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: '5XL', variantId: 24088, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: 'XL', variantId: 11899, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: 'L', variantId: 11896, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: 'S', variantId: 11898, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: 'M', variantId: 11897, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: '2XL', variantId: 11900, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: '3XL', variantId: 11901, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: '4XL', variantId: 23963, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: '5XL', variantId: 24097, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: 'XL', variantId: 12055, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: 'M', variantId: 12053, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: 'L', variantId: 12052, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: 'S', variantId: 12054, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: '2XL', variantId: 12056, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: '3XL', variantId: 12057, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: '4XL', variantId: 24015, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: '5XL', variantId: 24147, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: 'M', variantId: 12095, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: 'S', variantId: 12096, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: 'L', variantId: 12094, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: 'XL', variantId: 12097, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: '2XL', variantId: 12098, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: '3XL', variantId: 12099, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: '4XL', variantId: 24028, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: '5XL', variantId: 24161, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' }
-                ]
-              });
-              onCustomizationModeChange(false);
-              onViewModeChange(true);
-            }}
-          >
-            {/* Main Image */}
-            <img
-              src="/images/eternal_ascension/violet.jpg"
-              alt="Eternal Ascension"
-              className="w-full h-full object-contain p-2 transition-opacity duration-300 group-hover:opacity-0"
-            />
-            {/* Hover Image */}
-            <img
-              src="/images/eternal_ascension/violet1.jpg"
-              alt="Eternal Ascension - Front View"
-              className="absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
-            />
-            {/* Image Progress Indicator - Always 2 dots for front/back */}
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#9F2FFF]" />
-              <div className="w-1.5 h-1.5 rounded-full border border-[#9F2FFF]" />
-            </div>
-          </div>
-          <div className="p-2 flex flex-col flex-grow">
-            <h3 className="text-xs md:text-sm font-semibold text-gray-900 mb-1 line-clamp-2 flex-grow">Eternal Ascension</h3>
-            <p className="text-xs md:text-sm text-gray-600 mb-2">$40.00</p>
-          </div>
-          <button
-            className="w-full bg-gray-900 text-white py-2 px-3 rounded-none text-xs md:text-sm hover:bg-gray-800 transition-colors"
-            onClick={() => {
-              setSelectedProduct({
-                id: '682803161b86b39978039d62',
-                title: 'Eternal Ascension',
-                images: [
-                  { src: '/images/eternal_ascension/violet.jpg' },
-                  { src: '/images/eternal_ascension/violet1.jpg' }
-                ],
-                variants: [
-                  { id: '12125', title: 'Black M', price: '4000' },
-                  { id: '12126', title: 'Black S', price: '4000' },
-                  { id: '12124', title: 'Black L', price: '4000' },
-                  { id: '12127', title: 'Black XL', price: '4000' },
-                  { id: '12128', title: 'Black 2XL', price: '4000' },
-                  { id: '12129', title: 'Black 3XL', price: '4250' },
-                  { id: '24039', title: 'Black 4XL', price: '4250' },
-                  { id: '24171', title: 'Black 5XL', price: '4250' },
-                  { id: '11873', title: 'Charcoal M', price: '4000' },
-                  { id: '11872', title: 'Charcoal L', price: '4000' },
-                  { id: '11875', title: 'Charcoal XL', price: '4000' },
-                  { id: '11874', title: 'Charcoal S', price: '4000' },
-                  { id: '11876', title: 'Charcoal 2XL', price: '4000' },
-                  { id: '11877', title: 'Charcoal 3XL', price: '4250' },
-                  { id: '23955', title: 'Charcoal 4XL', price: '4250' },
-                  { id: '24088', title: 'Charcoal 5XL', price: '4250' },
-                  { id: '11899', title: 'Dark Chocolate XL', price: '4000' },
-                  { id: '11896', title: 'Dark Chocolate L', price: '4000' },
-                  { id: '11898', title: 'Dark Chocolate S', price: '4000' },
-                  { id: '11897', title: 'Dark Chocolate M', price: '4000' },
-                  { id: '11900', title: 'Dark Chocolate 2XL', price: '4000' },
-                  { id: '11901', title: 'Dark Chocolate 3XL', price: '4250' },
-                  { id: '23963', title: 'Dark Chocolate 4XL', price: '4250' },
-                  { id: '24097', title: 'Dark Chocolate 5XL', price: '4250' },
-                  { id: '12055', title: 'Sand XL', price: '4000' },
-                  { id: '12053', title: 'Sand M', price: '4000' },
-                  { id: '12052', title: 'Sand L', price: '4000' },
-                  { id: '12054', title: 'Sand S', price: '4000' },
-                  { id: '12056', title: 'Sand 2XL', price: '4000' },
-                  { id: '12057', title: 'Sand 3XL', price: '4250' },
-                  { id: '24015', title: 'Sand 4XL', price: '4250' },
-                  { id: '24147', title: 'Sand 5XL', price: '4250' },
-                  { id: '12095', title: 'Violet M', price: '4000' },
-                  { id: '12096', title: 'Violet S', price: '4000' },
-                  { id: '12094', title: 'Violet L', price: '4000' },
-                  { id: '12097', title: 'Violet XL', price: '4000' },
-                  { id: '12098', title: 'Violet 2XL', price: '4000' },
-                  { id: '12099', title: 'Violet 3XL', price: '4250' },
-                  { id: '24028', title: 'Violet 4XL', price: '4250' },
-                  { id: '24161', title: 'Violet 5XL', price: '4250' }
-                ],
-                colorMappings: [
-                  { shirtColor: 'Black', logoColor: '', size: 'M', variantId: 12125, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: 'S', variantId: 12126, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: 'L', variantId: 12124, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: 'XL', variantId: 12127, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: '2XL', variantId: 12128, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: '3XL', variantId: 12129, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: '4XL', variantId: 24039, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Black', logoColor: '', size: '5XL', variantId: 24171, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: 'M', variantId: 11873, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: 'L', variantId: 11872, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: 'XL', variantId: 11875, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: 'S', variantId: 11874, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: '2XL', variantId: 11876, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: '3XL', variantId: 11877, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: '4XL', variantId: 23955, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Charcoal', logoColor: '', size: '5XL', variantId: 24088, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: 'XL', variantId: 11899, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: 'L', variantId: 11896, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: 'S', variantId: 11898, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: 'M', variantId: 11897, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: '2XL', variantId: 11900, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: '3XL', variantId: 11901, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: '4XL', variantId: 23963, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Dark Chocolate', logoColor: '', size: '5XL', variantId: 24097, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: 'XL', variantId: 12055, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: 'M', variantId: 12053, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: 'L', variantId: 12052, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: 'S', variantId: 12054, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: '2XL', variantId: 12056, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: '3XL', variantId: 12057, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: '4XL', variantId: 24015, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Sand', logoColor: '', size: '5XL', variantId: 24147, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: 'M', variantId: 12095, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: 'S', variantId: 12096, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: 'L', variantId: 12094, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: 'XL', variantId: 12097, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: '2XL', variantId: 12098, price: 4000, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: '3XL', variantId: 12099, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: '4XL', variantId: 24028, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' },
-                  { shirtColor: 'Violet', logoColor: '', size: '5XL', variantId: 24161, price: 4250, stock_status: 'in_stock', printifyProductId: '682803161b86b39978039d62' }
-                ]
-              });
-              onCustomizationModeChange(false);
-              onViewModeChange(true);
-            }}
-          >
-            View Options
-          </button>
-        </div>
-        {/* The Eternal Snap (Eternal Cap) Product Card */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[320px] md:max-w-[380px] mx-auto h-[400px] md:h-[460px] flex flex-col">
-          <div className="cursor-pointer h-[220px] md:h-[280px] flex items-center justify-center bg-gray-50 relative group"
-            onClick={() => {
-              setSelectedProduct({
-                id: 'eternal-snap',
-                title: 'The Eternal Snap',
-                images: [
-                  { src: '/images/eternal_cap/red_white3.jpg' },
-                  { src: '/images/eternal_cap/red_white2.jpg' }
-                ],
-                variants: [
-                  { id: 'default', title: 'One size', price: '4000' }
-                ],
-                customizable: true
-              });
-              onCustomizationModeChange(true);
-              onViewModeChange(false);
-            }}
-          >
-            {/* Main Image */}
-            <img
-              src="/images/eternal_cap/red_white3.jpg"
-              alt="The Eternal Snap"
-              className="w-full h-full object-contain p-2 transition-opacity duration-300 group-hover:opacity-0"
-            />
-            {/* Hover Image */}
-            <img
-              src="/images/eternal_cap/red_white2.jpg"
-              alt="The Eternal Snap - Hover"
-              className="absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
-            />
-            {/* Image Progress Indicator - Always 2 dots for front/back */}
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#9F2FFF]" />
-              <div className="w-1.5 h-1.5 rounded-full border border-[#9F2FFF]" />
-            </div>
-          </div>
-          <div className="p-2 flex flex-col flex-grow">
-            <h3 className="text-xs md:text-sm font-semibold text-gray-900 mb-1 line-clamp-2 flex-grow">The Eternal Snap</h3>
-            <p className="text-xs md:text-sm text-gray-600 mb-2">$40.00</p>
-          </div>
-          <button
-            className="w-full bg-gray-900 text-white py-2 px-3 rounded-none text-xs md:text-sm hover:bg-gray-800 transition-colors"
-            onClick={() => {
-              setSelectedProduct({
-                id: 'eternal-snap',
-                title: 'The Eternal Snap',
-                images: [
-                  { src: '/images/eternal_cap/red_white3.jpg' },
-                  { src: '/images/eternal_cap/red_white2.jpg' }
-                ],
-                variants: [
-                  { id: 'default', title: 'One size', price: '4000' }
-                ],
-                customizable: true
-              });
-              onCustomizationModeChange(true);
-              onViewModeChange(false);
-            }}
-          >
-            Customize
-          </button>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 p-4 md:p-6 mb-32">
         {/* Product Grid */}
         {products.map((product) => (
-          <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[320px] md:max-w-[380px] mx-auto h-[400px] md:h-[460px] flex flex-col">
+          <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[400px] md:max-w-[450px] mx-auto h-[500px] md:h-[550px] flex flex-col">
             {product.images[0] && (
               <div 
-                className="cursor-pointer h-[220px] md:h-[280px] flex items-center justify-center bg-gray-50 relative group"
+                className="cursor-pointer h-[350px] md:h-[400px] flex items-center justify-center bg-gray-50 relative group"
                 onClick={() => {
                   if (product.customizable) {
                     setSelectedProduct(product);
@@ -860,8 +524,8 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
               </div>
             )}
             <div className="p-2 flex flex-col flex-grow">
-              <h3 className="text-xs md:text-sm font-semibold text-gray-900 mb-1 line-clamp-2 flex-grow">{product.title}</h3>
-              <p className="text-xs md:text-sm text-gray-600 mb-2">
+              <h3 className="text-sm md:text-base font-semibold text-gray-900 mb-1 line-clamp-2 flex-grow">{product.title}</h3>
+              <p className="text-sm md:text-base text-gray-600 mb-2">
                 {(product.title === 'Eternal Collapse' || product.title === 'Vow of the Eternal')
                   ? '$40.00'
                   : product.title === 'Eternal Awakening'
@@ -870,138 +534,13 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
               </p>
             </div>
             <button
-              className="w-full bg-gray-900 text-white py-2 px-3 rounded-none text-xs md:text-sm hover:bg-gray-800 transition-colors"
-              onClick={() => {
-                setSelectedProduct(product);
-                if (product.customizable) {
-                  onCustomizationModeChange(true);
-                  onViewModeChange(false);
-                } else {
-                  onViewModeChange(true);
-                  onCustomizationModeChange(false);
-                }
-              }}
+              className="w-full bg-gray-900 text-white py-1.5 px-3 rounded-none text-sm hover:bg-gray-800 transition-colors"
+              onClick={() => handleCustomizeClick(product)}
             >
-              {product.customizable ? 'Customize' : 'View Options'}
+              Customize
             </button>
           </div>
         ))}
-        {/* Eternal Cut Product Card - always appended at the end */}
-        <div key="eternal-cut" className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[320px] md:max-w-[380px] mx-auto h-[400px] md:h-[460px] flex flex-col">
-          <div className="cursor-pointer h-[220px] md:h-[280px] flex items-center justify-center bg-gray-50 relative group"
-            onClick={() => {
-              setSelectedProduct({
-                id: '6828e9aa1b86b3997803cc3d',
-                title: 'Eternal Cut',
-                images: [
-                  { src: '/images/eternal_cut/black.jpg' },
-                  { src: '/images/eternal_cut/white.jpg' }
-                ],
-                variants: [
-                  { id: '68542', title: 'Black XS', price: '3500' },
-                  { id: '68544', title: 'Black S', price: '3500' },
-                  { id: '68546', title: 'Black M', price: '3500' },
-                  { id: '68548', title: 'Black L', price: '3500' },
-                  { id: '68550', title: 'Black XL', price: '3500' },
-                  { id: '68552', title: 'Black 2XL', price: '3500' },
-                  { id: '107430', title: 'Black 3XL', price: '3500' },
-                  { id: '106112', title: 'Coal XS', price: '3500' },
-                  { id: '106113', title: 'Coal S', price: '3500' },
-                  { id: '106114', title: 'Coal M', price: '3500' },
-                  { id: '106115', title: 'Coal L', price: '3500' },
-                  { id: '106116', title: 'Coal XL', price: '3500' },
-                  { id: '106117', title: 'Coal 2XL', price: '3500' },
-                  { id: '107431', title: 'Coal 3XL', price: '3500' },
-                  { id: '68543', title: 'White XS', price: '3500' },
-                  { id: '68545', title: 'White S', price: '3500' },
-                  { id: '68547', title: 'White M', price: '3500' },
-                  { id: '68549', title: 'White L', price: '3500' },
-                  { id: '68551', title: 'White XL', price: '3500' },
-                  { id: '68553', title: 'White 2XL', price: '3500' },
-                  { id: '107437', title: 'White 3XL', price: '3500' },
-                  { id: '106106', title: 'Army XS', price: '3500' },
-                  { id: '106107', title: 'Army S', price: '3500' },
-                  { id: '106108', title: 'Army M', price: '3500' },
-                  { id: '106109', title: 'Army L', price: '3500' },
-                  { id: '106110', title: 'Army XL', price: '3500' },
-                  { id: '106111', title: 'Army 2XL', price: '3500' },
-                  { id: '107428', title: 'Army 3XL', price: '3500' }
-                ]
-              });
-              onCustomizationModeChange(false);
-              onViewModeChange(true);
-            }}
-          >
-            {/* Main Image */}
-            <img
-              src="/images/eternal_cut/black.jpg"
-              alt="Eternal Cut"
-              className="w-full h-full object-contain p-2 transition-opacity duration-300 group-hover:opacity-0"
-            />
-            {/* Hover Image */}
-            <img
-              src="/images/eternal_cut/white.jpg"
-              alt="Eternal Cut - White"
-              className="absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
-            />
-            {/* Image Progress Indicator - Always 2 dots for front/back */}
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#9F2FFF]" />
-              <div className="w-1.5 h-1.5 rounded-full border border-[#9F2FFF]" />
-            </div>
-          </div>
-          <div className="p-2 flex flex-col flex-grow">
-            <h3 className="text-xs md:text-sm font-semibold text-gray-900 mb-1 line-clamp-2 flex-grow">Eternal Cut</h3>
-            <p className="text-xs md:text-sm text-gray-600 mb-2">$35.00</p>
-          </div>
-          <button
-            className="w-full bg-gray-900 text-white py-2 px-3 rounded-none text-xs md:text-sm hover:bg-gray-800 transition-colors"
-            onClick={() => {
-              setSelectedProduct({
-                id: '6828e9aa1b86b3997803cc3d',
-                title: 'Eternal Cut',
-                images: [
-                  { src: '/images/eternal_cut/black.jpg' },
-                  { src: '/images/eternal_cut/white.jpg' }
-                ],
-                variants: [
-                  { id: '68542', title: 'Black XS', price: '3500' },
-                  { id: '68544', title: 'Black S', price: '3500' },
-                  { id: '68546', title: 'Black M', price: '3500' },
-                  { id: '68548', title: 'Black L', price: '3500' },
-                  { id: '68550', title: 'Black XL', price: '3500' },
-                  { id: '68552', title: 'Black 2XL', price: '3500' },
-                  { id: '107430', title: 'Black 3XL', price: '3500' },
-                  { id: '106112', title: 'Coal XS', price: '3500' },
-                  { id: '106113', title: 'Coal S', price: '3500' },
-                  { id: '106114', title: 'Coal M', price: '3500' },
-                  { id: '106115', title: 'Coal L', price: '3500' },
-                  { id: '106116', title: 'Coal XL', price: '3500' },
-                  { id: '106117', title: 'Coal 2XL', price: '3500' },
-                  { id: '107431', title: 'Coal 3XL', price: '3500' },
-                  { id: '68543', title: 'White XS', price: '3500' },
-                  { id: '68545', title: 'White S', price: '3500' },
-                  { id: '68547', title: 'White M', price: '3500' },
-                  { id: '68549', title: 'White L', price: '3500' },
-                  { id: '68551', title: 'White XL', price: '3500' },
-                  { id: '68553', title: 'White 2XL', price: '3500' },
-                  { id: '107437', title: 'White 3XL', price: '3500' },
-                  { id: '106106', title: 'Army XS', price: '3500' },
-                  { id: '106107', title: 'Army S', price: '3500' },
-                  { id: '106108', title: 'Army M', price: '3500' },
-                  { id: '106109', title: 'Army L', price: '3500' },
-                  { id: '106110', title: 'Army XL', price: '3500' },
-                  { id: '106111', title: 'Army 2XL', price: '3500' },
-                  { id: '107428', title: 'Army 3XL', price: '3500' }
-                ]
-              });
-              onCustomizationModeChange(false);
-              onViewModeChange(true);
-            }}
-          >
-            View Options
-          </button>
-        </div>
       </div>
 
       {/* Full-screen Image Gallery Modal */}
