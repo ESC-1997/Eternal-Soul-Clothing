@@ -20,6 +20,7 @@ export default function MensCollection() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [eternalCollapse, setEternalCollapse] = useState<Product[]>([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -35,6 +36,7 @@ export default function MensCollection() {
         console.log('=== ALL PRODUCT TITLES ===');
         printifyProducts.forEach((product: any) => {
           console.log('Product Title:', product.title);
+          console.log('Product ID:', product.id);
         });
         console.log('========================');
 
@@ -43,20 +45,43 @@ export default function MensCollection() {
           'Eternally Cozy Sweatpants',
           'Eternal Rebirth',
           'Eternal Cut',
-          'Vow of The Eternal'
+          'Vow of The Eternal',
+          'Eternal Awakening'
+        ];
+
+        const radarProducts = [
+          'Eternal Collapse',
+          'Eternal Swords',
+          'Baseball Tee',
+          'Eternally Untainted',
+          'Eternal Shadow'
         ];
 
         console.log('Filtering products...');
+        console.log('Looking for radar products:', radarProducts);
+        
+        // Filter for main products
         const filteredProducts = printifyProducts.filter((product: any) => {
           const isAllowed = allowedProducts.some(name => {
             const matches = product.title.toLowerCase().includes(name.toLowerCase());
-            console.log(`Checking "${product.title}" against "${name}": ${matches}`);
+            console.log(`Checking main product "${product.title}" against "${name}": ${matches}`);
             return matches;
           });
           return isAllowed;
         });
 
-        console.log('Filtered products:', filteredProducts.map((p: { title: string }) => p.title));
+        // Filter for radar products
+        const radarItems = printifyProducts.filter((product: any) => {
+          const matches = radarProducts.some(name => {
+            const isMatch = product.title.toLowerCase().includes(name.toLowerCase());
+            console.log(`Checking radar product "${product.title}" against "${name}": ${isMatch}`);
+            return isMatch;
+          });
+          return matches;
+        });
+
+        console.log('Found main products:', filteredProducts.map((p: { title: string }) => p.title));
+        console.log('Found radar items:', radarItems.map((p: { title: string }) => p.title));
 
         // Transform Printify products to match our Product interface
         const transformedProducts = filteredProducts.map((product: any) => ({
@@ -70,8 +95,21 @@ export default function MensCollection() {
           }))
         }));
 
+        // Transform radar items if found
+        const transformedRadarItems = radarItems.map((product: any) => ({
+          id: product.id,
+          title: product.title,
+          images: product.images.map((img: any) => ({ src: img.src })),
+          variants: product.variants.map((variant: any) => ({
+            id: variant.id,
+            title: variant.title,
+            price: (variant.price / 100).toFixed(2)
+          }))
+        }));
+
         console.log('Setting products:', transformedProducts);
         setProducts(transformedProducts);
+        setEternalCollapse(transformedRadarItems);
       } catch (err) {
         console.error('Error fetching products:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -157,6 +195,8 @@ export default function MensCollection() {
                         ? '/shop/mens/eternal-cut'
                         : product.title.toLowerCase().includes('vow of the eternal')
                         ? '/shop/mens/vow-of-the-eternal'
+                        : product.title.toLowerCase().includes('eternal awakening')
+                        ? '/shop/mens/eternal-awakening'
                         : `/shop/mens/${product.id}`
                     }
                     className="group"
@@ -182,7 +222,75 @@ export default function MensCollection() {
                       <p className="text-base text-gray-600">
                         {product.title.toLowerCase().includes('vow of the eternal')
                           ? '$40.00'
+                          : product.title.toLowerCase().includes('eternal awakening')
+                          ? '$45.00'
                           : `$${product.variants[0].price}`}
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Gradient Overlays for Scroll Indication */}
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#2C2F36] to-transparent pointer-events-none"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#2C2F36] to-transparent pointer-events-none"></div>
+      </div>
+
+      {/* ON THE RADAR Banner Section */}
+      <div className="bg-[#DADBE4] py-4 my-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-['Bebas_Neue'] text-[#1B1F3B] tracking-wider text-center">
+            ON THE RADAR
+          </h2>
+        </div>
+      </div>
+
+      {/* Second Product Grid */}
+      <div className="relative px-4">
+        <div className="overflow-x-auto pb-8 scrollbar-hide">
+          <div className="flex space-x-6 min-w-min">
+            {eternalCollapse && eternalCollapse.map((product) => (
+              <div key={product.id} className="flex-none w-[300px] group">
+                <div className="bg-white rounded-lg overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 h-[450px]">
+                  <Link 
+                    href={
+                      product.title.toLowerCase().includes('eternal collapse')
+                        ? '/shop/mens/eternal-collapse'
+                        : product.title.toLowerCase().includes('eternal swords')
+                        ? '/shop/mens/eternal-swords'
+                        : product.title.toLowerCase().includes('baseball tee')
+                        ? '/shop/mens/baseball-tee'
+                        : product.title.toLowerCase().includes('eternally untainted')
+                        ? '/shop/mens/eternally-untainted'
+                        : product.title.toLowerCase().includes('eternal shadow')
+                        ? '/shop/mens/eternal-shadow'
+                        : `/shop/mens/${product.id}`
+                    }
+                    className="group"
+                  >
+                    <div className="relative h-[350px]">
+                      <Image
+                        src={product.images[0].src}
+                        alt={product.title}
+                        fill
+                        className="object-cover transition-opacity duration-300 group-hover:opacity-0"
+                      />
+                      {product.images[1] && (
+                        <Image
+                          src={product.images[1].src}
+                          alt={`${product.title} - alternate view`}
+                          fill
+                          className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        />
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{product.title}</h3>
+                      <p className="text-base text-gray-600">
+                        $40.00
                       </p>
                     </div>
                   </Link>
