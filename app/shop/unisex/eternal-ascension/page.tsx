@@ -51,7 +51,7 @@ export default function EternalAscensionPage() {
         
         // Find the Eternal Ascension T-shirt by ID
         const eternalAscension = products.find((p: any) => 
-          p.id === '682803161b86b39978039d62'
+          p.id === '683520806bcc8fd0d80d4a0f'
         );
 
         if (!eternalAscension) {
