@@ -50,7 +50,7 @@ export default function ShopNavigation() {
                 : 'text-[#2C2F36] hover:bg-[#9F2FFF] hover:text-white'
             }`}
           >
-            Shop All
+            Customize
           </Link>
           <Link 
             href="/shop/mens" 
@@ -60,7 +60,7 @@ export default function ShopNavigation() {
                 : 'text-[#2C2F36] hover:bg-[#9F2FFF] hover:text-white'
             }`}
           >
-            Mens
+            Men
           </Link>
           <Link 
             href="/shop/women" 
@@ -70,7 +70,7 @@ export default function ShopNavigation() {
                 : 'text-[#2C2F36] hover:bg-[#9F2FFF] hover:text-white'
             }`}
           >
-            Women's
+            Women
           </Link>
           <Link 
             href="/shop/accessories" 
