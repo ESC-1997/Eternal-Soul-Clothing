@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
+import { useSearchParams } from 'next/navigation';
+import LoadingScreen from '@/app/components/LoadingScreen';
 
 interface Product {
   id: string;
@@ -20,7 +22,7 @@ interface Product {
   }[];
 }
 
-export default function EternalCollapsePage() {
+export default function EternalUntaintedPage() {
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -29,6 +31,17 @@ export default function EternalCollapsePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
+  const searchParams = useSearchParams();
+  const source = searchParams.get('source');
+
+  // Helper function to check if a variant is in stock
+  const isVariantInStock = (color: string, size: string) => {
+    if (!product) return false;
+    const variant = product.variants.find(v => v.color === color && v.size === size);
+    // Debug logging for stock check
+    console.log('Checking stock for:', { color, size, variant });
+    return !!variant;
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -38,15 +51,35 @@ export default function EternalCollapsePage() {
           throw new Error('Failed to fetch products');
         }
         const products = await response.json();
-        const collapse = products.find((p: any) => p.title.toLowerCase().includes('eternal collapse'));
-        if (!collapse) throw new Error('Product not found');
+        const untainted = products.find((p: any) => p.title.toLowerCase().includes('eternally untainted'));
+        if (!untainted) throw new Error('Product not found');
+
+        // Debug logging
+        console.log('Raw Printify data:', {
+          title: untainted.title,
+          variants: untainted.variants.map((v: any) => ({
+            title: v.title,
+            is_enabled: v.is_enabled,
+            is_available: v.is_available,
+            price: v.price
+          }))
+        });
+
         const transformedProduct: Product = {
-          id: collapse.id,
-          title: collapse.title,
-          description: collapse.description || 'The Eternal Collapse collection is crafted for those who seek comfort and style in every moment.',
-          images: collapse.images.map((img: any) => ({ src: img.src })),
-          variants: collapse.variants
-            .filter((variant: any) => variant.is_enabled)
+          id: untainted.id,
+          title: untainted.title,
+          description: untainted.description || 'The Eternal Untainted collection embodies purity and resilience, crafted for those who stand unshaken in their convictions.',
+          images: untainted.images.map((img: any) => ({ src: img.src })),
+          variants: untainted.variants
+            .filter((variant: any) => {
+              // Debug logging for variant filtering
+              console.log('Checking variant:', {
+                title: variant.title,
+                is_enabled: variant.is_enabled,
+                is_available: variant.is_available
+              });
+              return variant.is_enabled;
+            })
             .map((variant: any) => {
               const [color, size] = variant.title.split(' / ');
               return {
@@ -58,6 +91,13 @@ export default function EternalCollapsePage() {
               };
             })
         };
+
+        // Debug logging for transformed product
+        console.log('Transformed product:', {
+          title: transformedProduct.title,
+          variants: transformedProduct.variants
+        });
+
         setProduct(transformedProduct);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -83,7 +123,7 @@ export default function EternalCollapsePage() {
       price: Number(selectedVariant.price),
       quantity: 1,
       image: product.images[selectedImage].src,
-      logo: product.images[0].src
+      logo: 'Standard'
     });
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
@@ -92,12 +132,18 @@ export default function EternalCollapsePage() {
   const availableColors = product ? Array.from(new Set(product.variants.map(v => v.color))) : [];
   const availableSizes = product ? Array.from(new Set(product.variants.map(v => v.size))) : [];
 
+  // Reset selections if they become invalid
+  useEffect(() => {
+    if (product && selectedColor && selectedSize) {
+      if (!isVariantInStock(selectedColor, selectedSize)) {
+        setSelectedColor('');
+        setSelectedSize('');
+      }
+    }
+  }, [product, selectedColor, selectedSize]);
+
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
   if (error || !product) {
     return (
@@ -113,7 +159,7 @@ export default function EternalCollapsePage() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href="/shop/mens"
+            href={source === 'women' ? '/shop/women' : '/shop/mens'}
             className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
           >
             <svg 
@@ -189,35 +235,49 @@ export default function EternalCollapsePage() {
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
               <div className="grid grid-cols-4 gap-4">
-                {availableSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`p-4 border rounded-lg transition-colors ${
-                      selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {availableSizes.map((size) => {
+                  const isInStock = selectedColor ? isVariantInStock(selectedColor, size) : true;
+                  return (
+                    <button
+                      key={size}
+                      onClick={() => isInStock && setSelectedSize(size)}
+                      className={`p-4 border rounded-lg transition-colors ${
+                        selectedSize === size
+                          ? 'border-white bg-white text-[#2C2F36]'
+                          : isInStock
+                            ? 'border-gray-600 hover:border-white'
+                            : 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {size}
+                      {!isInStock && <span className="block text-xs mt-1">Out of Stock</span>}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div className="pt-6">
               <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
-                ${product.variants[0].price.toFixed(2)}
+                {selectedSize && selectedColor && isVariantInStock(selectedColor, selectedSize)
+                  ? `$${product.variants.find(v => v.size === selectedSize && v.color === selectedColor)?.price.toFixed(2)}`
+                  : 'Select a color and size'}
               </p>
               <button
                 onClick={handleAddToCart}
-                disabled={!selectedSize || !selectedColor}
+                disabled={!selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)}
                 className={`w-full py-4 rounded-lg font-semibold transition-colors ${
-                  !selectedSize || !selectedColor
+                  !selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)
                     ? 'bg-gray-600 cursor-not-allowed'
                     : 'bg-white text-[#2C2F36] hover:bg-gray-100'
                 }`}
               >
-                {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+                {!selectedSize || !selectedColor
+                  ? 'Select a color and size'
+                  : !isVariantInStock(selectedColor, selectedSize)
+                    ? 'Out of Stock'
+                    : addedToCart
+                      ? 'Added to Cart!'
+                      : 'Add to Cart'}
               </button>
             </div>
             {/* Description */}
