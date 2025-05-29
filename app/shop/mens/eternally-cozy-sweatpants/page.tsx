@@ -43,7 +43,7 @@ export default function EternallyCozySweatpantsPage() {
         
         // Find the sweatpants product
         const foundProduct = products.find((p: any) => 
-          p.title.toLowerCase().includes('eternally cozy sweatpants')
+          p.title.toLowerCase().includes('eternally cozy legacy sweatpants')
         );
         
         if (!foundProduct) {
