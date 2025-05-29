@@ -49,7 +49,8 @@ export default function SportsBraPage() {
         
         // Find the sports bra product
         const foundProduct = products.find((p: any) => 
-          p.title.toLowerCase().includes('sports bra')
+          p.title.toLowerCase().includes('sports bra') &&
+          !p.title.toLowerCase().includes('grey')
         );
         
         if (!foundProduct) {
