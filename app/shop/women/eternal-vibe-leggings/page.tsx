@@ -40,8 +40,7 @@ export default function EternalVibeLeggingsPage() {
         
         // Find the leggings product
         const foundProduct = products.find((p: any) => 
-          p.title.toLowerCase().includes('eternal vibe') && 
-          p.title.toLowerCase().includes('leggings')
+          p.id === '682dbe84049a5caa6208ed11'  // Standard leggings product ID
         );
         
         if (!foundProduct) {
