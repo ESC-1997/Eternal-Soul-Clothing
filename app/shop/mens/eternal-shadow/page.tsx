@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useCart } from '../../../context/CartContext';
 import ShopNavigation from '../../../components/ShopNavigation';
 
@@ -39,18 +40,25 @@ export default function EternalShadowPage() {
         );
 
         if (eternalShadow) {
+          console.log('Found product:', eternalShadow); // Debug log
+          const variants = eternalShadow.variants.map((variant: any) => ({
+            id: String(variant.id), // Ensure ID is a string
+            title: variant.title,
+            price: (variant.price / 100).toFixed(2)
+          }));
+          console.log('Processed variants:', variants); // Debug log
+          
           setProduct({
             id: eternalShadow.id,
             title: eternalShadow.title,
             images: eternalShadow.images.map((img: any) => ({ src: img.src })),
-            variants: eternalShadow.variants.map((variant: any) => ({
-              id: variant.id,
-              title: variant.title,
-              price: (variant.price / 100).toFixed(2)
-            }))
+            variants
           });
-          if (eternalShadow.variants.length > 0) {
-            setSelectedVariant(eternalShadow.variants[0].id);
+          
+          // Set initial variant
+          if (variants.length > 0) {
+            console.log('Setting initial variant:', variants[0].id); // Debug log
+            setSelectedVariant(variants[0].id);
           }
         }
       } catch (err) {
@@ -62,6 +70,46 @@ export default function EternalShadowPage() {
 
     fetchProduct();
   }, []);
+
+  // Log variant changes
+  console.log('Current selectedVariant:', selectedVariant);
+
+  const handleAddToCart = () => {
+    try {
+      console.log('Current selectedVariant:', selectedVariant); // Debug log
+      console.log('Available variants:', product?.variants); // Debug log
+      
+      if (!product) {
+        console.error('Product not loaded');
+        return;
+      }
+
+      const variant = product.variants.find(v => String(v.id) === String(selectedVariant));
+      console.log('Found variant:', variant); // Debug log
+      
+      if (!variant) {
+        console.error('No variant selected');
+        return;
+      }
+
+      const cartItem = {
+        id: product.id,
+        name: product.title,
+        price: Number(variant.price),
+        quantity,
+        image: product.images[0].src,
+        variantId: Number(variant.id),
+        color: 'Black',
+        logo: 'Standard',
+        size: variant.title
+      };
+
+      console.log('Adding to cart:', cartItem); // Debug log
+      addItem(cartItem);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -79,28 +127,34 @@ export default function EternalShadowPage() {
     );
   }
 
-  const handleAddToCart = () => {
-    const variant = product.variants.find(v => v.id === selectedVariant);
-    if (variant) {
-      addItem({
-        id: product.id,
-        name: product.title,
-        price: Number(variant.price),
-        quantity,
-        image: product.images[0].src,
-        variantId: Number(variant.id),
-        color: 'Black',
-        logo: 'Standard',
-        size: variant.title
-      });
-    }
-  };
-
   return (
     <main className="min-h-screen bg-[#2C2F36]">
       <div className="max-w-7xl mx-auto relative">
         <ShopNavigation />
-        <div className="pt-8 px-4">
+        <div className="pt-24 px-4">
+          {/* Back to Products Button */}
+          <div className="mb-6">
+            <Link 
+              href="/shop/mens"
+              className="inline-flex items-center text-white hover:text-gray-300 transition-colors"
+            >
+              <svg 
+                className="w-5 h-5 mr-2" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+                />
+              </svg>
+              Back to Products
+            </Link>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Product Images */}
             <div className="space-y-4">
@@ -135,18 +189,23 @@ export default function EternalShadowPage() {
             {/* Product Details */}
             <div className="text-white">
               <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
-              <p className="text-2xl mb-6">$40.00</p>
+              <p className="text-2xl mb-6">
+                ${product.variants.find(v => String(v.id) === String(selectedVariant))?.price || product.variants[0].price}
+              </p>
               
               {/* Variant Selection */}
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">Size</label>
                 <select
                   value={selectedVariant}
-                  onChange={(e) => setSelectedVariant(e.target.value)}
+                  onChange={(e) => {
+                    console.log('Variant selection changed:', e.target.value); // Debug log
+                    setSelectedVariant(e.target.value);
+                  }}
                   className="w-full bg-white text-black rounded-md p-2"
                 >
                   {product.variants.map((variant) => (
-                    <option key={variant.id} value={variant.id}>
+                    <option key={variant.id} value={String(variant.id)}>
                       {variant.title}
                     </option>
                   ))}
@@ -176,9 +235,14 @@ export default function EternalShadowPage() {
               {/* Add to Cart Button */}
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-[#9F2FFF] text-white py-3 rounded-md hover:bg-[#8A2BE2] transition-colors"
+                disabled={!selectedVariant}
+                className={`w-full py-3 rounded-md transition-colors ${
+                  selectedVariant 
+                    ? 'bg-[#9F2FFF] text-white hover:bg-[#8A2BE2]' 
+                    : 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                }`}
               >
-                Add to Cart
+                {selectedVariant ? 'Add to Cart' : 'Select a Size'}
               </button>
 
               {/* Product Description */}
