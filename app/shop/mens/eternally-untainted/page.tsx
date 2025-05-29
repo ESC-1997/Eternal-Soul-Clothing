@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
+import { useSearchParams } from 'next/navigation';
+import LoadingScreen from '@/app/components/LoadingScreen';
 
 interface Product {
   id: string;
@@ -17,11 +19,10 @@ interface Product {
     price: number;
     size: string;
     color: string;
-    isAvailable: boolean;
   }[];
 }
 
-export default function EternallyUntaintedPage() {
+export default function EternalUntaintedPage() {
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -30,6 +31,17 @@ export default function EternallyUntaintedPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
+  const searchParams = useSearchParams();
+  const source = searchParams.get('source');
+
+  // Helper function to check if a variant is in stock
+  const isVariantInStock = (color: string, size: string) => {
+    if (!product) return false;
+    const variant = product.variants.find(v => v.color === color && v.size === size);
+    // Debug logging for stock check
+    console.log('Checking stock for:', { color, size, variant });
+    return !!variant;
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -39,38 +51,53 @@ export default function EternallyUntaintedPage() {
           throw new Error('Failed to fetch products');
         }
         const products = await response.json();
-        const eternallyUntainted = products.find((p: any) => p.title.toLowerCase().includes('eternally untainted'));
-        if (!eternallyUntainted) throw new Error('Product not found');
-        
-        console.log('Raw variants:', eternallyUntainted.variants);
-        
+        const untainted = products.find((p: any) => p.title.toLowerCase().includes('eternally untainted'));
+        if (!untainted) throw new Error('Product not found');
+
+        // Debug logging
+        console.log('Raw Printify data:', {
+          title: untainted.title,
+          variants: untainted.variants.map((v: any) => ({
+            title: v.title,
+            is_enabled: v.is_enabled,
+            is_available: v.is_available,
+            price: v.price
+          }))
+        });
+
         const transformedProduct: Product = {
-          id: eternallyUntainted.id,
-          title: eternallyUntainted.title,
-          description: eternallyUntainted.description || 'The Eternally Untainted collection represents purity and resilience, crafted for those who value timeless elegance and enduring quality.',
-          images: eternallyUntainted.images.map((img: any) => ({ src: img.src })),
-          variants: eternallyUntainted.variants
-            .filter((variant: any) => variant.is_enabled)
+          id: untainted.id,
+          title: untainted.title,
+          description: untainted.description || 'The Eternal Untainted collection embodies purity and resilience, crafted for those who stand unshaken in their convictions.',
+          images: untainted.images.map((img: any) => ({ src: img.src })),
+          variants: untainted.variants
+            .filter((variant: any) => {
+              // Debug logging for variant filtering
+              console.log('Checking variant:', {
+                title: variant.title,
+                is_enabled: variant.is_enabled,
+                is_available: variant.is_available
+              });
+              return variant.is_enabled;
+            })
             .map((variant: any) => {
-              let color = variant.title;
-              let size = '';
-              
-              if (variant.title.includes(' / ')) {
-                [color, size] = variant.title.split(' / ');
-              } else if (variant.title.includes(' - ')) {
-                [color, size] = variant.title.split(' - ');
-              }
-              
+              const [color, size] = variant.title.split(' / ');
               return {
                 id: variant.id,
                 title: variant.title,
                 price: Number((variant.price / 100).toFixed(2)),
                 size: size.trim(),
-                color: color.trim(),
-                isAvailable: variant.is_available
+                color: color.trim()
               };
             })
         };
+
+        // Debug logging for transformed product
+        console.log('Transformed product:', {
+          title: transformedProduct.title,
+          variants: transformedProduct.variants
+        });
+
         setProduct(transformedProduct);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -96,7 +123,7 @@ export default function EternallyUntaintedPage() {
       price: Number(selectedVariant.price),
       quantity: 1,
       image: product.images[selectedImage].src,
-      logo: product.images[0].src
+      logo: 'Standard'
     });
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
@@ -105,12 +132,18 @@ export default function EternallyUntaintedPage() {
   const availableColors = product ? Array.from(new Set(product.variants.map(v => v.color))) : [];
   const availableSizes = product ? Array.from(new Set(product.variants.map(v => v.size))) : [];
 
+  // Reset selections if they become invalid
+  useEffect(() => {
+    if (product && selectedColor && selectedSize) {
+      if (!isVariantInStock(selectedColor, selectedSize)) {
+        setSelectedColor('');
+        setSelectedSize('');
+      }
+    }
+  }, [product, selectedColor, selectedSize]);
+
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
   if (error || !product) {
     return (
@@ -126,7 +159,7 @@ export default function EternallyUntaintedPage() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href="/shop/mens"
+            href={source === 'women' ? '/shop/women' : '/shop/mens'}
             className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
           >
             <svg 
@@ -183,58 +216,77 @@ export default function EternallyUntaintedPage() {
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
               <div className="grid grid-cols-4 gap-4">
-                {availableColors.map((color) => {
-                  const colorVariants = product.variants.filter(v => v.color === color);
-                  const isColorAvailable = colorVariants.some(v => v.isAvailable);
-                  return (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`p-4 border rounded-lg transition-colors ${
-                        selectedColor === color
-                          ? 'border-white bg-white text-[#2C2F36]'
-                          : 'border-gray-600 hover:border-white'
-                      } ${!isColorAvailable ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      disabled={!isColorAvailable}
-                    >
-                      {color}
-                      {!isColorAvailable && <span className="block text-sm text-red-500">Out of Stock</span>}
-                    </button>
-                  );
-                })}
+                {availableColors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`p-4 border rounded-lg transition-colors ${
+                      selectedColor === color
+                        ? 'border-white bg-white text-[#2C2F36]'
+                        : 'border-gray-600 hover:border-white'
+                    }`}
+                  >
+                    {color}
+                  </button>
+                ))}
               </div>
             </div>
             {/* Size Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
               <div className="grid grid-cols-4 gap-4">
-                {availableSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`p-4 border rounded-lg transition-colors ${
-                      selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {availableSizes.map((size) => {
+                  const isInStock = selectedColor ? isVariantInStock(selectedColor, size) : true;
+                  return (
+                    <button
+                      key={size}
+                      onClick={() => isInStock && setSelectedSize(size)}
+                      className={`p-4 border rounded-lg transition-colors ${
+                        selectedSize === size
+                          ? 'border-white bg-white text-[#2C2F36]'
+                          : isInStock
+                            ? 'border-gray-600 hover:border-white'
+                            : 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {size}
+                      {!isInStock && <span className="block text-xs mt-1">Out of Stock</span>}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              disabled={!selectedSize || !selectedColor}
-              className={`w-full py-4 px-6 rounded-lg text-lg font-semibold transition-colors ${
-                !selectedSize || !selectedColor
-                  ? 'bg-gray-600 cursor-not-allowed'
-                  : 'bg-white text-[#2C2F36] hover:bg-gray-100'
-              }`}
-            >
-              {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
-            </button>
+            <div className="pt-6">
+              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
+                {selectedSize && selectedColor && isVariantInStock(selectedColor, selectedSize)
+                  ? `$${product.variants.find(v => v.size === selectedSize && v.color === selectedColor)?.price.toFixed(2)}`
+                  : 'Select a color and size'}
+              </p>
+              <button
+                onClick={handleAddToCart}
+                disabled={!selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)}
+                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
+                  !selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)
+                    ? 'bg-gray-600 cursor-not-allowed'
+                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
+                }`}
+              >
+                {!selectedSize || !selectedColor
+                  ? 'Select a color and size'
+                  : !isVariantInStock(selectedColor, selectedSize)
+                    ? 'Out of Stock'
+                    : addedToCart
+                      ? 'Added to Cart!'
+                      : 'Add to Cart'}
+              </button>
+            </div>
+            {/* Description */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Description</h3>
+              <p className="text-gray-300">
+                {product.description}
+              </p>
+            </div>
           </div>
         </div>
       </div>
