@@ -3,172 +3,115 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
+import LoadingScreen from '@/app/components/LoadingScreen';
 
 interface Product {
   id: string;
   title: string;
+  description: string;
   images: {
     src: string;
   }[];
   variants: {
     id: string;
     title: string;
-    price: string;
+    price: number;
     size: string;
     color: string;
-    is_enabled: boolean;
-    is_available: boolean;
   }[];
 }
 
 export default function EternalAwakeningPage() {
   const { addItem } = useCart();
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
+
+  // Helper function to check if a variant is in stock
+  const isVariantInStock = (color: string, size: string) => {
+    if (!product) return false;
+    return product.variants.some(v => v.color === color && v.size === size);
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const response = await fetch('/api/printify/products');
         if (!response.ok) {
-          throw new Error('Failed to fetch products from Printify');
+          throw new Error('Failed to fetch products');
         }
         const products = await response.json();
-        
-        // Find the Eternal Awakening product
-        const foundProduct = products.find((p: any) => 
-          p.title.toLowerCase().includes('eternal awakening')
-        );
-        
-        if (!foundProduct) {
-          throw new Error('Product not found');
-        }
-
-        console.log('Found product:', JSON.stringify({
-          title: foundProduct.title,
-          variants: foundProduct.variants.map((v: any) => ({
-            title: v.title,
-            is_enabled: v.is_enabled,
-            is_available: v.is_available,
-            price: v.price
-          }))
-        }, null, 2));
-
-        // Transform the product data
+        const awakening = products.find((p: any) => p.title.toLowerCase().includes('eternal awakening'));
+        if (!awakening) throw new Error('Product not found');
         const transformedProduct: Product = {
-          id: foundProduct.id,
-          title: foundProduct.title,
-          images: foundProduct.images.map((img: any) => ({ 
-            src: img.src
-          })),
-          variants: foundProduct.variants
-            .filter((variant: any) => {
-              console.log('Checking variant:', JSON.stringify({
-                title: variant.title,
-                is_enabled: variant.is_enabled,
-                is_available: variant.is_available
-              }, null, 2));
-              return variant.is_enabled;
-            })
+          id: awakening.id,
+          title: awakening.title,
+          description: awakening.description || 'The Eternal Awakening collection represents the dawn of new beginnings, crafted for those who embrace transformation.',
+          images: awakening.images.map((img: any) => ({ src: img.src })),
+          variants: awakening.variants
+            .filter((variant: any) => variant.is_enabled)
             .map((variant: any) => {
-              // Parse the variant title to extract color and size
               const [color, size] = variant.title.split(' / ');
               return {
                 id: variant.id,
                 title: variant.title,
-                price: (variant.price / 100).toFixed(2),
-                size: size,
-                color: color,
-                is_enabled: variant.is_enabled,
-                is_available: variant.is_available
+                price: Number((variant.price / 100).toFixed(2)),
+                size: size.trim(),
+                color: color.trim()
               };
             })
         };
-
-        console.log('Transformed product:', JSON.stringify({
-          title: transformedProduct.title,
-          variants: transformedProduct.variants
-        }, null, 2));
-
         setProduct(transformedProduct);
-        
-        // Get unique enabled colors and sizes
-        const uniqueColors = Array.from(new Set(
-          transformedProduct.variants
-            .filter(v => v.is_enabled)
-            .map(v => v.color)
-        ));
-        const uniqueSizes = Array.from(new Set(
-          transformedProduct.variants
-            .filter(v => v.is_enabled)
-            .map(v => v.size)
-        ));
-        
-        setSelectedSize(uniqueSizes[0]);
-        setSelectedColor(uniqueColors[0]);
       } catch (err) {
-        console.error('Error in fetchProduct:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, []);
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = () => {
     if (!product || !selectedSize || !selectedColor) return;
-
-    setIsAddingToCart(true);
-    try {
-      const selectedVariant = product.variants.find(
-        v => v.size === selectedSize && v.color === selectedColor
-      );
-
-      if (!selectedVariant) {
-        throw new Error('Selected variant not found');
-      }
-
-      if (!selectedVariant.is_available) {
-        throw new Error('Selected variant is out of stock');
-      }
-
-      addItem({
-        id: product.id,
-        name: product.title,
-        color: selectedColor,
-        size: selectedSize,
-        price: parseFloat(selectedVariant.price),
-        quantity: 1,
-        image: product.images[selectedImage].src,
-        variantId: parseInt(selectedVariant.id),
-        logo: 'default'
-      });
-
-      setAddedToCart(true);
-      setTimeout(() => setAddedToCart(false), 2000);
-    } catch (err) {
-      console.error('Error adding to cart:', err);
-    } finally {
-      setIsAddingToCart(false);
-    }
+    const selectedVariant = product.variants.find(
+      v => v.size === selectedSize && v.color === selectedColor
+    );
+    if (!selectedVariant) return;
+    addItem({
+      id: product.id,
+      variantId: Number(selectedVariant.id),
+      name: product.title,
+      size: selectedSize,
+      color: selectedColor,
+      price: Number(selectedVariant.price),
+      quantity: 1,
+      image: product.images[selectedImage].src,
+      logo: 'Standard'
+    });
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
+  const availableColors = product ? Array.from(new Set(product.variants.map(v => v.color))) : [];
+  const availableSizes = product ? Array.from(new Set(product.variants.map(v => v.size))) : [];
 
+  // Reset selections if they become invalid
+  useEffect(() => {
+    if (product && selectedColor && selectedSize) {
+      if (!isVariantInStock(selectedColor, selectedSize)) {
+        setSelectedColor('');
+        setSelectedSize('');
+      }
+    }
+  }, [product, selectedColor, selectedSize]);
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
   if (error || !product) {
     return (
       <div className="text-center text-red-600 p-4">
@@ -176,48 +119,6 @@ export default function EternalAwakeningPage() {
       </div>
     );
   }
-
-  // Get unique enabled colors and sizes
-  const uniqueColors = Array.from(new Set(
-    product.variants
-      .filter(v => v.is_enabled)
-      .map(v => v.color)
-  )).sort();
-
-  const uniqueSizes = Array.from(new Set(
-    product.variants
-      .filter(v => v.is_enabled)
-      .map(v => v.size)
-  )).sort((a, b) => {
-    const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', '2XL'];
-    return sizeOrder.indexOf(a) - sizeOrder.indexOf(b);
-  });
-
-  console.log('Rendering with:', JSON.stringify({
-    uniqueColors,
-    uniqueSizes,
-    selectedColor,
-    selectedSize,
-    variants: product.variants.map(v => ({
-      size: v.size,
-      color: v.color,
-      is_enabled: v.is_enabled,
-      is_available: v.is_available
-    }))
-  }, null, 2));
-
-  const selectedVariant = product.variants.find(
-    v => v.size === selectedSize && v.color === selectedColor
-  );
-
-  const isVariantAvailable = selectedVariant?.is_available ?? false;
-
-  console.log('Selected variant:', JSON.stringify({
-    selectedColor,
-    selectedSize,
-    selectedVariant,
-    isVariantAvailable
-  }, null, 2));
 
   return (
     <main className="min-h-screen bg-[#2C2F36]">
@@ -244,50 +145,45 @@ export default function EternalAwakeningPage() {
             Back to Products
           </Link>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Product Images */}
           <div className="space-y-4">
-            <div className="relative aspect-square bg-white rounded-lg overflow-hidden">
+            <div className="relative h-[500px] bg-white rounded-lg overflow-hidden">
               <Image
                 src={product.images[selectedImage].src}
                 alt={product.title}
                 fill
                 className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
-            {/* Thumbnail gallery */}
-            <div className="flex gap-4 overflow-x-auto pb-2">
+            {/* Thumbnail Gallery */}
+            <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
               {product.images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`relative flex-shrink-0 w-20 aspect-square rounded-lg overflow-hidden ${
+                  className={`relative flex-none w-20 h-20 rounded-lg overflow-hidden ${
                     selectedImage === index ? 'ring-2 ring-white' : ''
                   }`}
                 >
                   <Image
                     src={image.src}
-                    alt={`${product.title} - View ${index + 1}`}
+                    alt={`${product.title} - Image ${index + 1}`}
                     fill
                     className="object-cover"
-                    sizes="80px"
                   />
                 </button>
               ))}
             </div>
           </div>
-
-          {/* Product Info */}
+          {/* Product Details */}
           <div className="text-white space-y-6">
-            <h1 className="text-4xl font-['Bebas_Neue'] tracking-wider">{product.title}</h1>
-            
+            <h1 className="text-3xl font-bold">{product.title}</h1>
             {/* Color Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
               <div className="grid grid-cols-4 gap-4">
-                {uniqueColors.map((color) => (
+                {availableColors.map((color) => (
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
@@ -302,45 +198,61 @@ export default function EternalAwakeningPage() {
                 ))}
               </div>
             </div>
-
             {/* Size Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
               <div className="grid grid-cols-4 gap-4">
-                {uniqueSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`p-4 border rounded-lg transition-colors ${
-                      selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {availableSizes.map((size) => {
+                  const isInStock = selectedColor ? isVariantInStock(selectedColor, size) : true;
+                  return (
+                    <button
+                      key={size}
+                      onClick={() => isInStock && setSelectedSize(size)}
+                      className={`p-4 border rounded-lg transition-colors ${
+                        selectedSize === size
+                          ? 'border-white bg-white text-[#2C2F36]'
+                          : isInStock
+                            ? 'border-gray-600 hover:border-white'
+                            : 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {size}
+                      {!isInStock && <span className="block text-xs mt-1">Out of Stock</span>}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-
             <div className="pt-6">
               <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
-                ${selectedVariant?.price}
+                {selectedSize && selectedColor && isVariantInStock(selectedColor, selectedSize)
+                  ? `$${product.variants.find(v => v.size === selectedSize && v.color === selectedColor)?.price.toFixed(2)}`
+                  : 'Select a color and size'}
               </p>
-              {!isVariantAvailable && (
-                <p className="text-red-500 mb-4">Out of Stock</p>
-              )}
               <button
                 onClick={handleAddToCart}
-                disabled={isAddingToCart || !selectedSize || !selectedColor || !isVariantAvailable}
+                disabled={!selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)}
                 className={`w-full py-4 rounded-lg font-semibold transition-colors ${
-                  isAddingToCart || !selectedSize || !selectedColor || !isVariantAvailable
+                  !selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)
                     ? 'bg-gray-600 cursor-not-allowed'
                     : 'bg-white text-[#2C2F36] hover:bg-gray-100'
                 }`}
               >
-                {isAddingToCart ? 'Adding...' : addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+                {!selectedSize || !selectedColor
+                  ? 'Select a color and size'
+                  : !isVariantInStock(selectedColor, selectedSize)
+                    ? 'Out of Stock'
+                    : addedToCart
+                      ? 'Added to Cart!'
+                      : 'Add to Cart'}
               </button>
+            </div>
+            {/* Description */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Description</h3>
+              <p className="text-gray-300">
+                {product.description}
+              </p>
             </div>
           </div>
         </div>
