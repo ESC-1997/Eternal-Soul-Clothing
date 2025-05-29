@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PrintfulProduct } from '@/lib/printful';
 import LoadingScreen from '@/app/components/LoadingScreen';
 
 interface Product {
@@ -16,7 +15,7 @@ interface Product {
     title: string;
     price: string;
   }[];
-  source: 'printify' | 'printful';
+  source: 'printify';
 }
 
 export default function MensCollection() {
@@ -30,22 +29,14 @@ export default function MensCollection() {
       try {
         console.log('Fetching products...');
         
-        // Fetch products from both APIs
-        const [printifyResponse, printfulResponse] = await Promise.all([
-          fetch('/api/printify/products'),
-          fetch('/api/printful/products')
-        ]);
+        // Fetch products from Printify API
+        const printifyResponse = await fetch('/api/printify/products');
 
         if (!printifyResponse.ok) {
           throw new Error('Failed to fetch products from Printify');
         }
 
-        if (!printfulResponse.ok) {
-          throw new Error('Failed to fetch products from Printful');
-        }
-
         const printifyProducts = await printifyResponse.json();
-        const printfulProducts = await printfulResponse.json();
 
         // Filter for specific products by name
         const allowedProducts = [
@@ -75,15 +66,6 @@ export default function MensCollection() {
           return isAllowed;
         });
 
-        // Filter Printful products
-        const filteredPrintfulProducts = printfulProducts.filter((product: PrintfulProduct) => {
-          const isAllowed = allowedProducts.some(name => 
-            product.name.toLowerCase().includes(name.toLowerCase())
-          );
-          console.log('Printful Product:', product.name, 'Is Allowed:', isAllowed); // Debug log
-          return isAllowed;
-        });
-
         // Transform Printify products
         const transformedPrintifyProducts = filteredPrintifyProducts.map((product: any) => ({
           id: product.id,
@@ -97,22 +79,9 @@ export default function MensCollection() {
           source: 'printify' as const
         }));
 
-        // Transform Printful products
-        const transformedPrintfulProducts = filteredPrintfulProducts.map((product: PrintfulProduct) => ({
-          id: product.id.toString(),
-          title: product.name,
-          images: [{ src: product.thumbnail_url }],
-          variants: [{
-            id: product.id.toString(),
-            title: 'Default',
-            price: '0.00' // Price will be fetched when viewing product details
-          }],
-          source: 'printful' as const
-        }));
-
-        // Combine and sort products
-        const allProducts = [...transformedPrintifyProducts, ...transformedPrintfulProducts]
-          .sort((a, b) => {
+        // Sort products
+        const allProducts = transformedPrintifyProducts
+          .sort((a: Product, b: Product) => {
             // Define the desired order
             const order = [
               'Eternal Rebirth',
@@ -141,16 +110,10 @@ export default function MensCollection() {
 
         setProducts(allProducts);
 
-        // Handle radar products similarly
+        // Handle radar products
         const radarPrintifyItems = printifyProducts.filter((product: any) => {
           return radarProducts.some(name => 
             product.title.toLowerCase().includes(name.toLowerCase())
-          );
-        });
-
-        const radarPrintfulItems = printfulProducts.filter((product: PrintfulProduct) => {
-          return radarProducts.some(name => 
-            product.name.toLowerCase().includes(name.toLowerCase())
           );
         });
 
@@ -182,20 +145,8 @@ export default function MensCollection() {
           };
         });
 
-        const transformedRadarPrintfulItems = radarPrintfulItems.map((product: PrintfulProduct) => ({
-          id: product.id.toString(),
-          title: product.name,
-          images: [{ src: product.thumbnail_url }],
-          variants: [{
-            id: product.id.toString(),
-            title: 'Default',
-            price: '0.00'
-          }],
-          source: 'printful' as const
-        }));
-
-        const allRadarItems = [...transformedRadarPrintifyItems, ...transformedRadarPrintfulItems]
-          .sort((a, b) => a.title.localeCompare(b.title));
+        const allRadarItems = transformedRadarPrintifyItems
+          .sort((a: Product, b: Product) => a.title.localeCompare(b.title));
 
         setEternalCollapse(allRadarItems);
       } catch (err) {
