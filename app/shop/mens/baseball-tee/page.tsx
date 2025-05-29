@@ -124,6 +124,23 @@ export default function BaseballTeePage() {
   const availableColors = product ? Array.from(new Set(product.variants.map(v => v.color))) : [];
   const availableSizes = product ? Array.from(new Set(product.variants.map(v => v.size))) : [];
 
+  // Helper function to check if a variant is in stock
+  const isVariantInStock = (color: string, size: string) => {
+    if (!product) return false;
+    const variant = product.variants.find(v => v.color === color && v.size === size);
+    return variant?.isAvailable ?? false;
+  };
+
+  // Reset selections if they become invalid
+  useEffect(() => {
+    if (product && selectedColor && selectedSize) {
+      if (!isVariantInStock(selectedColor, selectedSize)) {
+        setSelectedColor('');
+        setSelectedSize('');
+      }
+    }
+  }, [product, selectedColor, selectedSize]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -202,58 +219,77 @@ export default function BaseballTeePage() {
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
               <div className="grid grid-cols-4 gap-4">
-                {availableColors.map((color) => {
-                  const colorVariants = product.variants.filter(v => v.color === color);
-                  const isColorAvailable = colorVariants.some(v => v.isAvailable);
-                  return (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`p-4 border rounded-lg transition-colors ${
-                        selectedColor === color
-                          ? 'border-white bg-white text-[#2C2F36]'
-                          : 'border-gray-600 hover:border-white'
-                      } ${!isColorAvailable ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      disabled={!isColorAvailable}
-                    >
-                      {color}
-                      {!isColorAvailable && <span className="block text-sm text-red-500">Out of Stock</span>}
-                    </button>
-                  );
-                })}
+                {availableColors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`p-4 border rounded-lg transition-colors ${
+                      selectedColor === color
+                        ? 'border-white bg-white text-[#2C2F36]'
+                        : 'border-gray-600 hover:border-white'
+                    }`}
+                  >
+                    {color}
+                  </button>
+                ))}
               </div>
             </div>
             {/* Size Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
               <div className="grid grid-cols-4 gap-4">
-                {availableSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`p-4 border rounded-lg transition-colors ${
-                      selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {availableSizes.map((size) => {
+                  const isInStock = selectedColor ? isVariantInStock(selectedColor, size) : true;
+                  return (
+                    <button
+                      key={size}
+                      onClick={() => isInStock && setSelectedSize(size)}
+                      className={`p-4 border rounded-lg transition-colors ${
+                        selectedSize === size
+                          ? 'border-white bg-white text-[#2C2F36]'
+                          : isInStock
+                            ? 'border-gray-600 hover:border-white'
+                            : 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {size}
+                      {!isInStock && <span className="block text-xs mt-1">Out of Stock</span>}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              disabled={!selectedSize || !selectedColor}
-              className={`w-full py-4 px-6 rounded-lg text-lg font-semibold transition-colors ${
-                !selectedSize || !selectedColor
-                  ? 'bg-gray-600 cursor-not-allowed'
-                  : 'bg-white text-[#2C2F36] hover:bg-gray-100'
-              }`}
-            >
-              {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
-            </button>
+            <div className="pt-6">
+              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
+                {selectedSize && selectedColor && isVariantInStock(selectedColor, selectedSize)
+                  ? `$${product.variants.find(v => v.size === selectedSize && v.color === selectedColor)?.price.toFixed(2)}`
+                  : 'Select a color and size'}
+              </p>
+              <button
+                onClick={handleAddToCart}
+                disabled={!selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)}
+                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
+                  !selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)
+                    ? 'bg-gray-600 cursor-not-allowed'
+                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
+                }`}
+              >
+                {!selectedSize || !selectedColor
+                  ? 'Select a color and size'
+                  : !isVariantInStock(selectedColor, selectedSize)
+                    ? 'Out of Stock'
+                    : addedToCart
+                      ? 'Added to Cart!'
+                      : 'Add to Cart'}
+              </button>
+            </div>
+            {/* Description */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Description</h3>
+              <p className="text-gray-300">
+                {product.description}
+              </p>
+            </div>
           </div>
         </div>
       </div>
