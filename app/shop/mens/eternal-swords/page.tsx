@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
+import LoadingScreen from '@/app/components/LoadingScreen';
 
 interface Product {
   id: string;
@@ -29,6 +30,12 @@ export default function EternalSwordsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
+
+  // Helper function to check if a variant is in stock
+  const isVariantInStock = (color: string, size: string) => {
+    if (!product) return false;
+    return product.variants.some(v => v.color === color && v.size === size);
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -83,7 +90,7 @@ export default function EternalSwordsPage() {
       price: Number(selectedVariant.price),
       quantity: 1,
       image: product.images[selectedImage].src,
-      logo: product.images[0].src
+      logo: 'Standard'
     });
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
@@ -92,12 +99,18 @@ export default function EternalSwordsPage() {
   const availableColors = product ? Array.from(new Set(product.variants.map(v => v.color))) : [];
   const availableSizes = product ? Array.from(new Set(product.variants.map(v => v.size))) : [];
 
+  // Reset selections if they become invalid
+  useEffect(() => {
+    if (product && selectedColor && selectedSize) {
+      if (!isVariantInStock(selectedColor, selectedSize)) {
+        setSelectedColor('');
+        setSelectedSize('');
+      }
+    }
+  }, [product, selectedColor, selectedSize]);
+
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
   if (error || !product) {
     return (
@@ -189,33 +202,58 @@ export default function EternalSwordsPage() {
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
               <div className="grid grid-cols-4 gap-4">
-                {availableSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`p-4 border rounded-lg transition-colors ${
-                      selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {availableSizes.map((size) => {
+                  const isInStock = selectedColor ? isVariantInStock(selectedColor, size) : true;
+                  return (
+                    <button
+                      key={size}
+                      onClick={() => isInStock && setSelectedSize(size)}
+                      className={`p-4 border rounded-lg transition-colors ${
+                        selectedSize === size
+                          ? 'border-white bg-white text-[#2C2F36]'
+                          : isInStock
+                            ? 'border-gray-600 hover:border-white'
+                            : 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {size}
+                      {!isInStock && <span className="block text-xs mt-1">Out of Stock</span>}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              disabled={!selectedSize || !selectedColor}
-              className={`w-full py-4 px-6 rounded-lg text-lg font-semibold transition-colors ${
-                !selectedSize || !selectedColor
-                  ? 'bg-gray-600 cursor-not-allowed'
-                  : 'bg-white text-[#2C2F36] hover:bg-gray-100'
-              }`}
-            >
-              {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
-            </button>
+            <div className="pt-6">
+              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
+                {selectedSize && selectedColor && isVariantInStock(selectedColor, selectedSize)
+                  ? `$${product.variants.find(v => v.size === selectedSize && v.color === selectedColor)?.price.toFixed(2)}`
+                  : 'Select a color and size'}
+              </p>
+              <button
+                onClick={handleAddToCart}
+                disabled={!selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)}
+                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
+                  !selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)
+                    ? 'bg-gray-600 cursor-not-allowed'
+                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
+                }`}
+              >
+                {!selectedSize || !selectedColor
+                  ? 'Select a color and size'
+                  : !isVariantInStock(selectedColor, selectedSize)
+                    ? 'Out of Stock'
+                    : addedToCart
+                      ? 'Added to Cart!'
+                      : 'Add to Cart'}
+              </button>
+            </div>
+            {/* Description */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Description</h3>
+              <p className="text-gray-300">
+                {product.description}
+              </p>
+            </div>
           </div>
         </div>
       </div>
