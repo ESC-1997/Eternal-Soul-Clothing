@@ -66,25 +66,6 @@ export default function Navigation() {
           
           <div className="flex flex-col items-center space-y-5 mt-2">
             <Link 
-              href="/collections" 
-              className="group flex flex-col items-center"
-              onClick={() => setIsOpen(false)}
-            >
-              <div className="flex justify-center">
-                <Image
-                  src="/images/T_Shirt.png"
-                  alt="T-Shirt"
-                  width={35}
-                  height={35}
-                  className="object-contain"
-                />
-              </div>
-              <button className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
-                Collections
-              </button>
-            </Link>
-
-            <Link 
               href="/shop" 
               className="group flex flex-col items-center relative"
               onClick={() => setIsOpen(false)}
@@ -182,9 +163,6 @@ export default function Navigation() {
 
             <div className="flex items-center">
               <div className="flex items-center space-x-8">
-                <Link href="/collections" className="text-white hover:text-gray-300 transition-colors">
-                  Collections
-                </Link>
                 <Link href="/shop" className="text-white hover:text-gray-300 transition-colors">
                   Shop
                 </Link>
