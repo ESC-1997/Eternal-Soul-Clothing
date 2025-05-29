@@ -3,8 +3,6 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
-import { useSearchParams } from 'next/navigation';
-import LoadingScreen from '@/app/components/LoadingScreen';
 
 interface Product {
   id: string;
@@ -22,7 +20,7 @@ interface Product {
   }[];
 }
 
-export default function EternalUntaintedPage() {
+export default function EternalCollapsePage() {
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -31,16 +29,11 @@ export default function EternalUntaintedPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
-  const searchParams = useSearchParams();
-  const source = searchParams.get('source');
 
   // Helper function to check if a variant is in stock
   const isVariantInStock = (color: string, size: string) => {
     if (!product) return false;
-    const variant = product.variants.find(v => v.color === color && v.size === size);
-    // Debug logging for stock check
-    console.log('Checking stock for:', { color, size, variant });
-    return !!variant;
+    return product.variants.some(v => v.color === color && v.size === size);
   };
 
   useEffect(() => {
@@ -51,35 +44,15 @@ export default function EternalUntaintedPage() {
           throw new Error('Failed to fetch products');
         }
         const products = await response.json();
-        const untainted = products.find((p: any) => p.title.toLowerCase().includes('eternally untainted'));
-        if (!untainted) throw new Error('Product not found');
-
-        // Debug logging
-        console.log('Raw Printify data:', {
-          title: untainted.title,
-          variants: untainted.variants.map((v: any) => ({
-            title: v.title,
-            is_enabled: v.is_enabled,
-            is_available: v.is_available,
-            price: v.price
-          }))
-        });
-
+        const collapse = products.find((p: any) => p.title.toLowerCase().includes('eternal collapse'));
+        if (!collapse) throw new Error('Product not found');
         const transformedProduct: Product = {
-          id: untainted.id,
-          title: untainted.title,
-          description: untainted.description || 'The Eternal Untainted collection embodies purity and resilience, crafted for those who stand unshaken in their convictions.',
-          images: untainted.images.map((img: any) => ({ src: img.src })),
-          variants: untainted.variants
-            .filter((variant: any) => {
-              // Debug logging for variant filtering
-              console.log('Checking variant:', {
-                title: variant.title,
-                is_enabled: variant.is_enabled,
-                is_available: variant.is_available
-              });
-              return variant.is_enabled;
-            })
+          id: collapse.id,
+          title: collapse.title,
+          description: collapse.description || 'The Eternal Collapse collection is crafted for those who seek comfort and style in every moment.',
+          images: collapse.images.map((img: any) => ({ src: img.src })),
+          variants: collapse.variants
+            .filter((variant: any) => variant.is_enabled)
             .map((variant: any) => {
               const [color, size] = variant.title.split(' / ');
               return {
@@ -91,13 +64,6 @@ export default function EternalUntaintedPage() {
               };
             })
         };
-
-        // Debug logging for transformed product
-        console.log('Transformed product:', {
-          title: transformedProduct.title,
-          variants: transformedProduct.variants
-        });
-
         setProduct(transformedProduct);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -143,7 +109,11 @@ export default function EternalUntaintedPage() {
   }, [product, selectedColor, selectedSize]);
 
   if (loading) {
-    return <LoadingScreen />;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      </div>
+    );
   }
   if (error || !product) {
     return (
@@ -159,7 +129,7 @@ export default function EternalUntaintedPage() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href={source === 'women' ? '/shop/women' : '/shop/mens'}
+            href="/shop/mens"
             className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
           >
             <svg 
