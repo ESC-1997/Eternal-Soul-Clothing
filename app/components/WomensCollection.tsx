@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import LoadingScreen from '@/app/components/LoadingScreen';
 
 interface Product {
   id: string;
@@ -35,7 +36,9 @@ export default function WomensCollection() {
 
         // Filter for Eternal Motion products
         const eternalMotionItems = printifyProducts.filter((product: any) => 
-          product.title.toLowerCase().includes('eternal motion')
+          product.title.toLowerCase().includes('eternal motion') ||
+          product.title.toLowerCase().includes('eternal tank') ||
+          product.title.toLowerCase().includes('sports bra')
         );
 
         // Transform Eternal Motion products
@@ -50,7 +53,34 @@ export default function WomensCollection() {
               title: variant.title,
               price: Number((variant.price / 100).toFixed(2))
             }))
-        }));
+        }))
+        .sort((a: Product, b: Product) => {
+          // Define the desired order
+          const order = [
+            'Eternal Motion (Biker Shorts) - Black',
+            'Eternal Motion (Biker Shorts) - Violet',
+            'Eternal Motion (Biker Shorts) - Dark Grey',
+            'Eternal Motion (Biker Shorts) - Charm Pink',
+            'Eternal Motion (Biker Shorts) - Midnight Waves',
+            'Eternal Tank - Women\'s Summer Top',
+            'Eternal Soul Sports Bra'
+          ];
+          
+          const indexA = order.findIndex(title => a.title.includes(title));
+          const indexB = order.findIndex(title => b.title.includes(title));
+          
+          // If both products are in the order list, sort by their position
+          if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+          }
+          
+          // If only one product is in the order list, prioritize it
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+          
+          // If neither product is in the order list, sort alphabetically
+          return a.title.localeCompare(b.title);
+        });
 
         setEternalMotionProducts(transformedEternalMotionProducts);
 
@@ -75,11 +105,14 @@ export default function WomensCollection() {
         const womenItems = printifyProducts.filter((product: any) => 
           (product.title.toLowerCase().includes('women') || 
           product.title.toLowerCase().includes('womens') ||
-          product.title.toLowerCase().includes('biker shorts') ||
-          product.title.toLowerCase().includes('sports bra') ||
-          product.id === '6829030f8de41e64de032e9b') &&  // Eternal Ascension Women's Cropped Hoodie
+          product.id === '6829030f8de41e64de032e9b' ||  // Eternal Ascension Women's Cropped Hoodie
+          product.id === '682dbe84049a5caa6208ed11' ||  // Eternal Vibe Women's Casual Leggings - Black
+          product.id === '683763a0ced8bcc1e60d3a62' ||  // Eternal Vibe Women's Casual Leggings - Grey
+          product.id === '683763a0ced8bcc1e60d3a63') &&  // Eternal Vibe Women's Casual Leggings - Midnight Indigo
           !product.title.toLowerCase().includes('eternal lotus') &&  // Exclude Eternal Lotus products
-          !product.title.toLowerCase().includes('eternal motion')  // Exclude Eternal Motion products
+          !product.title.toLowerCase().includes('eternal motion') &&  // Exclude Eternal Motion products
+          !product.title.toLowerCase().includes('eternal tank') &&  // Exclude Eternal Tank
+          !product.title.toLowerCase().includes('sports bra')  // Exclude Sports Bra
         );
 
         // Filter for unisex products
@@ -87,6 +120,7 @@ export default function WomensCollection() {
           const title = product.title.toLowerCase();
           const isUnisex = (
             title.includes('eternally woven') ||
+            title.includes('eternally untainted') ||
             product.id === '683520806bcc8fd0d80d4a0f' ||  // New Eternal Ascension T-shirt
             product.id === '6813de3b9fb67dd986004dc8' ||  // Eternal Lotus - Purple Floral Graphic Tee
             product.id === '6813ea12a7ab600a950c4b5a' ||  // Eternal Lotus (Black & Grey)
@@ -102,6 +136,7 @@ export default function WomensCollection() {
               isUnisex: isUnisex,
               matches: {
                 eternallyWoven: title.includes('eternally woven'),
+                eternallyUntainted: title.includes('eternally untainted'),
                 isAscension: product.id === '683520806bcc8fd0d80d4a0f',
                 isPurpleTee: product.id === '6813de3b9fb67dd986004dc8',
                 isBlackGrey: product.id === '6813ea12a7ab600a950c4b5a'
@@ -131,7 +166,32 @@ export default function WomensCollection() {
               title: variant.title,
               price: Number((variant.price / 100).toFixed(2))
             }))
-        }));
+        }))
+        .sort((a: Product, b: Product) => {
+          // Define the desired order for women's products
+          const order = [
+            'Eternal Vibe Women\'s Casual Leggings - Black',
+            'Eternal Vibe Women\'s Casual Leggings - Grey',
+            'Eternal Vibe Women\'s Casual Leggings - Midnight Indigo',
+            'Eternal Vibe Women\'s Casual Leggings - Light Pink',
+            'Eternal Ascension Women\'s Cropped Hoodie'
+          ];
+          
+          const indexA = order.findIndex(title => a.title.includes(title));
+          const indexB = order.findIndex(title => b.title.includes(title));
+          
+          // If both products are in the order list, sort by their position
+          if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+          }
+          
+          // If only one product is in the order list, prioritize it
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+          
+          // If neither product is in the order list, sort alphabetically
+          return a.title.localeCompare(b.title);
+        });
 
         const transformedUnisexProducts = unisexItems.map((product: any) => {
           const filteredVariants = product.variants.filter((variant: any) => variant.is_enabled);
@@ -178,11 +238,7 @@ export default function WomensCollection() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (error) {
@@ -221,7 +277,28 @@ export default function WomensCollection() {
             {eternalMotionProducts.map((product) => (
               <div key={product.id} className="flex-none w-[300px] group">
                 <div className="bg-white overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 h-[450px]">
-                  <Link href={`/shop/women/${product.id}`} className="group">
+                  <Link 
+                    href={
+                      product.title.toLowerCase().includes('biker shorts') && product.title.toLowerCase().includes('black')
+                        ? '/shop/women/biker-shorts-black'
+                        : product.title.toLowerCase().includes('biker shorts') && product.title.toLowerCase().includes('violet')
+                        ? '/shop/women/biker-shorts-violet'
+                        : product.title.toLowerCase().includes('biker shorts') && product.title.toLowerCase().includes('dark grey')
+                        ? '/shop/women/biker-shorts-dark-grey'
+                        : product.title.toLowerCase().includes('biker shorts') && product.title.toLowerCase().includes('charm pink')
+                        ? '/shop/women/biker-shorts-charm-pink'
+                        : product.title.toLowerCase().includes('biker shorts') && product.title.toLowerCase().includes('midnight waves')
+                        ? '/shop/women/biker-shorts-midnight-waves'
+                        : product.title.toLowerCase().includes('eternal tank')
+                        ? '/shop/women/eternal-tank'
+                        : product.title.toLowerCase().includes('sports bra') && product.title.toLowerCase().includes('grey')
+                        ? '/shop/women/sports-bra-grey'
+                        : product.title.toLowerCase().includes('sports bra')
+                        ? '/shop/women/sports-bra'
+                        : `/shop/women/${product.id}`
+                    } 
+                    className="group"
+                  >
                     <div className="relative h-[350px]">
                       <Image
                         src={product.images[0].src}
@@ -278,8 +355,12 @@ export default function WomensCollection() {
                         ? '/shop/women/biker-shorts-violet'
                         : product.title.toLowerCase().includes('biker shorts') && product.title.toLowerCase().includes('black')
                         ? '/shop/women/biker-shorts-black'
-                        : product.title.toLowerCase().includes('eternal vibe') && product.title.toLowerCase().includes('leggings')
+                        : product.id === '682dbe84049a5caa6208ed11'  // Black Leggings
                         ? '/shop/women/eternal-vibe-leggings'
+                        : product.id === '683763a0ced8bcc1e60d3a62'  // Grey Leggings
+                        ? '/shop/women/eternal-vibe-leggings-grey'
+                        : product.id === '683763a0ced8bcc1e60d3a63'  // Midnight Indigo Leggings
+                        ? '/shop/women/eternal-vibe-leggings-midnight-indigo'
                         : product.title.toLowerCase().includes('eternal tank')
                         ? '/shop/women/eternal-tank'
                         : product.id === '6829030f8de41e64de032e9b'  // Eternal Ascension Hoodie
@@ -340,13 +421,15 @@ export default function WomensCollection() {
                 <div className="bg-white overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 h-[450px]">
                   <Link
                     href={product.title.toLowerCase().includes('eternally woven') 
-                      ? '/shop/unisex/eternally-woven'
+                      ? '/shop/unisex/eternally-woven?source=women'
+                      : product.title.toLowerCase().includes('eternally untainted')
+                      ? '/shop/mens/eternally-untainted?source=women'
                       : product.title.toLowerCase().includes('eternal lotus') && product.title.toLowerCase().includes('black & grey')
-                      ? '/shop/unisex/eternal-lotus-B&G'
+                      ? '/shop/unisex/eternal-lotus-B&G?source=women'
                       : product.id === '6813de3b9fb67dd986004dc8'  // Eternal Lotus Purple Graphic Tee
-                      ? '/shop/unisex/eternal-lotus-purple'
+                      ? '/shop/unisex/eternal-lotus-purple?source=women'
                       : product.id === '683520806bcc8fd0d80d4a0f'  // New Eternal Ascension T-shirt
-                      ? '/shop/unisex/eternal-ascension'
+                      ? '/shop/unisex/eternal-ascension?source=women'
                       : product.title === 'Eternal Glow'  // Eternal Glow
                       ? '/shop/women/eternal-glow'
                       : `/shop/product/${product.id}`}
