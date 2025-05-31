@@ -357,7 +357,7 @@ export default function Shop() {
               </video>
             </div>
             {/* Customizable Collection Section */}
-            <div style={{
+            <div id="customizable-collection" style={{
               width: '100%',
               background: '#2C2F36',
               height: '1200px',
