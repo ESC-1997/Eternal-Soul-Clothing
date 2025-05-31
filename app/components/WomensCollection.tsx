@@ -108,7 +108,8 @@ export default function WomensCollection() {
           product.id === '6829030f8de41e64de032e9b' ||  // Eternal Ascension Women's Cropped Hoodie
           product.id === '682dbe84049a5caa6208ed11' ||  // Eternal Vibe Women's Casual Leggings - Black
           product.id === '683763a0ced8bcc1e60d3a62' ||  // Eternal Vibe Women's Casual Leggings - Grey
-          product.id === '683763a0ced8bcc1e60d3a63') &&  // Eternal Vibe Women's Casual Leggings - Midnight Indigo
+          product.id === '683763a0ced8bcc1e60d3a63' ||  // Eternal Vibe Women's Casual Leggings - Midnight Indigo
+          product.title.toLowerCase().includes('eternal love')) &&  // Add Eternal Love
           !product.title.toLowerCase().includes('eternal lotus') &&  // Exclude Eternal Lotus products
           !product.title.toLowerCase().includes('eternal motion') &&  // Exclude Eternal Motion products
           !product.title.toLowerCase().includes('eternal tank') &&  // Exclude Eternal Tank
@@ -174,7 +175,8 @@ export default function WomensCollection() {
             'Eternal Vibe Women\'s Casual Leggings - Grey',
             'Eternal Vibe Women\'s Casual Leggings - Midnight Indigo',
             'Eternal Vibe Women\'s Casual Leggings - Light Pink',
-            'Eternal Ascension Women\'s Cropped Hoodie'
+            'Eternal Ascension Women\'s Cropped Hoodie',
+            'Eternal Love'  // Add Eternal Love to the order
           ];
           
           const indexA = order.findIndex(title => a.title.includes(title));
@@ -367,6 +369,8 @@ export default function WomensCollection() {
                         ? '/shop/women/eternal-ascension-hoodie'
                         : product.title === 'Eternal Glow'  // Eternal Glow
                         ? '/shop/women/eternal-glow'
+                        : product.title.toLowerCase().includes('eternal love')  // Eternal Love
+                        ? '/shop/women/eternal-love'
                         : `/shop/women/${product.id}`
                     }
                     className="group"
