@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
+import { useSearchParams } from 'next/navigation';
 
 interface Product {
   id: string;
@@ -22,6 +23,8 @@ interface Product {
 }
 
 export default function EternallyCozyNewGenSweatpantsPage() {
+  const searchParams = useSearchParams();
+  const source = searchParams.get('source');
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<number>(0);
@@ -160,8 +163,8 @@ export default function EternallyCozyNewGenSweatpantsPage() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href="/shop/mens"
-            className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
+            href={source === '/shop/mens/all-products' ? '/shop/mens/all-products' : '/shop/mens'}
+            className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
           >
             <svg 
               className="w-5 h-5 mr-2" 
@@ -199,7 +202,7 @@ export default function EternallyCozyNewGenSweatpantsPage() {
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`relative flex-shrink-0 w-20 aspect-square rounded-lg overflow-hidden ${
-                    selectedImage === index ? 'ring-2 ring-white' : ''
+                    selectedImage === index ? 'ring-2 ring-[#9F2FFF]' : ''
                   }`}
                 >
                   <Image
@@ -228,8 +231,8 @@ export default function EternallyCozyNewGenSweatpantsPage() {
                     onClick={() => setSelectedColor(color)}
                     className={`p-4 border rounded-lg transition-colors ${
                       selectedColor === color
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
+                        ? 'border-[#9F2FFF] bg-[#9F2FFF] text-white'
+                        : 'border-gray-600 hover:border-[#9F2FFF]'
                     }`}
                   >
                     {color}
@@ -248,8 +251,8 @@ export default function EternallyCozyNewGenSweatpantsPage() {
                     onClick={() => setSelectedSize(size)}
                     className={`p-4 border rounded-lg transition-colors ${
                       selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
+                        ? 'border-[#9F2FFF] bg-[#9F2FFF] text-white'
+                        : 'border-gray-600 hover:border-[#9F2FFF]'
                     }`}
                   >
                     {size}
@@ -271,7 +274,7 @@ export default function EternallyCozyNewGenSweatpantsPage() {
                 className={`w-full py-4 rounded-lg font-semibold transition-colors ${
                   !selectedSize || !selectedColor || !isVariantAvailable
                     ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
+                    : 'bg-[#9F2FFF] text-white hover:bg-[#8A2BE2]'
                 }`}
               >
                 {!selectedSize || !selectedColor
