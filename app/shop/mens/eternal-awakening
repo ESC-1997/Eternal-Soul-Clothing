@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
-import LoadingScreen from '@/app/components/LoadingScreen';
+import { useSearchParams } from 'next/navigation';
 
 interface Product {
   id: string;
@@ -22,6 +22,8 @@ interface Product {
 }
 
 export default function EternalAwakeningPage() {
+  const searchParams = useSearchParams();
+  const source = searchParams.get('source');
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -45,14 +47,23 @@ export default function EternalAwakeningPage() {
           throw new Error('Failed to fetch products');
         }
         const products = await response.json();
-        const awakening = products.find((p: any) => p.title.toLowerCase().includes('eternal awakening'));
-        if (!awakening) throw new Error('Product not found');
+        
+        // Find the Eternal Awakening product
+        const eternalAwakening = products.find((p: any) => 
+          p.title.toLowerCase().includes('eternal awakening')
+        );
+
+        if (!eternalAwakening) {
+          throw new Error('Product not found');
+        }
+
+        // Transform the product data
         const transformedProduct: Product = {
-          id: awakening.id,
-          title: awakening.title,
-          description: awakening.description || 'The Eternal Awakening collection represents the dawn of new beginnings, crafted for those who embrace transformation.',
-          images: awakening.images.map((img: any) => ({ src: img.src })),
-          variants: awakening.variants
+          id: eternalAwakening.id,
+          title: eternalAwakening.title,
+          description: "The Eternal Awakening collection represents a bold statement of style and individuality. Each piece is crafted with premium materials and features our distinctive design elements, creating a perfect blend of comfort and fashion-forward aesthetics. This collection is designed for those who seek to make a statement while maintaining everyday versatility.",
+          images: eternalAwakening.images.map((img: any) => ({ src: img.src })),
+          variants: eternalAwakening.variants
             .filter((variant: any) => variant.is_enabled)
             .map((variant: any) => {
               const [color, size] = variant.title.split(' / ');
@@ -65,6 +76,7 @@ export default function EternalAwakeningPage() {
               };
             })
         };
+
         setProduct(transformedProduct);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -72,15 +84,18 @@ export default function EternalAwakeningPage() {
         setLoading(false);
       }
     };
+
     fetchProduct();
   }, []);
 
   const handleAddToCart = () => {
     if (!product || !selectedSize || !selectedColor) return;
+
     const selectedVariant = product.variants.find(
       v => v.size === selectedSize && v.color === selectedColor
     );
     if (!selectedVariant) return;
+
     addItem({
       id: product.id,
       variantId: Number(selectedVariant.id),
@@ -90,12 +105,14 @@ export default function EternalAwakeningPage() {
       price: Number(selectedVariant.price),
       quantity: 1,
       image: product.images[selectedImage].src,
-      logo: 'Standard'
+      logo: product.images[0].src
     });
+
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
+  // Get unique colors and sizes
   const availableColors = product ? Array.from(new Set(product.variants.map(v => v.color))) : [];
   const availableSizes = product ? Array.from(new Set(product.variants.map(v => v.size))) : [];
 
@@ -110,8 +127,13 @@ export default function EternalAwakeningPage() {
   }, [product, selectedColor, selectedSize]);
 
   if (loading) {
-    return <LoadingScreen />;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      </div>
+    );
   }
+
   if (error || !product) {
     return (
       <div className="text-center text-red-600 p-4">
@@ -126,8 +148,8 @@ export default function EternalAwakeningPage() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href="/shop/mens"
-            className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
+            href={source || "/shop/mens"}
+            className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
           >
             <svg 
               className="w-5 h-5 mr-2" 
@@ -145,6 +167,8 @@ export default function EternalAwakeningPage() {
             Back to Products
           </Link>
         </div>
+
+        {/* Product Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Product Images */}
           <div className="space-y-4">
@@ -163,7 +187,7 @@ export default function EternalAwakeningPage() {
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`relative flex-none w-20 h-20 rounded-lg overflow-hidden ${
-                    selectedImage === index ? 'ring-2 ring-white' : ''
+                    selectedImage === index ? 'ring-2 ring-[#9F2FFF]' : ''
                   }`}
                 >
                   <Image
@@ -176,9 +200,20 @@ export default function EternalAwakeningPage() {
               ))}
             </div>
           </div>
-          {/* Product Details */}
+
+          {/* Product Info */}
           <div className="text-white space-y-6">
-            <h1 className="text-3xl font-bold">{product.title}</h1>
+            <h1 className="text-4xl font-['Bebas_Neue'] tracking-wider">{product.title}</h1>
+            
+            {/* Price Display */}
+            <div className="text-2xl font-['Bebas_Neue'] tracking-wider">
+              {selectedColor && selectedSize ? (
+                `$${product.variants.find(v => v.color === selectedColor && v.size === selectedSize)?.price.toFixed(2)}`
+              ) : (
+                'Select a color and size'
+              )}
+            </div>
+            
             {/* Color Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
@@ -186,11 +221,13 @@ export default function EternalAwakeningPage() {
                 {availableColors.map((color) => (
                   <button
                     key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`p-4 border rounded-lg transition-colors ${
+                    onClick={() => {
+                      setSelectedColor(color);
+                    }}
+                    className={`px-4 py-2 rounded-md border-2 transition-colors ${
                       selectedColor === color
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
+                        ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
+                        : 'border-white text-white hover:border-[#9F2FFF]'
                     }`}
                   >
                     {color}
@@ -198,6 +235,7 @@ export default function EternalAwakeningPage() {
                 ))}
               </div>
             </div>
+
             {/* Size Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
@@ -208,11 +246,11 @@ export default function EternalAwakeningPage() {
                     <button
                       key={size}
                       onClick={() => isInStock && setSelectedSize(size)}
-                      className={`p-4 border rounded-lg transition-colors ${
+                      className={`px-4 py-2 rounded-md border-2 transition-colors ${
                         selectedSize === size
-                          ? 'border-white bg-white text-[#2C2F36]'
+                          ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
                           : isInStock
-                            ? 'border-gray-600 hover:border-white'
+                            ? 'border-white text-white hover:border-[#9F2FFF]'
                             : 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
                       }`}
                     >
@@ -223,36 +261,24 @@ export default function EternalAwakeningPage() {
                 })}
               </div>
             </div>
-            <div className="pt-6">
-              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
-                {selectedSize && selectedColor && isVariantInStock(selectedColor, selectedSize)
-                  ? `$${product.variants.find(v => v.size === selectedSize && v.color === selectedColor)?.price.toFixed(2)}`
-                  : 'Select a color and size'}
-              </p>
-              <button
-                onClick={handleAddToCart}
-                disabled={!selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)}
-                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
-                  !selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)
-                    ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
-                }`}
-              >
-                {!selectedSize || !selectedColor
-                  ? 'Select a color and size'
-                  : !isVariantInStock(selectedColor, selectedSize)
-                    ? 'Out of Stock'
-                    : addedToCart
-                      ? 'Added to Cart!'
-                      : 'Add to Cart'}
-              </button>
-            </div>
-            {/* Description */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Description</h3>
-              <p className="text-gray-300">
-                {product.description}
-              </p>
+
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              disabled={!selectedColor || !selectedSize}
+              className={`w-full py-3 rounded-md transition-colors ${
+                !selectedColor || !selectedSize
+                  ? 'bg-gray-500 cursor-not-allowed'
+                  : 'bg-[#9F2FFF] hover:bg-[#8A2BE2]'
+              }`}
+            >
+              {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+            </button>
+
+            {/* Product Description */}
+            <div className="mt-8">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">Product Details</h2>
+              <p className="text-gray-300">{product.description}</p>
             </div>
           </div>
         </div>
