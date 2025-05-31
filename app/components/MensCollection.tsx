@@ -176,7 +176,7 @@ export default function MensCollection() {
   if (products.length === 0) {
     return (
       <div className="w-full">
-        <div className="flex justify-center py-8">
+        <div className="flex justify-center py-8 pb-12">
           <Image
             src="/images/Phoenix_ES_DADBE4.png"
             alt="Eternal Soul Men's Collection"
@@ -193,8 +193,8 @@ export default function MensCollection() {
   }
 
   return (
-    <div className="w-full">
-      <div className="flex justify-center py-8">
+    <div className="w-full mb-16">
+      <div className="flex justify-center py-8 pb-12">
         <Image
           src="/images/Phoenix_ES_DADBE4.png"
           alt="Eternal Soul Men's Collection"
@@ -205,16 +205,16 @@ export default function MensCollection() {
       </div>
 
       {/* Banner Section */}
-      <div className="bg-[#DADBE4] py-4 mb-4">
+      <div className="bg-[#DADBE4] py-4 mb-12">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-['Bebas_Neue'] text-[#1B1F3B] tracking-wider text-center">
+          <h2 className="text-4xl font-['Bebas_Neue'] text-[#1B1F3B] tracking-wider text-center">
             ESSENTIALS
           </h2>
         </div>
       </div>
       
       {/* Product Grid */}
-      <div className="relative px-4">
+      <div className="relative px-4 mb-16">
         <div className="overflow-x-auto pb-8 scrollbar-hide">
           <div className="flex space-x-6 min-w-min">
             {products.map((product) => (
@@ -289,9 +289,9 @@ export default function MensCollection() {
       </div>
 
       {/* ON THE RADAR Banner Section */}
-      <div className="bg-[#DADBE4] py-4 my-8">
+      <div className="bg-[#DADBE4] py-4 mb-12">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-['Bebas_Neue'] text-[#1B1F3B] tracking-wider text-center">
+          <h2 className="text-4xl font-['Bebas_Neue'] text-[#1B1F3B] tracking-wider text-center">
             ON THE RADAR
           </h2>
         </div>
@@ -368,6 +368,27 @@ export default function MensCollection() {
         {/* Gradient Overlays for Scroll Indication */}
         <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#2C2F36] to-transparent pointer-events-none"></div>
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#2C2F36] to-transparent pointer-events-none"></div>
+      </div>
+
+      {/* Bottom Banner */}
+      <div className="w-full h-[250px] relative mt-16">
+        <Image
+          src="/images/banner.png"
+          alt="Banner"
+          fill
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/20 via-black/30 via-black/20 to-transparent"></div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center mt-4">
+          <h2 className="text-4xl font-['Bebas_Neue'] text-white tracking-wider mb-12">
+            DON'T STOP HERE.
+          </h2>
+          <Link href="/shop/mens/all-products">
+            <button className="px-8 py-3 bg-white text-[#1B1F3B] font-['Bebas_Neue'] text-xl tracking-wider hover:bg-gray-100 transition-colors">
+              SHOP ALL MEN'S
+            </button>
+          </Link>
+        </div>
       </div>
     </div>
   );
