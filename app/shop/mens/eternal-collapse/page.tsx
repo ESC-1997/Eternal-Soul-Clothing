@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
+import { useSearchParams } from 'next/navigation';
 
 interface Product {
   id: string;
@@ -21,6 +22,8 @@ interface Product {
 }
 
 export default function EternalCollapsePage() {
+  const searchParams = useSearchParams();
+  const source = searchParams.get('source');
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -129,8 +132,8 @@ export default function EternalCollapsePage() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href="/shop/mens"
-            className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
+            href={source || "/shop/mens"}
+            className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
           >
             <svg 
               className="w-5 h-5 mr-2" 
@@ -148,6 +151,7 @@ export default function EternalCollapsePage() {
             Back to Products
           </Link>
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Product Images */}
           <div className="space-y-4">
@@ -166,7 +170,7 @@ export default function EternalCollapsePage() {
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`relative flex-none w-20 h-20 rounded-lg overflow-hidden ${
-                    selectedImage === index ? 'ring-2 ring-white' : ''
+                    selectedImage === index ? 'ring-2 ring-[#9F2FFF]' : ''
                   }`}
                 >
                   <Image
@@ -179,9 +183,20 @@ export default function EternalCollapsePage() {
               ))}
             </div>
           </div>
-          {/* Product Details */}
+
+          {/* Product Info */}
           <div className="text-white space-y-6">
-            <h1 className="text-3xl font-bold">{product.title}</h1>
+            <h1 className="text-4xl font-['Bebas_Neue'] tracking-wider">{product.title}</h1>
+            
+            {/* Price Display */}
+            <div className="text-2xl font-['Bebas_Neue'] tracking-wider">
+              {selectedColor && selectedSize ? (
+                `$${product.variants.find(v => v.color === selectedColor && v.size === selectedSize)?.price.toFixed(2)}`
+              ) : (
+                'Select a color and size'
+              )}
+            </div>
+            
             {/* Color Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
@@ -190,10 +205,10 @@ export default function EternalCollapsePage() {
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
-                    className={`p-4 border rounded-lg transition-colors ${
+                    className={`px-4 py-2 rounded-md border-2 transition-colors ${
                       selectedColor === color
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
+                        ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
+                        : 'border-white text-white hover:border-[#9F2FFF]'
                     }`}
                   >
                     {color}
@@ -201,6 +216,7 @@ export default function EternalCollapsePage() {
                 ))}
               </div>
             </div>
+
             {/* Size Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
@@ -211,11 +227,11 @@ export default function EternalCollapsePage() {
                     <button
                       key={size}
                       onClick={() => isInStock && setSelectedSize(size)}
-                      className={`p-4 border rounded-lg transition-colors ${
+                      className={`px-4 py-2 rounded-md border-2 transition-colors ${
                         selectedSize === size
-                          ? 'border-white bg-white text-[#2C2F36]'
+                          ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
                           : isInStock
-                            ? 'border-gray-600 hover:border-white'
+                            ? 'border-white text-white hover:border-[#9F2FFF]'
                             : 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
                       }`}
                     >
@@ -226,36 +242,24 @@ export default function EternalCollapsePage() {
                 })}
               </div>
             </div>
-            <div className="pt-6">
-              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
-                {selectedSize && selectedColor && isVariantInStock(selectedColor, selectedSize)
-                  ? `$${product.variants.find(v => v.size === selectedSize && v.color === selectedColor)?.price.toFixed(2)}`
-                  : 'Select a color and size'}
-              </p>
-              <button
-                onClick={handleAddToCart}
-                disabled={!selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)}
-                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
-                  !selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)
-                    ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
-                }`}
-              >
-                {!selectedSize || !selectedColor
-                  ? 'Select a color and size'
-                  : !isVariantInStock(selectedColor, selectedSize)
-                    ? 'Out of Stock'
-                    : addedToCart
-                      ? 'Added to Cart!'
-                      : 'Add to Cart'}
-              </button>
-            </div>
-            {/* Description */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Description</h3>
-              <p className="text-gray-300">
-                {product.description}
-              </p>
+
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              disabled={!selectedColor || !selectedSize}
+              className={`w-full py-3 rounded-md transition-colors ${
+                !selectedColor || !selectedSize
+                  ? 'bg-gray-500 cursor-not-allowed'
+                  : 'bg-[#9F2FFF] hover:bg-[#8A2BE2]'
+              }`}
+            >
+              {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+            </button>
+
+            {/* Product Description */}
+            <div className="mt-8">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">Product Details</h2>
+              <p className="text-gray-300">{product.description}</p>
             </div>
           </div>
         </div>
