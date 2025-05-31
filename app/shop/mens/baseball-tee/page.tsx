@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
+import { useSearchParams } from 'next/navigation';
 
 interface Product {
   id: string;
@@ -22,6 +23,8 @@ interface Product {
 }
 
 export default function BaseballTeePage() {
+  const searchParams = useSearchParams();
+  const source = searchParams.get('source');
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -162,8 +165,8 @@ export default function BaseballTeePage() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href="/shop/mens"
-            className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
+            href={source || "/shop/mens"}
+            className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
           >
             <svg 
               className="w-5 h-5 mr-2" 
