@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
+import { useSearchParams } from 'next/navigation';
 
 interface Product {
   id: string;
@@ -21,6 +22,8 @@ interface Product {
 }
 
 export default function EternallyWovenPage() {
+  const searchParams = useSearchParams();
+  const source = searchParams.get('source');
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -132,8 +135,8 @@ export default function EternallyWovenPage() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href="/shop/women"
-            className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
+            href={source || "/shop/women"}
+            className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
           >
             <svg 
               className="w-5 h-5 mr-2" 
@@ -171,7 +174,7 @@ export default function EternallyWovenPage() {
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`relative flex-none w-20 h-20 rounded-lg overflow-hidden ${
-                    selectedImage === index ? 'ring-2 ring-white' : ''
+                    selectedImage === index ? 'ring-2 ring-[#9F2FFF]' : ''
                   }`}
                 >
                   <Image
@@ -198,13 +201,11 @@ export default function EternallyWovenPage() {
                     key={color}
                     onClick={() => {
                       setSelectedColor(color);
-                      const imageIndex = availableColors.indexOf(color);
-                      setSelectedImage(imageIndex);
                     }}
-                    className={`p-4 border rounded-lg transition-colors ${
+                    className={`px-4 py-2 rounded-md border-2 transition-colors ${
                       selectedColor === color
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
+                        ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
+                        : 'border-white text-white hover:border-[#9F2FFF]'
                     }`}
                   >
                     {color}
@@ -220,11 +221,13 @@ export default function EternallyWovenPage() {
                 {availableSizes.map((size) => (
                   <button
                     key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`p-4 border rounded-lg transition-colors ${
+                    onClick={() => {
+                      setSelectedSize(size);
+                    }}
+                    className={`px-4 py-2 rounded-md border-2 transition-colors ${
                       selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
+                        ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
+                        : 'border-white text-white hover:border-[#9F2FFF]'
                     }`}
                   >
                     {size}
@@ -233,29 +236,23 @@ export default function EternallyWovenPage() {
               </div>
             </div>
 
-            <div className="pt-6">
-              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
-                ${product.variants[0].price.toFixed(2)}
-              </p>
-              <button
-                onClick={handleAddToCart}
-                disabled={!selectedSize || !selectedColor}
-                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
-                  !selectedSize || !selectedColor
-                    ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
-                }`}
-              >
-                {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
-              </button>
-            </div>
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              disabled={!selectedColor || !selectedSize}
+              className={`w-full py-3 rounded-md transition-colors ${
+                !selectedColor || !selectedSize
+                  ? 'bg-gray-500 cursor-not-allowed'
+                  : 'bg-[#9F2FFF] hover:bg-[#8A2BE2]'
+              }`}
+            >
+              {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+            </button>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Description</h3>
-              <p className="text-gray-300">
-                {product.description}
-              </p>
+            {/* Product Description */}
+            <div className="mt-8">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">Product Details</h2>
+              <p className="text-gray-300">{product.description}</p>
             </div>
           </div>
         </div>
