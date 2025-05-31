@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useCart } from '../../../context/CartContext';
 import ShopNavigation from '../../../components/ShopNavigation';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 interface Product {
   id: string;
@@ -19,6 +20,8 @@ interface Product {
 }
 
 export default function EternalSnapPage() {
+  const searchParams = useSearchParams();
+  const source = searchParams.get('source');
   const { addItem } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -107,7 +110,7 @@ export default function EternalSnapPage() {
           {/* Back to Products Button */}
           <div className="mb-8">
             <Link 
-              href="/shop/accessories"
+              href={source || "/shop/accessories"}
               className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors text-lg font-medium"
             >
               <svg 
