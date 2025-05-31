@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCart } from '@/app/context/CartContext';
 import ShopNavigation from '@/app/components/ShopNavigation';
 import Link from 'next/link';
@@ -26,6 +26,8 @@ interface Product {
 export default function EternallyBoldPage() {
   const { addItem } = useCart();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const source = searchParams.get('source');
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -157,12 +159,12 @@ export default function EternallyBoldPage() {
 
   return (
     <main className="min-h-screen bg-[#2C2F36]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back to products button */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href="/shop/mens"
-            className="inline-flex items-center text-[#DADBE4] hover:text-white transition-colors duration-200"
+            href={source === '/shop/mens/all-products' ? '/shop/mens/all-products' : '/shop/mens'}
+            className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
           >
             <svg 
               className="w-5 h-5 mr-2" 
@@ -177,7 +179,7 @@ export default function EternallyBoldPage() {
                 d="M10 19l-7-7m0 0l7-7m-7 7h18" 
               />
             </svg>
-            Back to products
+            Back to Products
           </Link>
         </div>
 
