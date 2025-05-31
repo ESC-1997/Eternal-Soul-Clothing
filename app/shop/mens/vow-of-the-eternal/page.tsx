@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
+import { useSearchParams } from 'next/navigation';
 
 interface Product {
   id: string;
@@ -22,6 +23,8 @@ interface Product {
 }
 
 export default function VowOfTheEternal() {
+  const searchParams = useSearchParams();
+  const source = searchParams.get('source');
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -175,8 +178,8 @@ export default function VowOfTheEternal() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href="/shop/mens"
-            className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
+            href={source || "/shop/mens"}
+            className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
           >
             <svg 
               className="w-5 h-5 mr-2" 
@@ -198,31 +201,29 @@ export default function VowOfTheEternal() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Product Images */}
           <div className="space-y-4">
-            <div className="relative aspect-square bg-white rounded-lg overflow-hidden">
+            <div className="relative h-[500px] bg-white rounded-lg overflow-hidden">
               <Image
                 src={product.images[selectedImage].src}
                 alt={product.title}
                 fill
                 className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
-            {/* Thumbnail gallery */}
-            <div className="flex gap-4 overflow-x-auto pb-2">
+            {/* Thumbnail Gallery */}
+            <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
               {product.images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`relative flex-shrink-0 w-20 aspect-square rounded-lg overflow-hidden ${
-                    selectedImage === index ? 'ring-2 ring-white' : ''
+                  className={`relative flex-none w-20 h-20 rounded-lg overflow-hidden ${
+                    selectedImage === index ? 'ring-2 ring-[#9F2FFF]' : ''
                   }`}
                 >
                   <Image
                     src={image.src}
-                    alt={`${product.title} - View ${index + 1}`}
+                    alt={`${product.title} - Image ${index + 1}`}
                     fill
                     className="object-cover"
-                    sizes="80px"
                   />
                 </button>
               ))}
@@ -233,6 +234,15 @@ export default function VowOfTheEternal() {
           <div className="text-white space-y-6">
             <h1 className="text-4xl font-['Bebas_Neue'] tracking-wider">{product.title}</h1>
             
+            {/* Price Display */}
+            <div className="text-2xl font-['Bebas_Neue'] tracking-wider">
+              {selectedColor && selectedSize ? (
+                `$${selectedVariant?.price}`
+              ) : (
+                'Select a color and size'
+              )}
+            </div>
+            
             {/* Color Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
@@ -241,10 +251,10 @@ export default function VowOfTheEternal() {
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
-                    className={`p-4 border rounded-lg transition-colors ${
+                    className={`px-4 py-2 rounded-md border-2 transition-colors ${
                       selectedColor === color
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
+                        ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
+                        : 'border-white text-white hover:border-[#9F2FFF]'
                     }`}
                   >
                     {color}
@@ -261,10 +271,10 @@ export default function VowOfTheEternal() {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`p-4 border rounded-lg transition-colors ${
+                    className={`px-4 py-2 rounded-md border-2 transition-colors ${
                       selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
+                        ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
+                        : 'border-white text-white hover:border-[#9F2FFF]'
                     }`}
                   >
                     {size}
@@ -273,24 +283,25 @@ export default function VowOfTheEternal() {
               </div>
             </div>
 
-            <div className="pt-6">
-              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
-                ${selectedVariant?.price}
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              disabled={!selectedColor || !selectedSize}
+              className={`w-full py-3 rounded-md transition-colors ${
+                !selectedColor || !selectedSize
+                  ? 'bg-gray-500 cursor-not-allowed'
+                  : 'bg-[#9F2FFF] hover:bg-[#8A2BE2]'
+              }`}
+            >
+              {isAddingToCart ? 'Adding...' : addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+            </button>
+
+            {/* Product Description */}
+            <div className="mt-8">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">Product Details</h2>
+              <p className="text-gray-300">
+                The Vow of the Eternal collection represents a bold statement of style and individuality. Each piece is crafted with premium materials and features our distinctive design elements, creating a perfect blend of comfort and fashion-forward aesthetics.
               </p>
-              {!isVariantAvailable && (
-                <p className="text-red-500 mb-4">Out of Stock</p>
-              )}
-              <button
-                onClick={handleAddToCart}
-                disabled={isAddingToCart || !selectedSize || !selectedColor || !isVariantAvailable}
-                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
-                  isAddingToCart || !selectedSize || !selectedColor || !isVariantAvailable
-                    ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
-                }`}
-              >
-                {isAddingToCart ? 'Adding...' : addedToCart ? 'Added to Cart!' : 'Add to Cart'}
-              </button>
             </div>
           </div>
         </div>
