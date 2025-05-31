@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
 import LoadingScreen from '@/app/components/LoadingScreen';
+import { useSearchParams } from 'next/navigation';
 
 interface Product {
   id: string;
@@ -22,6 +23,8 @@ interface Product {
 }
 
 export default function EternalSwordsPage() {
+  const searchParams = useSearchParams();
+  const source = searchParams.get('source');
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -34,7 +37,8 @@ export default function EternalSwordsPage() {
   // Helper function to check if a variant is in stock
   const isVariantInStock = (color: string, size: string) => {
     if (!product) return false;
-    return product.variants.some(v => v.color === color && v.size === size);
+    const variant = product.variants.find(v => v.color === color && v.size === size);
+    return !!variant;
   };
 
   useEffect(() => {
@@ -46,11 +50,15 @@ export default function EternalSwordsPage() {
         }
         const products = await response.json();
         const swords = products.find((p: any) => p.title.toLowerCase().includes('eternal swords'));
-        if (!swords) throw new Error('Product not found');
-        const transformedProduct: Product = {
+        
+        if (!swords) {
+          throw new Error('Product not found');
+        }
+
+        const transformedProduct = {
           id: swords.id,
           title: swords.title,
-          description: swords.description || 'The Eternal Swords collection embodies strength and resilience, crafted for those who carry their battles with grace.',
+          description: swords.description || 'The Eternal Swords collection represents strength and precision.',
           images: swords.images.map((img: any) => ({ src: img.src })),
           variants: swords.variants
             .filter((variant: any) => variant.is_enabled)
@@ -65,6 +73,7 @@ export default function EternalSwordsPage() {
               };
             })
         };
+
         setProduct(transformedProduct);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -72,6 +81,7 @@ export default function EternalSwordsPage() {
         setLoading(false);
       }
     };
+
     fetchProduct();
   }, []);
 
@@ -112,6 +122,7 @@ export default function EternalSwordsPage() {
   if (loading) {
     return <LoadingScreen />;
   }
+
   if (error || !product) {
     return (
       <div className="text-center text-red-600 p-4">
@@ -126,8 +137,8 @@ export default function EternalSwordsPage() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href="/shop/mens"
-            className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
+            href={source === '/shop/mens/all-products' ? '/shop/mens/all-products' : '/shop/mens'}
+            className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
           >
             <svg 
               className="w-5 h-5 mr-2" 
@@ -145,6 +156,7 @@ export default function EternalSwordsPage() {
             Back to Products
           </Link>
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Product Images */}
           <div className="space-y-4">
@@ -163,7 +175,7 @@ export default function EternalSwordsPage() {
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`relative flex-none w-20 h-20 rounded-lg overflow-hidden ${
-                    selectedImage === index ? 'ring-2 ring-white' : ''
+                    selectedImage === index ? 'ring-2 ring-[#9F2FFF]' : ''
                   }`}
                 >
                   <Image
@@ -189,8 +201,8 @@ export default function EternalSwordsPage() {
                     onClick={() => setSelectedColor(color)}
                     className={`p-4 border rounded-lg transition-colors ${
                       selectedColor === color
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
+                        ? 'border-[#9F2FFF] bg-[#9F2FFF] text-white'
+                        : 'border-gray-600 hover:border-[#9F2FFF]'
                     }`}
                   >
                     {color}
@@ -210,9 +222,9 @@ export default function EternalSwordsPage() {
                       onClick={() => isInStock && setSelectedSize(size)}
                       className={`p-4 border rounded-lg transition-colors ${
                         selectedSize === size
-                          ? 'border-white bg-white text-[#2C2F36]'
+                          ? 'border-[#9F2FFF] bg-[#9F2FFF] text-white'
                           : isInStock
-                            ? 'border-gray-600 hover:border-white'
+                            ? 'border-gray-600 hover:border-[#9F2FFF]'
                             : 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
                       }`}
                     >
@@ -235,16 +247,14 @@ export default function EternalSwordsPage() {
                 className={`w-full py-4 rounded-lg font-semibold transition-colors ${
                   !selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)
                     ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
+                    : 'bg-[#9F2FFF] text-white hover:bg-[#8A2BE2]'
                 }`}
               >
                 {!selectedSize || !selectedColor
-                  ? 'Select a color and size'
-                  : !isVariantInStock(selectedColor, selectedSize)
-                    ? 'Out of Stock'
-                    : addedToCart
-                      ? 'Added to Cart!'
-                      : 'Add to Cart'}
+                  ? 'Select options'
+                  : addedToCart
+                    ? 'Added to Cart!'
+                    : 'Add to Cart'}
               </button>
             </div>
             {/* Description */}
