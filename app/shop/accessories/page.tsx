@@ -129,7 +129,7 @@ export default function AccessoriesShop() {
               <div className="flex space-x-6 min-w-min">
                 {products.map((product) => (
                   <div key={product.id} className="flex-none w-[300px] group">
-                    <div className="bg-white rounded-lg overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 h-[450px]">
+                    <div className="bg-white overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 h-[450px]">
                       <Link 
                         href={(() => {
                           const normalizedTitle = product.title.toLowerCase().replace(/\s+/g, '');
