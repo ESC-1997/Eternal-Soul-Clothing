@@ -30,9 +30,6 @@ let cache = {
 // Function to fetch fresh data
 async function fetchFreshData() {
   try {
-    console.log('=== PRINTIFY API REQUEST ===');
-    console.log('Fetching fresh products data from Printify');
-    
     let allProducts: PrintifyProduct[] = [];
     let page = 1;
     let hasMore = true;
@@ -48,14 +45,8 @@ async function fetchFreshData() {
       });
 
       if (!response.ok) {
-        console.error('Printify API Error:', {
-          status: response.status,
-          statusText: response.statusText,
-          url: `https://api.printify.com/v1/shops/22091288/products.json?limit=50&page=${page}`
-        });
         const errorText = await response.text();
-        console.error('Error response:', errorText);
-        throw new Error(`Failed to fetch products from Printify: ${response.status} ${response.statusText} - ${errorText}`);
+        throw new Error(`Failed to fetch products from Printify: ${response.status} ${response.statusText}`);
       }
 
       const data: PrintifyResponse = await response.json();
@@ -66,122 +57,12 @@ async function fetchFreshData() {
       page++;
     }
     
-    // Debug: Log the full API response structure
-    console.log('=== PRINTIFY API RESPONSE STRUCTURE ===');
-    console.log('Total products:', allProducts.length);
-    console.log('All products:', allProducts.map((p: any) => ({
-      id: p.id,
-      title: p.title,
-      is_published: p.is_published,
-      is_enabled: p.is_enabled,
-      variants: p.variants.map((v: any) => ({
-        id: v.id,
-        title: v.title,
-        is_available: v.is_available,
-        is_enabled: v.is_enabled
-      }))
-    })));
-    
-    // Debug: Log specific Eternal Lotus products
-    const eternalLotusProducts = allProducts.filter((p: any) => 
-      p.id === '6813de3b9fb67dd986004dc8' || 
-      p.id === '6813ea12a7ab600a950c4b5a'
-    );
-    
-    console.log('=== ETERNAL LOTUS PRODUCTS DEBUG ===');
-    if (eternalLotusProducts.length === 0) {
-      console.log('No Eternal Lotus products found in API response');
-      // Search for any products with "eternal lotus" in the title
-      const allEternalLotus = allProducts.filter((p: any) => 
-        p.title.toLowerCase().includes('eternal lotus')
-      );
-      console.log('All products with "eternal lotus" in title:', allEternalLotus.map((p: any) => ({
-        id: p.id,
-        title: p.title,
-        is_published: p.is_published,
-        is_enabled: p.is_enabled
-      })));
-    } else {
-      eternalLotusProducts.forEach((p: any) => {
-        console.log(`Product: "${p.title}" (ID: ${p.id})`);
-        console.log('Status:', {
-          is_published: p.is_published,
-          is_enabled: p.is_enabled
-        });
-        console.log('All variants:', p.variants.map((v: any) => ({
-          id: v.id,
-          title: v.title,
-          is_available: v.is_available,
-          is_enabled: v.is_enabled,
-          options: v.options
-        })));
-      });
-    }
-    
-    // Debug: Log all products and their variants
-    console.log('=== ALL PRODUCTS FROM PRINTIFY ===');
-    allProducts.forEach((p: any) => {
-      console.log(`Product: "${p.title}" (ID: ${p.id})`);
-      console.log('Variants:', p.variants.map((v: any) => ({
-        id: v.id,
-        title: v.title,
-        is_available: v.is_available,
-        is_enabled: v.is_enabled
-      })));
-    });
-    
-    // Debug: Log the raw data for Eternal Awakening
-    const eternalAwakening = allProducts.find((p: any) => p.title === "Eternal Awakening");
-    if (eternalAwakening) {
-      console.log('Eternal Awakening raw data:', {
-        title: eternalAwakening.title,
-        id: eternalAwakening.id,
-        variants: eternalAwakening.variants.map((v: any) => ({
-          id: v.id,
-          title: v.title,
-          price: v.price,
-          is_available: v.is_available,
-          options: v.options
-        }))
-      });
-    }
-    
     // Add customizable flag to products and filter out unavailable variants
-    const products = allProducts.map((product: any) => {
-      const filteredVariants = product.variants.filter((variant: any) => variant.is_available);
-      
-      // Debug: Log Eternal Lotus products after filtering
-      if (product.id === '6813de3b9fb67dd986004dc8' || product.id === '6813ea12a7ab600a950c4b5a') {
-        console.log(`Eternal Lotus product after filtering: "${product.title}"`);
-        console.log('Available variants:', filteredVariants.map((v: any) => ({
-          id: v.id,
-          title: v.title,
-          is_available: v.is_available,
-          options: v.options
-        })));
-      }
-      
-      // Debug: Log product data for Eternal Motion
-      if (product.title === "Eternal Motion (Biker Shorts) - Violet") {
-        console.log('Eternal Motion product data:', {
-          title: product.title,
-          id: product.id,
-          variants: filteredVariants.map((v: any) => ({
-            id: v.id,
-            title: v.title,
-            price: v.price,
-            is_available: v.is_available,
-            options: v.options
-          }))
-        });
-      }
-      
-      return {
-        ...product,
-        customizable: product.title && product.title.includes('ES Phoenix Logo'),
-        variants: filteredVariants
-      };
-    });
+    const products = allProducts.map((product: any) => ({
+      ...product,
+      customizable: product.title && product.title.includes('ES Phoenix Logo'),
+      variants: product.variants.filter((variant: any) => variant.is_available)
+    }));
 
     // Update cache
     cache = {
@@ -206,7 +87,6 @@ export async function GET() {
     // Check if we have valid cached data
     const now = Date.now();
     if (cache.data && (now - cache.timestamp) < CACHE_DURATION * 1000) {
-      console.log('Returning cached products data');
       return NextResponse.json(cache.data, {
         headers: {
           'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
@@ -216,7 +96,6 @@ export async function GET() {
 
     // If cache is invalid or not initialized, fetch fresh data
     if (!cache.isInitialized) {
-      console.log('Cache not initialized, fetching fresh data...');
       const products = await fetchFreshData();
       return NextResponse.json(products, {
         headers: {
@@ -226,7 +105,6 @@ export async function GET() {
     }
 
     // If cache is initialized but expired, try to use stale data while fetching fresh
-    console.log('Cache expired, using stale data while fetching fresh...');
     const staleData = cache.data;
     
     // Fetch fresh data in the background
