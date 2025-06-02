@@ -2,7 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['images-api.printify.com'],
+    domains: [
+      'files.cdn.printful.com',
+      'cdn.printful.com',
+      'printful-upload.s3-accelerate.amazonaws.com',
+      'images-api.printify.com'
+    ],
   },
 }
 
