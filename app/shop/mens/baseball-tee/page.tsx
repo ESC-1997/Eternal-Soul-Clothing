@@ -23,6 +23,18 @@ interface Product {
 }
 
 export default function BaseballTeePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    }>
+      <BaseballTeeContent />
+    </Suspense>
+  );
+}
+
+function BaseballTeeContent() {
   const searchParams = useSearchParams();
   const source = searchParams.get('source');
   const { addItem } = useCart();
@@ -160,144 +172,142 @@ export default function BaseballTeePage() {
   }
 
   return (
-    <Suspense fallback={<div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div></div>}>
-      <main className="min-h-screen bg-[#2C2F36]">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Back Button */}
-          <div className="mb-8">
-            <Link 
-              href={source || "/shop/mens"}
-              className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
+    <main className="min-h-screen bg-[#2C2F36]">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Back Button */}
+        <div className="mb-8">
+          <Link 
+            href={source || "/shop/mens"}
+            className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
+          >
+            <svg 
+              className="w-5 h-5 mr-2" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
             >
-              <svg 
-                className="w-5 h-5 mr-2" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18" 
-                />
-              </svg>
-              Back to Products
-            </Link>
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+              />
+            </svg>
+            Back to Products
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Product Images */}
+          <div className="space-y-4">
+            <div className="relative h-[500px] bg-white rounded-lg overflow-hidden">
+              <Image
+                src={product.images[selectedImage].src}
+                alt={product.title}
+                fill
+                className="object-cover"
+              />
+            </div>
+            {/* Thumbnail Gallery */}
+            <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
+              {product.images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImage(index)}
+                  className={`relative flex-none w-20 h-20 rounded-lg overflow-hidden ${
+                    selectedImage === index ? 'ring-2 ring-white' : ''
+                  }`}
+                >
+                  <Image
+                    src={image.src}
+                    alt={`${product.title} - Image ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Product Images */}
+          {/* Product Details */}
+          <div className="text-white space-y-6">
+            <h1 className="text-3xl font-bold">{product.title}</h1>
+            {/* Color Selection */}
             <div className="space-y-4">
-              <div className="relative h-[500px] bg-white rounded-lg overflow-hidden">
-                <Image
-                  src={product.images[selectedImage].src}
-                  alt={product.title}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              {/* Thumbnail Gallery */}
-              <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
-                {product.images.map((image, index) => (
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
+              <div className="grid grid-cols-4 gap-4">
+                {availableColors.map((color) => (
                   <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`relative flex-none w-20 h-20 rounded-lg overflow-hidden ${
-                      selectedImage === index ? 'ring-2 ring-white' : ''
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`p-4 border rounded-lg transition-colors ${
+                      selectedColor === color
+                        ? 'border-white bg-white text-[#2C2F36]'
+                        : 'border-gray-600 hover:border-white'
                     }`}
                   >
-                    <Image
-                      src={image.src}
-                      alt={`${product.title} - Image ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
+                    {color}
                   </button>
                 ))}
               </div>
             </div>
-            {/* Product Details */}
-            <div className="text-white space-y-6">
-              <h1 className="text-3xl font-bold">{product.title}</h1>
-              {/* Color Selection */}
-              <div className="space-y-4">
-                <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
-                <div className="grid grid-cols-4 gap-4">
-                  {availableColors.map((color) => (
+            {/* Size Selection */}
+            <div className="space-y-4">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <div className="grid grid-cols-4 gap-4">
+                {availableSizes.map((size) => {
+                  const isInStock = selectedColor ? isVariantInStock(selectedColor, size) : true;
+                  return (
                     <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
+                      key={size}
+                      onClick={() => isInStock && setSelectedSize(size)}
                       className={`p-4 border rounded-lg transition-colors ${
-                        selectedColor === color
+                        selectedSize === size
                           ? 'border-white bg-white text-[#2C2F36]'
-                          : 'border-gray-600 hover:border-white'
+                          : isInStock
+                            ? 'border-gray-600 hover:border-white'
+                            : 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
                       }`}
                     >
-                      {color}
+                      {size}
+                      {!isInStock && <span className="block text-xs mt-1">Out of Stock</span>}
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-              {/* Size Selection */}
-              <div className="space-y-4">
-                <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
-                <div className="grid grid-cols-4 gap-4">
-                  {availableSizes.map((size) => {
-                    const isInStock = selectedColor ? isVariantInStock(selectedColor, size) : true;
-                    return (
-                      <button
-                        key={size}
-                        onClick={() => isInStock && setSelectedSize(size)}
-                        className={`p-4 border rounded-lg transition-colors ${
-                          selectedSize === size
-                            ? 'border-white bg-white text-[#2C2F36]'
-                            : isInStock
-                              ? 'border-gray-600 hover:border-white'
-                              : 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
-                        }`}
-                      >
-                        {size}
-                        {!isInStock && <span className="block text-xs mt-1">Out of Stock</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="pt-6">
-                <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
-                  {selectedSize && selectedColor && isVariantInStock(selectedColor, selectedSize)
-                    ? `$${product.variants.find(v => v.size === selectedSize && v.color === selectedColor)?.price.toFixed(2)}`
-                    : 'Select a color and size'}
-                </p>
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)}
-                  className={`w-full py-4 rounded-lg font-semibold transition-colors ${
-                    !selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)
-                      ? 'bg-gray-600 cursor-not-allowed'
-                      : 'bg-white text-[#2C2F36] hover:bg-gray-100'
-                  }`}
-                >
-                  {!selectedSize || !selectedColor
-                    ? 'Select a color and size'
-                    : !isVariantInStock(selectedColor, selectedSize)
-                      ? 'Out of Stock'
-                      : addedToCart
-                        ? 'Added to Cart!'
-                        : 'Add to Cart'}
-                </button>
-              </div>
-              {/* Description */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Description</h3>
-                <p className="text-gray-300">
-                  {product.description}
-                </p>
-              </div>
+            </div>
+            <div className="pt-6">
+              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
+                {selectedSize && selectedColor && isVariantInStock(selectedColor, selectedSize)
+                  ? `$${product.variants.find(v => v.size === selectedSize && v.color === selectedColor)?.price.toFixed(2)}`
+                  : 'Select a color and size'}
+              </p>
+              <button
+                onClick={handleAddToCart}
+                disabled={!selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)}
+                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
+                  !selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)
+                    ? 'bg-gray-600 cursor-not-allowed'
+                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
+                }`}
+              >
+                {!selectedSize || !selectedColor
+                  ? 'Select a color and size'
+                  : !isVariantInStock(selectedColor, selectedSize)
+                    ? 'Out of Stock'
+                    : addedToCart
+                      ? 'Added to Cart!'
+                      : 'Add to Cart'}
+              </button>
+            </div>
+            {/* Description */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Description</h3>
+              <p className="text-gray-300">
+                {product.description}
+              </p>
             </div>
           </div>
         </div>
-      </main>
-    </Suspense>
+      </div>
+    </main>
   );
 } 

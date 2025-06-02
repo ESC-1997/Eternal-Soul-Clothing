@@ -23,6 +23,18 @@ interface Product {
 }
 
 export default function EternalRebirth() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    }>
+      <EternalRebirthContent />
+    </Suspense>
+  );
+}
+
+function EternalRebirthContent() {
   const searchParams = useSearchParams();
   const source = searchParams.get('source');
   const { addItem } = useCart();
@@ -173,133 +185,131 @@ export default function EternalRebirth() {
   const isVariantAvailable = selectedVariant?.is_available ?? false;
 
   return (
-    <Suspense fallback={<div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div></div>}>
-      <main className="min-h-screen bg-[#2C2F36]">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Back Button */}
-          <div className="mb-8">
-            <Link 
-              href={source || "/shop/mens"}
-              className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
+    <main className="min-h-screen bg-[#2C2F36]">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Back Button */}
+        <div className="mb-8">
+          <Link 
+            href={source || "/shop/mens"}
+            className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
+          >
+            <svg 
+              className="w-5 h-5 mr-2" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
             >
-              <svg 
-                className="w-5 h-5 mr-2" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18" 
-                />
-              </svg>
-              Back to Products
-            </Link>
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+              />
+            </svg>
+            Back to Products
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Product Images */}
+          <div className="space-y-4">
+            <div className="relative aspect-square bg-white rounded-lg overflow-hidden">
+              <Image
+                src={product.images[selectedImage].src}
+                alt={product.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            </div>
+            {/* Thumbnail gallery */}
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {product.images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImage(index)}
+                  className={`relative flex-shrink-0 w-20 aspect-square rounded-lg overflow-hidden ${
+                    selectedImage === index ? 'ring-2 ring-white' : ''
+                  }`}
+                >
+                  <Image
+                    src={image.src}
+                    alt={`${product.title} - View ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                  />
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Product Images */}
+          {/* Product Info */}
+          <div className="text-white space-y-6">
+            <h1 className="text-4xl font-['Bebas_Neue'] tracking-wider">{product.title}</h1>
+            
+            {/* Color Selection */}
             <div className="space-y-4">
-              <div className="relative aspect-square bg-white rounded-lg overflow-hidden">
-                <Image
-                  src={product.images[selectedImage].src}
-                  alt={product.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-              </div>
-              {/* Thumbnail gallery */}
-              <div className="flex gap-4 overflow-x-auto pb-2">
-                {product.images.map((image, index) => (
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
+              <div className="grid grid-cols-4 gap-4">
+                {uniqueColors.map((color) => (
                   <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`relative flex-shrink-0 w-20 aspect-square rounded-lg overflow-hidden ${
-                      selectedImage === index ? 'ring-2 ring-white' : ''
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`p-4 border rounded-lg transition-colors ${
+                      selectedColor === color
+                        ? 'border-[#9F2FFF] bg-[#9F2FFF] text-white'
+                        : 'border-gray-600 hover:border-[#9F2FFF]'
                     }`}
                   >
-                    <Image
-                      src={image.src}
-                      alt={`${product.title} - View ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="80px"
-                    />
+                    {color}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Product Info */}
-            <div className="text-white space-y-6">
-              <h1 className="text-4xl font-['Bebas_Neue'] tracking-wider">{product.title}</h1>
-              
-              {/* Color Selection */}
-              <div className="space-y-4">
-                <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
-                <div className="grid grid-cols-4 gap-4">
-                  {uniqueColors.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`p-4 border rounded-lg transition-colors ${
-                        selectedColor === color
-                          ? 'border-[#9F2FFF] bg-[#9F2FFF] text-white'
-                          : 'border-gray-600 hover:border-[#9F2FFF]'
-                      }`}
-                    >
-                      {color}
-                    </button>
-                  ))}
-                </div>
+            {/* Size Selection */}
+            <div className="space-y-4">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <div className="grid grid-cols-4 gap-4">
+                {uniqueSizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`p-4 border rounded-lg transition-colors ${
+                      selectedSize === size
+                        ? 'border-[#9F2FFF] bg-[#9F2FFF] text-white'
+                        : 'border-gray-600 hover:border-[#9F2FFF]'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
               </div>
+            </div>
 
-              {/* Size Selection */}
-              <div className="space-y-4">
-                <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
-                <div className="grid grid-cols-4 gap-4">
-                  {uniqueSizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`p-4 border rounded-lg transition-colors ${
-                        selectedSize === size
-                          ? 'border-[#9F2FFF] bg-[#9F2FFF] text-white'
-                          : 'border-gray-600 hover:border-[#9F2FFF]'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-6">
-                <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
-                  ${selectedVariant?.price}
-                </p>
-                {!isVariantAvailable && (
-                  <p className="text-red-500 mb-4">Out of Stock</p>
-                )}
-                <button
-                  onClick={handleAddToCart}
-                  disabled={isAddingToCart || !selectedSize || !selectedColor || !isVariantAvailable}
-                  className={`w-full py-4 rounded-lg font-semibold transition-colors ${
-                    isAddingToCart || !selectedSize || !selectedColor || !isVariantAvailable
-                      ? 'bg-gray-600 cursor-not-allowed'
-                      : 'bg-[#9F2FFF] text-white hover:bg-[#8A2BE2]'
-                  }`}
-                >
-                  {isAddingToCart ? 'Adding...' : addedToCart ? 'Added to Cart!' : 'Add to Cart'}
-                </button>
-              </div>
+            <div className="pt-6">
+              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
+                ${selectedVariant?.price}
+              </p>
+              {!isVariantAvailable && (
+                <p className="text-red-500 mb-4">Out of Stock</p>
+              )}
+              <button
+                onClick={handleAddToCart}
+                disabled={isAddingToCart || !selectedSize || !selectedColor || !isVariantAvailable}
+                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
+                  isAddingToCart || !selectedSize || !selectedColor || !isVariantAvailable
+                    ? 'bg-gray-600 cursor-not-allowed'
+                    : 'bg-[#9F2FFF] text-white hover:bg-[#8A2BE2]'
+                }`}
+              >
+                {isAddingToCart ? 'Adding...' : addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+              </button>
             </div>
           </div>
         </div>
-      </main>
-    </Suspense>
+      </div>
+    </main>
   );
 } 
