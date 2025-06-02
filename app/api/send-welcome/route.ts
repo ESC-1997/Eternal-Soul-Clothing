@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import sgMail from '@sendgrid/mail';
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const { email, name } = await req.json();
     console.log('Received welcome email request:', { email, name });
@@ -26,10 +26,10 @@ export async function POST(req: NextRequest) {
                 Welcome${name ? ', ' + name : ''}!
               </h1>
               <p style="color:#1B1F3B;font-family:'Lato',Arial,sans-serif;font-size:1.1rem;margin-bottom:24px;">
-                We’re all about more than just clothes — we’re about energy, expression, and wearing your soul on your sleeve (literally). You’ll be the first to know about exclusive drops, limited-time promo codes, and behind-the-scenes updates from the brand.
+                We're all about more than just clothes — we're about energy, expression, and wearing your soul on your sleeve (literally). You'll be the first to know about exclusive drops, limited-time promo codes, and behind-the-scenes updates from the brand.
               </p>
               <p style="color:#1B1F3B;font-family:'Lato',Arial,sans-serif;font-size:1rem;">
-                We’re just getting started — and we’re glad you’re here.
+                We're just getting started — and we're glad you're here.
               </p>
               <p style="color:#9F2FFF;font-size:0.9rem;margin-top:32px;">
                 Eternal Soul Clothing &copy; ${new Date().getFullYear()}

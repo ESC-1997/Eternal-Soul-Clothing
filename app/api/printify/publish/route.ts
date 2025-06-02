@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const { productId } = await request.json();
 
@@ -45,4 +44,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}
