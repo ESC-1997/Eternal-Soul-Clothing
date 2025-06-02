@@ -62,7 +62,8 @@ export class PromoCodeService {
       throw new Error(`Minimum purchase amount of $${promoCode.min_purchase} required`);
     }
 
-    if (promoCode.customer_id && promoCode.customer_id !== customerId) {
+    // Only check customer-specific validation if both the promo code has a customerId AND we have a customerId
+    if (promoCode.customer_id && customerId && promoCode.customer_id !== customerId) {
       throw new Error('This promo code is not available for your account');
     }
 

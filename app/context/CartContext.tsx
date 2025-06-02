@@ -1,5 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { productVariants } from '../components/productVariants';
 
 export interface CartItem {
   id: string; // product or variant id
@@ -45,6 +46,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [shippingCost, setShippingCost] = useState(0);
 
   const addItem = (item: CartItem) => {
+    // Failsafe: check stock status if possible
+    let stockStatus = 'In Stock';
+    if (item.variantId) {
+      // Try to find the stock status in productVariants
+      for (const productId in productVariants) {
+        for (const color in productVariants[productId]) {
+          for (const size in productVariants[productId][color]) {
+            const variant = productVariants[productId][color][size];
+            if (variant.variant_id === item.variantId) {
+              stockStatus = variant.stock_status;
+              break;
+            }
+          }
+        }
+      }
+    }
+    if (stockStatus === 'Out of Stock') {
+      alert('This item is out of stock and cannot be added to the cart.');
+      return;
+    }
     setItems(prev => {
       // Check if item with same id, size, color, logo exists
       const existing = prev.find(

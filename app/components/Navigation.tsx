@@ -28,23 +28,22 @@ export default function Navigation() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-[101] bg-[#1B1F3B] p-2 rounded-md"
+        className="lg:hidden fixed top-4 left-4 z-[101] bg-black p-2 rounded-md"
       >
         <div className="w-6 h-0.5 bg-white mb-1.5"></div>
         <div className="w-6 h-0.5 bg-white mb-1.5"></div>
         <div className="w-6 h-0.5 bg-white"></div>
       </button>
 
-      {/* Navigation Menu */}
+      {/* Mobile Navigation Menu */}
       <nav 
-        className={`fixed left-0 top-0 h-screen z-[100] transition-all duration-300 ease-in-out
-          ${isOpen ? 'w-24' : 'w-0 lg:w-24'}`} 
-        style={{ backgroundColor: '#1B1F3B' }}
+        className={`fixed left-0 top-0 h-screen z-[100] transition-all duration-300 ease-in-out bg-black
+          ${isOpen ? 'w-24' : 'w-0'} lg:w-0 lg:opacity-0 lg:pointer-events-none`} 
       >
         <div 
-          className={`flex flex-col p-1.5 ${!isOpen && '!hidden lg:!flex'} overflow-hidden pt-16 lg:pt-0`}
+          className={`flex flex-col p-1.5 ${!isOpen && '!hidden'} overflow-hidden pt-8`}
         >
-          <div className="flex justify-center mb-2">
+          <div className="flex justify-center mb-4">
             <Link 
               href="/" 
               className="relative group block cursor-pointer"
@@ -67,25 +66,6 @@ export default function Navigation() {
           
           <div className="flex flex-col items-center space-y-5 mt-2">
             <Link 
-              href="/collections" 
-              className="group flex flex-col items-center"
-              onClick={() => setIsOpen(false)}
-            >
-              <div className="flex justify-center">
-                <Image
-                  src="/images/T_Shirt.png"
-                  alt="T-Shirt"
-                  width={35}
-                  height={35}
-                  className="object-contain"
-                />
-              </div>
-              <button className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
-                Collections
-              </button>
-            </Link>
-
-            <Link 
               href="/shop" 
               className="group flex flex-col items-center relative"
               onClick={() => setIsOpen(false)}
@@ -103,25 +83,6 @@ export default function Navigation() {
                 Shop
               </button>
             </Link>
-
-            {/* Always show Profile button */}
-            <button
-              className="group flex flex-col items-center"
-              onClick={() => router.push('/profile')}
-            >
-              <div className="flex justify-center">
-                <Image
-                  src="/images/Profile.png"
-                  alt="Profile"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                />
-              </div>
-              <span className="text-white px-1.5 py-1 rounded hover:bg-gray-700 transition-colors text-sm w-full text-center">
-                Profile
-              </span>
-            </button>
 
             <Link 
               href="/resources" 
@@ -142,36 +103,125 @@ export default function Navigation() {
               </button>
             </Link>
 
-            {/* Cart Button */}
             <div className="flex flex-col items-center space-y-1 mt-auto">
-              <button 
+              <button
                 onClick={() => setIsCartOpen(true)}
-                className="flex flex-col items-center w-full hover:bg-gray-700 transition-colors rounded p-1.5"
+                className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <div className="flex justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                {cartItems.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#9F2FFF] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-bounce">
+                    {cartItems.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0)}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center">
+          <Image
+            src="/images/Phoenix_ES_DADBE4.png"
+            alt="Phoenix Eternal Soul"
+            width={50}
+            height={50}
+            className="object-contain"
+          />
+        </div>
+      </nav>
+
+      {/* Desktop Navigation Menu */}
+      <nav className="hidden lg:block fixed top-0 left-0 right-0 z-[100] bg-black">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="w-[200px]"></div> {/* Spacer to balance the right side */}
+
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <Link href="/" className="flex items-center">
+                <Image
+                  src="/images/Phoenix_ES_DADBE4.png"
+                  alt="Phoenix Eternal Soul"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
+              </Link>
+            </div>
+
+            <div className="flex items-center">
+              <div className="flex items-center space-x-8">
+                <Link href="/shop" className="text-white hover:text-gray-300 transition-colors">
+                  Shop
+                </Link>
+                <Link href="/resources" className="text-white hover:text-gray-300 transition-colors">
+                  Resources
+                </Link>
+              </div>
+              <div className="flex items-center space-x-4 ml-8">
+                <button
+                  onClick={() => router.push('/profile')}
+                  className="flex items-center text-white hover:text-gray-300 transition-colors"
+                >
                   <Image
-                    src="/images/Cart.png"
-                    alt="Cart"
-                    width={35}
-                    height={35}
+                    src="/images/Profile.png"
+                    alt="Profile"
+                    width={28}
+                    height={28}
                     className="object-contain"
                   />
-                </div>
-                <span className="text-white text-sm">
-                  Cart
-                </span>
-              </button>
+                </button>
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                  {cartItems.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#9F2FFF] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-bounce">
+                      {cartItems.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0)}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </nav>
 
+      {/* Add padding to main content to account for fixed header on desktop */}
+      <div className="hidden lg:block h-16"></div>
+
       {/* Cart Panel */}
       <div 
-        className={`fixed right-0 top-0 h-screen w-96 bg-white z-[102] transform transition-transform duration-300 ease-in-out
+        className={`fixed right-0 top-0 h-screen w-full min-w-0 max-w-[100vw] sm:max-w-sm md:max-w-md lg:w-96 bg-white z-[102] transform transition-transform duration-300 ease-in-out
           ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        <div className="p-6 h-full flex flex-col">
+        <div className="p-6 h-full flex flex-col overflow-y-auto">
           {/* Cart Header */}
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold">Shopping Cart</h2>
@@ -293,10 +343,10 @@ export default function Navigation() {
       {/* Checkout Panel */}
       <StripeProvider>
         <div
-          className={`fixed right-0 top-0 h-screen w-[420px] bg-white z-[103] shadow-lg transform transition-transform duration-300 ease-in-out
+          className={`fixed right-0 top-0 h-screen w-full min-w-0 max-w-[100vw] sm:max-w-sm md:max-w-md lg:w-[420px] bg-white z-[103] shadow-lg transform transition-transform duration-300 ease-in-out
             ${isCheckoutOpen ? 'translate-x-0' : 'translate-x-full'}`}
         >
-          <div className="p-8 h-full flex flex-col">
+          <div className="p-8 h-full flex flex-col overflow-y-auto">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Checkout</h2>

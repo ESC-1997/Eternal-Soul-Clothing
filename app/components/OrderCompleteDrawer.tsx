@@ -1,7 +1,8 @@
 "use client";
 import { useEffect } from 'react';
+import Image from 'next/image';
 
-interface OrderCompleteDrawerProps {
+export interface OrderCompleteDrawerProps {
   open: boolean;
   onClose: () => void;
 }
@@ -18,19 +19,21 @@ export default function OrderCompleteDrawer({ open, onClose }: OrderCompleteDraw
     };
   }, [open]);
 
-  if (!open) return null;
-
   return (
     <>
       {/* Overlay */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-[104]"
-        onClick={onClose}
-      />
+      {open && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-[199]"
+          onClick={onClose}
+        />
+      )}
       
       {/* Drawer */}
       <div
-        className="fixed right-0 top-0 h-screen w-[420px] bg-white z-[105] shadow-lg transform transition-transform duration-300 ease-in-out translate-x-0"
+        className={`fixed top-0 right-0 h-full w-full max-w-md transform transition-transform duration-300 ease-in-out z-[200]
+          ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        style={{ backgroundColor: '#1B1F3B' }}
       >
         {/* Close Button */}
         <button 
@@ -43,22 +46,31 @@ export default function OrderCompleteDrawer({ open, onClose }: OrderCompleteDraw
         </button>
 
         {/* Content */}
-        <div className="p-8 h-full flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+        <div className="flex flex-col items-center p-8 h-full">
+          {/* Logo */}
+          <div className="mt-12 mb-8">
+            <Image
+              src="/images/Phoenix_ES_DADBE4.png"
+              alt="Phoenix Eternal Soul"
+              width={200}
+              height={200}
+              className="object-contain"
+            />
           </div>
-          <h2 className="text-2xl font-bold mb-2">Order Complete!</h2>
-          <p className="text-gray-600 mb-6">
-            Thank you for your purchase. We'll send you an email confirmation shortly.
-          </p>
-          <button
-            onClick={onClose}
-            className="w-full bg-[#1B1F3B] text-white py-3 rounded font-semibold hover:bg-[#15182c] transition-colors"
-          >
-            Continue Shopping
-          </button>
+
+          {/* Message */}
+          <div className="text-center text-white space-y-4">
+            <h2 className="text-2xl font-semibold">Thanks for your order 🔮</h2>
+            <p className="text-lg">
+              We've sent a confirmation to your email. You can also view your order anytime on the Profile page.
+            </p>
+            <p className="text-lg mt-8">
+              Stay limitless.
+            </p>
+            <p className="text-lg font-semibold">
+              — Eternal Soul
+            </p>
+          </div>
         </div>
       </div>
     </>

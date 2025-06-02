@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import ProductCustomizer from './ProductCustomizer';
 import ProductViewer from './ProductViewer';
 import { eternalEleganceVariants as _eternalEleganceVariants } from './eternalEleganceVariants';
+import { eternalSlashVariants as _eternalSlashVariants } from './eternalSlashVariants';
 const eternalEleganceVariants: Record<string, any> = _eternalEleganceVariants;
+const eternalSlashVariants: Record<string, any> = _eternalSlashVariants;
 
 interface Product {
   id: string;
@@ -32,6 +34,7 @@ interface Product {
 interface PrintifyStoreProps {
   onCustomizationModeChange: (isCustomizing: boolean) => void;
   onViewModeChange: (isViewing: boolean) => void;
+  onProductSelect: (product: Product) => void;
 }
 
 // Add this mapping at the top of the file
@@ -43,17 +46,68 @@ const EE_PRODUCT_ID_TO_LOGO_COLOR: Record<string, string> = {
   '68163317960c7decc0099499': 'grey',
   '6814c6d00ed813d9e5087aea': 'black',
 };
-function getLogoColorFromProductId(productId: string): string {
-  return EE_PRODUCT_ID_TO_LOGO_COLOR[productId] || '';
+
+const ES_PRODUCT_ID_TO_LOGO_COLOR: Record<string, string> = {
+  '6820b02093284a99660b189d': 'midnight_indigo',
+  '6820aed333803c3c4502120d': 'red',
+  '6820ad40471efa6af008268a': 'white',
+  '6820abb0471efa6af0082632': 'grey',
+  '681fe48893284a99660af2f9': 'black',
+  '681fe068ebfdaacb650ca1d7': 'violet'
+};
+
+function getLogoColorFromProductId(productId: string, productType: 'ee' | 'es' = 'ee'): string {
+  return productType === 'ee' ? EE_PRODUCT_ID_TO_LOGO_COLOR[productId] || '' : ES_PRODUCT_ID_TO_LOGO_COLOR[productId] || '';
 }
 
-export default function PrintifyStore({ onCustomizationModeChange, onViewModeChange }: PrintifyStoreProps) {
+export default function PrintifyStore({ 
+  onCustomizationModeChange, 
+  onViewModeChange,
+  onProductSelect 
+}: PrintifyStoreProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [showSwipeIndicator, setShowSwipeIndicator] = useState<Record<string, boolean>>({});
+  const [currentImageStates, setCurrentImageStates] = useState<Record<string, number>>({});
+  // Paging state
+  const [currentPage, setCurrentPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 9;
+  const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE);
+  const pagedProducts = products.slice((currentPage - 1) * PRODUCTS_PER_PAGE, currentPage * PRODUCTS_PER_PAGE);
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent, productId: string) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = (productId: string) => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe || isRightSwipe) {
+      setShowSwipeIndicator(prev => ({ ...prev, [productId]: false }));
+      setCurrentImageStates(prev => ({
+        ...prev,
+        [productId]: prev[productId] === 0 ? 1 : 0
+      }));
+    }
+  };
 
   // Notify parent when customization mode changes
   useEffect(() => {
@@ -71,8 +125,11 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
         }
         const data = await response.json();
         
-        // Debug: Log all product titles
-        console.log('All products:', data.map((p: Product) => p.title));
+        // Debug: Log all product titles and IDs in a more readable format
+        console.log('=== ALL PRODUCTS FROM API ===');
+        data.forEach((p: Product) => {
+          console.log(`Title: "${p.title}" (ID: ${p.id})`);
+        });
         
         const filteredProducts = data.filter(
           (product: Product) => {
@@ -81,20 +138,31 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
               product.id !== "681449c6b03bb3ed0c01a685" && // Remove the original Phoenix Logo
               (
                 product.title === "Eternal Lotus (Black & Grey)" || 
-                product.title === "Eternal Lotus - Purple Floral Graphic Tee " ||
+                product.title === "Eternal Lotus - Purple Floral Graphic Tee" ||
                 product.title === "Eternal Collapse" ||
                 product.title === "Vow of the Eternal" ||
+                product.title === "Eternal Awakening" ||
+                product.title === "Eternal Divide" ||
+                product.title === "Eternal Glow" ||
                 isEternalElegance
               );
             
-            // Debug: Log each product's title, isEternalElegance, and whether it's included
-            console.log(`Product: '${product.title}', isEternalElegance: ${isEternalElegance}, Included: ${shouldInclude}`);
+            // Debug: Log each product's filtering decision
+            console.log(`=== FILTERING DECISION ===`);
+            console.log(`Product: "${product.title}" (ID: ${product.id})`);
+            console.log(`Is Eternal Elegance: ${isEternalElegance}`);
+            console.log(`Should Include: ${shouldInclude}`);
+            console.log(`Reason: ${shouldInclude ? 'Matches filter criteria' : 'Does not match filter criteria'}`);
+            
             return shouldInclude;
           }
         );
 
-        // Debug: Log filtered products
-        console.log('Filtered products:', filteredProducts.map((p: Product) => p.title));
+        // Debug: Log final filtered products
+        console.log('=== FINAL FILTERED PRODUCTS ===');
+        filteredProducts.forEach((p: Product) => {
+          console.log(`Title: "${p.title}" (ID: ${p.id})`);
+        });
 
         // Filter out customizable products and Eternal Elegance products for regularProducts
         const regularProducts = filteredProducts.filter(
@@ -182,6 +250,117 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
           });
         });
 
+        // Build colorMappings for Eternal Slash
+        const esColorMappings: any[] = [];
+        const eternalSlashProducts = data.filter(
+          (product: Product) =>
+            product.title && product.title.toLowerCase().includes('eternal slash')
+        );
+        eternalSlashProducts.forEach((product: Product) => {
+          const productId = product.id;
+          const logoColor = getLogoColorFromProductId(productId, 'es');
+          const variantMap = eternalSlashVariants[productId] as Record<string, any>;
+          if (!variantMap) return;
+          Object.entries(variantMap).forEach(([shirtColor, sizes]) => {
+            Object.entries(sizes as Record<string, any>).forEach(([size, variantData]) => {
+              esColorMappings.push({
+                shirtColor,
+                logoColor,
+                size,
+                variantId: variantData.variant_id,
+                price: variantData.price,
+                stock_status: variantData.stock_status,
+                printifyProductId: productId,
+              });
+            });
+          });
+        });
+
+        const combinedEternalSlashProduct: Product = {
+          id: 'eternal-divide',
+          title: 'Eternal Divide',
+          images: [
+            // Purple (Violet) combinations
+            { src: '/images/eternal_slash/purple_black.jpg' },
+            { src: '/images/eternal_slash/purple_charcoal.jpg' },
+            { src: '/images/eternal_slash/purple_forest_green.jpg' },
+            { src: '/images/eternal_slash/purple_light_blue.jpg' },
+            { src: '/images/eternal_slash/purple_sand.jpg' },
+            { src: '/images/eternal_slash/purple_white.jpg' },
+            // Midnight Indigo combinations
+            { src: '/images/eternal_slash/midnight_indigo_black.jpg' },
+            { src: '/images/eternal_slash/midnight_indigo_charcoal.jpg' },
+            { src: '/images/eternal_slash/midnight_indigo_light_blue.jpg' },
+            { src: '/images/eternal_slash/midnight_indigo_sage.jpg' },
+            { src: '/images/eternal_slash/midnight_indigo_sand.jpg' },
+            { src: '/images/eternal_slash/midnight_indigo_stone_blue.jpg' },
+            { src: '/images/eternal_slash/midnight_indigo_white.jpg' },
+            // Red combinations
+            { src: '/images/eternal_slash/red_black.jpg' },
+            { src: '/images/eternal_slash/red_charcoal.jpg' },
+            { src: '/images/eternal_slash/red_dark_chocolate.jpg' },
+            { src: '/images/eternal_slash/red_forest_green.jpg' },
+            { src: '/images/eternal_slash/red_light_blue.jpg' },
+            { src: '/images/eternal_slash/red_navy.jpg' },
+            { src: '/images/eternal_slash/red_sage.jpg' },
+            { src: '/images/eternal_slash/red_sand.jpg' },
+            { src: '/images/eternal_slash/red_white.jpg' },
+            // White combinations
+            { src: '/images/eternal_slash/white_black.jpg' },
+            { src: '/images/eternal_slash/white_charcoal.jpg' },
+            { src: '/images/eternal_slash/white_dark_chocolate.jpg' }
+          ],
+          variants: [
+            {
+              id: 'XS',
+              title: 'Extra Small',
+              price: '3500'
+            },
+            {
+              id: 'S',
+              title: 'Small',
+              price: '3500'
+            },
+            {
+              id: 'M',
+              title: 'Medium',
+              price: '3500'
+            },
+            {
+              id: 'L',
+              title: 'Large',
+              price: '3500'
+            },
+            {
+              id: 'XL',
+              title: 'Extra Large',
+              price: '3500'
+            },
+            {
+              id: '2XL',
+              title: '2X Large',
+              price: '3500'
+            },
+            {
+              id: '3XL',
+              title: '3X Large',
+              price: '3750'
+            },
+            {
+              id: '4XL',
+              title: '4X Large',
+              price: '3750'
+            },
+            {
+              id: '5XL',
+              title: '5X Large',
+              price: '3750'
+            }
+          ],
+          customizable: true,
+          colorMappings: esColorMappings
+        };
+
         const combinedEternalEleganceProduct: Product = {
           id: 'eternal-elegance-combined',
           title: 'Eternal Elegance',
@@ -202,7 +381,8 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
         setProducts([
           combinedCustomizableProduct, // ES Phoenix Logo
           combinedEternalEleganceProduct, // Eternal Elegance (single listing)
-          ...regularProducts // Only non-Eternal Elegance, non-customizable products
+          combinedEternalSlashProduct, // Eternal Slash (single listing)
+          // Remove regularProducts to only show customizable items
         ]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -223,6 +403,11 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+  };
+
+  const handleCustomizeClick = (product: Product) => {
+    onProductSelect(product);
+    onCustomizationModeChange(true);
   };
 
   if (loading) {
@@ -253,10 +438,8 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
           </svg>
           Back to Products
         </button>
-        {selectedProduct.customizable ? (
+        {selectedProduct.customizable && (
           <ProductCustomizer product={selectedProduct} />
-        ) : (
-          <ProductViewer product={selectedProduct} />
         )}
       </div>
     );
@@ -264,12 +447,13 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-2 lg:gap-3 p-2 md:p-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 p-4 md:p-6 mb-32">
+        {/* Product Grid */}
         {products.map((product) => (
-          <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[200px] md:max-w-[240px] mx-auto h-[280px] md:h-[320px] flex flex-col">
+          <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-[400px] md:max-w-[450px] mx-auto h-[500px] md:h-[550px] flex flex-col">
             {product.images[0] && (
               <div 
-                className="cursor-pointer h-[160px] md:h-[200px] flex items-center justify-center bg-gray-50 relative group"
+                className="cursor-pointer h-[350px] md:h-[400px] flex items-center justify-center bg-gray-50 relative group"
                 onClick={() => {
                   if (product.customizable) {
                     setSelectedProduct(product);
@@ -281,45 +465,79 @@ export default function PrintifyStore({ onCustomizationModeChange, onViewModeCha
                     setSelectedProduct({ ...product, customizable: false });
                   }
                 }}
+                onTouchStart={(e) => onTouchStart(e, product.id)}
+                onTouchMove={onTouchMove}
+                onTouchEnd={() => onTouchEnd(product.id)}
+                onMouseEnter={() => {
+                  setCurrentImageStates(prev => ({
+                    ...prev,
+                    [product.id]: 1
+                  }));
+                }}
+                onMouseLeave={() => {
+                  setCurrentImageStates(prev => ({
+                    ...prev,
+                    [product.id]: 0
+                  }));
+                }}
               >
                 {/* Main Image */}
                 <img
                   src={product.images[0].src}
                   alt={product.title}
-                  className="w-full h-full object-contain p-2 transition-opacity duration-300 group-hover:opacity-0"
+                  className={`w-full h-full object-contain p-2 transition-opacity duration-300 ${
+                    currentImageStates[product.id] === 1 ? 'opacity-0' : 'opacity-100'
+                  }`}
                 />
                 {/* Hover Image */}
                 {product.images[1] && (
                   <img
                     src={product.images[1].src}
                     alt={`${product.title} - Back View`}
-                    className="absolute inset-0 w-full h-full object-contain p-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    className={`absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-300 ${
+                      currentImageStates[product.id] === 1 ? 'opacity-100' : 'opacity-0'
+                    }`}
                   />
+                )}
+                {/* Image Progress Indicator - Always 2 dots for front/back */}
+                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
+                  <div className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                    currentImageStates[product.id] === 0 ? 'bg-[#9F2FFF]' : 'border border-[#9F2FFF]'
+                  }`} />
+                  <div className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                    currentImageStates[product.id] === 1 ? 'bg-[#9F2FFF]' : 'border border-[#9F2FFF]'
+                  }`} />
+                </div>
+                {/* Swipe Indicator for Mobile */}
+                {showSwipeIndicator[product.id] && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/10 animate-pulse md:hidden">
+                    <div className="flex items-center gap-1.5">
+                      <svg className="w-4 h-4" fill="none" stroke="#9F2FFF" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                      <svg className="w-4 h-4" fill="none" stroke="#9F2FFF" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
             <div className="p-2 flex flex-col flex-grow">
-              <h3 className="text-xs md:text-sm font-semibold text-gray-900 mb-1 line-clamp-2 flex-grow">{product.title}</h3>
-              <p className="text-xs md:text-sm text-gray-600 mb-2">
+              <h3 className="text-sm md:text-base font-semibold text-gray-900 mb-1 line-clamp-2 flex-grow">{product.title}</h3>
+              <p className="text-sm md:text-base text-gray-600 mb-2">
                 {(product.title === 'Eternal Collapse' || product.title === 'Vow of the Eternal')
                   ? '$40.00'
+                  : product.title === 'Eternal Awakening'
+                  ? '$45.00'
                   : formatPrice(product.variants[0]?.price || '0')}
               </p>
             </div>
             <button
-              className="w-full bg-gray-900 text-white py-2 px-3 rounded-none text-xs md:text-sm hover:bg-gray-800 transition-colors"
-              onClick={() => {
-                setSelectedProduct(product);
-                if (product.customizable) {
-                  onCustomizationModeChange(true);
-                  onViewModeChange(false);
-                } else {
-                  onViewModeChange(true);
-                  onCustomizationModeChange(false);
-                }
-              }}
+              className="w-full bg-gray-900 text-white py-1.5 px-3 rounded-none text-sm hover:bg-gray-800 transition-colors"
+              onClick={() => handleCustomizeClick(product)}
             >
-              {product.customizable ? 'Customize' : 'View Options'}
+              Customize
             </button>
           </div>
         ))}
