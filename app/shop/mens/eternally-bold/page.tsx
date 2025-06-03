@@ -48,6 +48,21 @@ function EternallyBoldContent() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
+  // Color to image mapping
+  const colorToImageMap: { [key: string]: number } = {
+    'Natural / Black': 0,
+    'White / Black': 4
+  };
+
+  // Update selected image when color changes
+  useEffect(() => {
+    if (selectedColor && colorToImageMap[selectedColor] !== undefined) {
+      console.log('Color selected:', selectedColor);
+      console.log('Mapped to image:', colorToImageMap[selectedColor]);
+      setSelectedImage(colorToImageMap[selectedColor]);
+    }
+  }, [selectedColor]);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {

@@ -415,12 +415,12 @@ export default function Shop() {
                   </p>
                   <button 
                     onClick={handleGenerate}
-                    className="bg-[#9F2FFF] text-[#DADBE4] border-none py-4 px-12 rounded-lg text-3xl font-['Bebas_Neue'] tracking-wider cursor-pointer w-fit mt-5 transition-all duration-300 hover:bg-[#8A29E6]">
+                    className="bg-[#9F2FFF] text-[#DADBE4] border-none py-4 px-12 text-3xl font-['Bebas_Neue'] tracking-wider cursor-pointer w-fit mt-5 transition-all duration-300 hover:bg-[#8A29E6]">
                     {isGenerating ? 'GENERATING...' : 'GENERATE'}
                   </button>
                 </div>
                 <div className="flex flex-col items-center justify-center">
-                  <div className="relative w-full max-w-[500px] h-[500px] border-4 border-white rounded-2xl overflow-hidden ml-auto mr-0">
+                  <div className="relative w-full max-w-[500px] h-[500px] border-4 border-white overflow-hidden ml-auto mr-0">
                     <video
                       src="/videos/q_mark.mp4"
                       autoPlay
@@ -458,7 +458,7 @@ export default function Shop() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-white p-6 max-w-xl w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-2xl font-['Bebas_Neue'] text-[#1B1F3B]">Your Generated Design</h3>
               <button 
@@ -474,7 +474,7 @@ export default function Shop() {
                 src={displayedImage}
                 alt="Selected design"
                 fill
-                className={`object-contain rounded-lg transition-opacity duration-300 ${
+                className={`object-contain transition-opacity duration-300 ${
                   isTransitioning ? 'opacity-0' : 'opacity-100'
                 }`}
               />

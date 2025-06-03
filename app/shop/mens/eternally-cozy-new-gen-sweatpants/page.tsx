@@ -46,6 +46,25 @@ function EternallyCozyNewGenSweatpantsContent() {
   const [addedToCart, setAddedToCart] = useState(false);
   const { addItem } = useCart();
 
+  // Color to image mapping
+  const colorToImageMap: { [key: string]: number } = {
+    'Black': 0,
+    'Maroon': 2,
+    'Dusty Rose': 4,
+    'Military Green': 6,
+    'White': 8,
+    'Charcoal Heather': 10,
+    'Navy Blazer': 12,
+    'Carbon Grey': 14
+  };
+
+  // Update selected image when color changes
+  useEffect(() => {
+    if (selectedColor && colorToImageMap[selectedColor] !== undefined) {
+      setSelectedImage(colorToImageMap[selectedColor]);
+    }
+  }, [selectedColor]);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -207,19 +226,22 @@ function EternallyCozyNewGenSweatpantsContent() {
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
-            {/* Thumbnail gallery */}
+            {/* Thumbnail gallery - Only show images that correspond to colors */}
             <div className="flex gap-4 overflow-x-auto pb-2">
-              {product.images.map((image, index) => (
+              {Object.entries(colorToImageMap).map(([color, imageIndex]) => (
                 <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
+                  key={color}
+                  onClick={() => {
+                    setSelectedColor(color);
+                    setSelectedImage(imageIndex);
+                  }}
                   className={`relative flex-shrink-0 w-20 aspect-square rounded-lg overflow-hidden ${
-                    selectedImage === index ? 'ring-2 ring-[#9F2FFF]' : ''
+                    selectedImage === imageIndex ? 'ring-2 ring-[#9F2FFF]' : ''
                   }`}
                 >
                   <Image
-                    src={image.src}
-                    alt={`${product.title} - View ${index + 1}`}
+                    src={product.images[imageIndex].src}
+                    alt={`${product.title} - ${color}`}
                     fill
                     className="object-cover"
                     sizes="80px"

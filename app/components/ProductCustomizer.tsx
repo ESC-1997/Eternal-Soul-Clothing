@@ -737,7 +737,7 @@ export default function ProductCustomizer({ product }: ProductCustomizerProps) {
     <div className="space-y-6">
       {/* Mobile Layout */}
       <div className="lg:hidden space-y-6">
-        <div className="relative h-[350px] rounded-lg overflow-hidden">
+        <div className="relative h-[350px] overflow-hidden">
           <Image
             src={images[currentImageIndex]}
             alt={`${product.title} - ${selectedShirtColor.name} shirt with ${selectedLogoColor.name} logo`}

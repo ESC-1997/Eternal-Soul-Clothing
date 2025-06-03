@@ -681,7 +681,7 @@ export default function ProductViewer({ product }: ProductViewerProps) {
         <div className="grid grid-cols-[minmax(0,1.5fr),minmax(0,0.5fr)] gap-16 -ml-4">
           {/* Left Column - Product Image */}
           <div className="space-y-4">
-            <div className="relative w-full h-[600px] bg-white rounded-lg p-4">
+            <div className="relative w-full h-[600px] bg-white p-4">
               <img
                 src={getImagePath()}
                 alt={product.title}

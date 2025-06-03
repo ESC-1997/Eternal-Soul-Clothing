@@ -16,6 +16,8 @@ interface Product {
     price: string;
     size: string;
     color: string;
+    is_enabled: boolean;
+    in_stock: boolean;
   }[];
 }
 
@@ -29,6 +31,37 @@ export default function EternalGlowPage() {
   const [error, setError] = useState<string | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
+
+  // Color to image mapping
+  const colorToImageMap: { [key: string]: number } = {
+    'Vintage White': 0,
+    'White': 3,
+    'Natural': 5,
+    'Storm': 7
+  };
+
+  // Update selected image when color changes
+  useEffect(() => {
+    if (selectedColor && colorToImageMap[selectedColor] !== undefined) {
+      setSelectedImage(colorToImageMap[selectedColor]);
+    }
+  }, [selectedColor]);
+
+  // Get available sizes for selected color
+  const getAvailableSizes = (color: string) => {
+    if (!product) return [];
+    return product.variants
+      .filter(v => v.color === color && v.is_enabled && v.in_stock)
+      .map(v => v.size);
+  };
+
+  // Check if a size is available for the selected color
+  const isSizeAvailable = (size: string) => {
+    if (!product || !selectedColor) return false;
+    return product.variants.some(
+      v => v.size === size && v.color === selectedColor && v.is_enabled
+    );
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -59,13 +92,18 @@ export default function EternalGlowPage() {
             .filter((variant: any) => variant.is_enabled)  // Only include enabled variants
             .map((variant: any) => {
               // Parse the variant title to extract size and color
-              const [size, color] = variant.title.split(' / ');
+              const parts = variant.title.split(' / ');
+              const color = parts[0]?.trim();  // First part is color
+              const size = parts[1]?.trim();   // Second part is size
+              
               return {
                 id: variant.id,
                 title: variant.title,
                 price: (variant.price / 100).toFixed(2),
                 size: size || variant.title,
-                color: color || variant.title
+                color: color || variant.title,
+                is_enabled: variant.is_enabled,
+                in_stock: variant.in_stock === false ? false : true // Assume in stock unless explicitly marked as out of stock
               };
             })
         };
@@ -74,8 +112,13 @@ export default function EternalGlowPage() {
         // Set initial selections
         const uniqueSizes = Array.from(new Set(transformedProduct.variants.map(v => v.size)));
         const uniqueColors = Array.from(new Set(transformedProduct.variants.map(v => v.color)));
+        const initialColor = uniqueColors[0];
         setSelectedSize(uniqueSizes[0]);
-        setSelectedColor(uniqueColors[0]);
+        setSelectedColor(initialColor);
+        // Set initial image based on the first color
+        if (initialColor && colorToImageMap[initialColor] !== undefined) {
+          setSelectedImage(colorToImageMap[initialColor]);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -85,6 +128,18 @@ export default function EternalGlowPage() {
 
     fetchProduct();
   }, []);
+
+  // Update selected size when color changes if current size is not available
+  useEffect(() => {
+    if (selectedColor && selectedSize && !isSizeAvailable(selectedSize)) {
+      const availableSizes = getAvailableSizes(selectedColor);
+      if (availableSizes.length > 0) {
+        setSelectedSize(availableSizes[0]);
+      } else {
+        setSelectedSize(null);
+      }
+    }
+  }, [selectedColor]);
 
   // Get the selected variant based on size and color
   const selectedVariant = product?.variants.find(
@@ -149,15 +204,15 @@ export default function EternalGlowPage() {
 
   return (
     <main className="min-h-screen bg-[#2C2F36]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Back Button */}
-        <div className="mb-4 sm:mb-6">
+        <div className="mb-8">
           <Link 
             href="/shop/women" 
-            className="inline-flex items-center text-white hover:text-gray-300 text-sm sm:text-base"
+            className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
           >
             <svg 
-              className="w-4 h-4 sm:w-5 sm:h-5 mr-2" 
+              className="w-5 h-5 mr-2" 
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -173,42 +228,33 @@ export default function EternalGlowPage() {
           </Link>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex justify-center gap-2 sm:gap-4 mb-4 sm:mb-8 text-sm sm:text-base">
-          <Link href="/shop" className="text-white hover:text-gray-300">Shop All</Link>
-          <Link href="/shop/mens" className="text-white hover:text-gray-300">Mens</Link>
-          <Link href="/shop/women" className="text-white hover:text-gray-300">Women's</Link>
-        </nav>
-
+        {/* Product Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Product Images */}
-          <div className="space-y-3 sm:space-y-4">
-            <div className="relative aspect-square bg-white rounded-lg overflow-hidden">
+          <div className="space-y-4">
+            <div className="relative h-[500px] bg-white rounded-lg overflow-hidden">
               <Image
                 src={product.images[selectedImage].src}
-                alt={`${product.title} - ${selectedColor}`}
+                alt={product.title}
                 fill
                 className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
               />
             </div>
-            {/* Thumbnail gallery */}
-            <div className="flex gap-2 sm:gap-4 overflow-x-auto pb-2 sm:pb-0">
+            {/* Thumbnail Gallery */}
+            <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
               {product.images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`relative flex-shrink-0 w-16 sm:w-20 aspect-square rounded-lg overflow-hidden ${
-                    selectedImage === index ? 'ring-2 ring-white' : ''
+                  className={`relative flex-none w-20 h-20 rounded-lg overflow-hidden ${
+                    selectedImage === index ? 'ring-2 ring-[#9F2FFF]' : ''
                   }`}
                 >
                   <Image
                     src={image.src}
-                    alt={`${product.title} - View ${index + 1}`}
+                    alt={`${product.title} - Image ${index + 1}`}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 64px, 80px"
                   />
                 </button>
               ))}
@@ -216,42 +262,27 @@ export default function EternalGlowPage() {
           </div>
 
           {/* Product Info */}
-          <div className="space-y-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">{product.title}</h1>
-            <p className="text-xl sm:text-2xl text-white">${selectedVariant?.price}</p>
+          <div className="text-white space-y-6">
+            <h1 className="text-4xl font-['Bebas_Neue'] tracking-wider">{product.title}</h1>
+            <p className="text-2xl">${selectedVariant?.price}</p>
             
-            {/* Size Selection */}
-            <div className="space-y-2">
-              <h3 className="text-base sm:text-lg font-semibold text-white">Size</h3>
-              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                {uniqueSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-2 sm:px-4 py-2 text-sm sm:text-base border rounded-lg ${
-                      selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 text-white hover:border-white'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Color Selection */}
-            <div className="space-y-2">
-              <h3 className="text-base sm:text-lg font-semibold text-white">Color</h3>
-              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+            <div className="space-y-4">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
+              <div className="grid grid-cols-4 gap-4">
                 {uniqueColors.map((color) => (
                   <button
                     key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`px-2 sm:px-4 py-2 text-sm sm:text-base border rounded-lg ${
+                    onClick={() => {
+                      setSelectedColor(color);
+                      if (colorToImageMap[color] !== undefined) {
+                        setSelectedImage(colorToImageMap[color]);
+                      }
+                    }}
+                    className={`px-4 py-2 rounded-md border-2 transition-colors ${
                       selectedColor === color
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 text-white hover:border-white'
+                        ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
+                        : 'border-white text-white hover:border-[#9F2FFF]'
                     }`}
                   >
                     {color}
@@ -260,23 +291,50 @@ export default function EternalGlowPage() {
               </div>
             </div>
 
+            {/* Size Selection */}
+            <div className="space-y-4">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <div className="grid grid-cols-4 gap-4">
+                {uniqueSizes.map((size) => {
+                  const isAvailable = isSizeAvailable(size);
+                  return (
+                    <button
+                      key={size}
+                      onClick={() => isAvailable && setSelectedSize(size)}
+                      disabled={!isAvailable}
+                      className={`px-4 py-2 rounded-md border-2 transition-colors ${
+                        !isAvailable
+                          ? 'border-gray-600 text-gray-600 cursor-not-allowed'
+                          : selectedSize === size
+                          ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
+                          : 'border-white text-white hover:border-[#9F2FFF]'
+                      }`}
+                    >
+                      {size}
+                      {!isAvailable && <span className="block text-xs mt-1">Out of Stock</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
               disabled={isAddingToCart || !selectedSize || !selectedColor}
-              className={`w-full py-3 px-6 rounded-lg text-white font-semibold transition-colors duration-200 ${
+              className={`w-full py-3 rounded-md transition-colors ${
                 isAddingToCart || !selectedSize || !selectedColor
-                  ? 'bg-gray-600 cursor-not-allowed'
-                  : 'bg-white text-[#2C2F36] hover:bg-gray-100'
+                  ? 'bg-gray-500 cursor-not-allowed'
+                  : 'bg-[#9F2FFF] hover:bg-[#8A2BE2]'
               }`}
             >
               {isAddingToCart ? 'Adding...' : addedToCart ? 'Added to Cart!' : 'Add to Cart'}
             </button>
 
-            {/* Description */}
-            <div className="space-y-2 sm:space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold text-white">Description</h3>
-              <p className="text-sm sm:text-base text-gray-300">
+            {/* Product Description */}
+            <div className="mt-8">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">Product Details</h2>
+              <p className="text-gray-300">
                 The Eternal Glow is a stunning piece that combines elegance with modern design. 
                 Featuring premium materials and a comfortable fit, this piece is perfect for 
                 those who want to make a statement while maintaining comfort and style.

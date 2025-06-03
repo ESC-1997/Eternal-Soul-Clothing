@@ -368,18 +368,17 @@ export default function ProfilePage() {
           </div>
         </div>
         {/* Save/Sign Out Buttons */}
-        <div className="flex flex-col gap-4 mt-6 max-w-2xl mx-auto">
+        <div className="flex justify-end space-x-4">
           <button
             type="submit"
-            className="w-full bg-[#1B1F3B] text-white py-2 rounded hover:bg-[#15182c] transition-colors font-semibold"
-            disabled={saving}
+            className="px-4 py-2 bg-[#9f2fff] text-white rounded-lg hover:bg-[#8a29e6] transition-colors text-sm"
           >
-            {saving ? "Saving..." : "Save Changes"}
+            Save changes
           </button>
           <button
             type="button"
-            className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 transition-colors font-semibold"
             onClick={handleSignOut}
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
           >
             Sign out
           </button>

@@ -211,7 +211,28 @@ export default function EternalAscensionPage() {
           {/* Product Details */}
           <div className="text-white space-y-6">
             <h1 className="text-3xl font-bold">{product.title}</h1>
+            <p className="text-xl">${product.variants[0].price.toFixed(2)}</p>
             
+            {/* Color Selection */}
+            <div className="space-y-4">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
+              <div className="grid grid-cols-4 gap-4">
+                {availableColors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`p-4 border rounded-lg transition-colors ${
+                      selectedColor === color
+                        ? 'border-[#9f2fff] bg-[#9f2fff] text-white'
+                        : 'border-gray-600 hover:border-[#9f2fff]'
+                    }`}
+                  >
+                    {color}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Size Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
@@ -222,38 +243,11 @@ export default function EternalAscensionPage() {
                     onClick={() => setSelectedSize(size)}
                     className={`p-4 border rounded-lg transition-colors ${
                       selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
+                        ? 'border-[#9f2fff] bg-[#9f2fff] text-white'
+                        : 'border-gray-600 hover:border-[#9f2fff]'
                     }`}
                   >
                     {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Color Selection */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
-              <div className="grid grid-cols-4 gap-4">
-                {availableColors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => {
-                      setSelectedColor(color);
-                      // Update the selected image based on the color
-                      const imageIndex = colorImageMap[color];
-                      if (imageIndex !== undefined) {
-                        setSelectedImage(imageIndex);
-                      }
-                    }}
-                    className={`p-4 border rounded-lg transition-colors ${
-                      selectedColor === color
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
-                    }`}
-                  >
-                    {color}
                   </button>
                 ))}
               </div>
@@ -269,23 +263,21 @@ export default function EternalAscensionPage() {
                 className={`w-full py-4 rounded-lg font-semibold transition-colors ${
                   !selectedSize || !selectedColor
                     ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
+                    : 'bg-[#9f2fff] text-white hover:bg-[#8a29e6]'
                 }`}
               >
                 {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
               </button>
             </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Description</h3>
-              <p className="text-gray-300">
-                {product.description}
-              </p>
+            {/* Product Description */}
+            <div className="mt-8">
+              <h3 className="text-lg font-semibold mb-2">Description</h3>
+              <p className="text-gray-300">{product.description}</p>
             </div>
           </div>
         </div>
       </div>
     </main>
   );
-} 
+}

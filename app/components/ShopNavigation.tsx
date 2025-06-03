@@ -41,7 +41,7 @@ export default function ShopNavigation() {
       top-0 z-[100]`}>
       <div className="relative max-w-7xl mx-auto">
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-        <nav className="relative flex overflow-x-auto md:overflow-visible justify-start md:justify-center gap-4 pt-4 pb-4 px-4 md:px-0 scrollbar-hide">
+        <nav className="relative flex overflow-x-auto md:overflow-visible justify-start md:justify-center gap-4 pt-4 pb-4 px-4 md:px-0 scrollbar-hide font-['Bebas_Neue'] tracking-wider text-lg">
           <Link 
             href="/shop" 
             className={`whitespace-nowrap px-4 py-2 text-base transition-colors duration-200 ${

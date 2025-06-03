@@ -95,7 +95,7 @@ export default function Home() {
             images.eternallyUntainted = product.images[0]?.src || '';
             console.log('Found Eternally Untainted image:', images.eternallyUntainted);
           }
-          if (product.title === "Eternal Rebirth") {
+          if (product.title === "Eternal Rebirth (Mineral Wash)") {
             images.eternalRebirth = product.images[0]?.src || '';
             console.log('Found Eternal Rebirth image:', images.eternalRebirth);
           }
@@ -103,11 +103,11 @@ export default function Home() {
             images.eternalGlow = product.images[0]?.src || '';
             console.log('Found Eternal Glow image:', images.eternalGlow);
           }
-          if (product.title === "Eternally Cozy Sweatpants") {
+          if (product.title === "Eternally Cozy Legacy Sweatpants") {
             images.eternallyCozy = product.images[0]?.src || '';
             console.log('Found Eternally Cozy image:', images.eternallyCozy);
           }
-          if (product.title === "Eternal Ascension") {
+          if (product.title === "Eternal Ascension T-Shirt") {
             images.eternalAscension = product.images[0]?.src || '';
             console.log('Found Eternal Ascension image:', images.eternalAscension);
           }

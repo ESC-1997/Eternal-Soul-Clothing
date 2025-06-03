@@ -1,10 +1,8 @@
 'use client';
-
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
-import LoadingScreen from '@/app/components/LoadingScreen';
 import { useSearchParams } from 'next/navigation';
 
 interface Product {
@@ -23,29 +21,40 @@ interface Product {
   }[];
 }
 
-export default function EternalUntaintedPage() {
-  return (
-    <Suspense fallback={
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
-    }>
-      <EternalUntaintedContent />
-    </Suspense>
-  );
-}
-
-function EternalUntaintedContent() {
+export default function EternallyUntaintedPage() {
   const searchParams = useSearchParams();
   const source = searchParams.get('source');
   const { addItem } = useCart();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
+
+  // Color to image mapping
+  const colorToImageMap: { [key: string]: number } = {
+    'Black': 0,
+    'White': 2,
+    'Sand': 4,
+    'Dark Chocolate': 6,
+    'Charcoal': 8,
+    'Navy': 10
+  };
+
+  // Update selected image when color changes
+  useEffect(() => {
+    if (selectedColor && colorToImageMap[selectedColor] !== undefined) {
+      setSelectedImage(colorToImageMap[selectedColor]);
+    }
+  }, [selectedColor]);
+
+  // Helper function to check if a variant is in stock
+  const isVariantInStock = (color: string, size: string) => {
+    if (!product) return false;
+    return product.variants.some(v => v.color === color && v.size === size);
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -56,15 +65,11 @@ function EternalUntaintedContent() {
         }
         const products = await response.json();
         const untainted = products.find((p: any) => p.title.toLowerCase().includes('eternally untainted'));
-        
-        if (!untainted) {
-          throw new Error('Product not found');
-        }
-
-        const transformedProduct = {
+        if (!untainted) throw new Error('Product not found');
+        const transformedProduct: Product = {
           id: untainted.id,
           title: untainted.title,
-          description: untainted.description || 'The Eternal Untainted collection embodies purity and resilience, crafted for those who stand unshaken in their convictions.',
+          description: untainted.description || 'The Eternally Untainted collection represents purity and timeless elegance. Each piece is crafted with premium materials and features our distinctive design elements.',
           images: untainted.images.map((img: any) => ({ src: img.src })),
           variants: untainted.variants
             .filter((variant: any) => variant.is_enabled)
@@ -79,7 +84,6 @@ function EternalUntaintedContent() {
               };
             })
         };
-
         setProduct(transformedProduct);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -87,16 +91,8 @@ function EternalUntaintedContent() {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, []);
-
-  // Helper function to check if a variant is in stock
-  const isVariantInStock = (color: string, size: string) => {
-    if (!product) return false;
-    const variant = product.variants.find(v => v.color === color && v.size === size);
-    return !!variant;
-  };
 
   const handleAddToCart = () => {
     if (!product || !selectedSize || !selectedColor) return;
@@ -134,12 +130,11 @@ function EternalUntaintedContent() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
       </div>
     );
   }
-
   if (error || !product) {
     return (
       <div className="text-center text-red-600 p-4">
@@ -154,7 +149,7 @@ function EternalUntaintedContent() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href={source === '/shop/mens/all-products' ? '/shop/mens/all-products' : '/shop/mens'}
+            href={source || "/shop/mens"}
             className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
           >
             <svg 
@@ -173,6 +168,7 @@ function EternalUntaintedContent() {
             Back to Products
           </Link>
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Product Images */}
           <div className="space-y-4">
@@ -204,9 +200,20 @@ function EternalUntaintedContent() {
               ))}
             </div>
           </div>
-          {/* Product Details */}
+
+          {/* Product Info */}
           <div className="text-white space-y-6">
-            <h1 className="text-3xl font-bold">{product.title}</h1>
+            <h1 className="text-4xl font-['Bebas_Neue'] tracking-wider">{product.title}</h1>
+            
+            {/* Price Display */}
+            <div className="text-2xl font-['Bebas_Neue'] tracking-wider">
+              {selectedColor && selectedSize ? (
+                `$${product.variants.find(v => v.color === selectedColor && v.size === selectedSize)?.price.toFixed(2)}`
+              ) : (
+                'Select a color and size'
+              )}
+            </div>
+            
             {/* Color Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
@@ -215,10 +222,10 @@ function EternalUntaintedContent() {
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
-                    className={`p-4 border rounded-lg transition-colors ${
+                    className={`px-4 py-2 rounded-md border-2 transition-colors ${
                       selectedColor === color
-                        ? 'border-[#9F2FFF] bg-[#9F2FFF] text-white'
-                        : 'border-gray-600 hover:border-[#9F2FFF]'
+                        ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
+                        : 'border-white text-white hover:border-[#9F2FFF]'
                     }`}
                   >
                     {color}
@@ -226,6 +233,7 @@ function EternalUntaintedContent() {
                 ))}
               </div>
             </div>
+
             {/* Size Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
@@ -236,53 +244,43 @@ function EternalUntaintedContent() {
                     <button
                       key={size}
                       onClick={() => isInStock && setSelectedSize(size)}
-                      className={`p-4 border rounded-lg transition-colors ${
+                      className={`px-4 py-2 rounded-md border-2 transition-colors ${
                         selectedSize === size
-                          ? 'border-[#9F2FFF] bg-[#9F2FFF] text-white'
+                          ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
                           : isInStock
-                            ? 'border-gray-600 hover:border-[#9F2FFF]'
-                            : 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
+                            ? 'border-white text-white hover:border-[#9F2FFF]'
+                            : 'border-gray-500 text-gray-500 cursor-not-allowed'
                       }`}
+                      disabled={!isInStock}
                     >
                       {size}
-                      {!isInStock && <span className="block text-xs mt-1">Out of Stock</span>}
                     </button>
                   );
                 })}
               </div>
             </div>
-            <div className="pt-6">
-              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
-                {selectedSize && selectedColor && isVariantInStock(selectedColor, selectedSize)
-                  ? `$${product.variants.find(v => v.size === selectedSize && v.color === selectedColor)?.price.toFixed(2)}`
-                  : 'Select a color and size'}
-              </p>
-              <button
-                onClick={handleAddToCart}
-                disabled={!selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)}
-                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
-                  !selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)
-                    ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-[#9F2FFF] text-white hover:bg-[#8A2BE2]'
-                }`}
-              >
-                {!selectedSize || !selectedColor
-                  ? 'Select options'
-                  : addedToCart
-                    ? 'Added to Cart!'
-                    : 'Add to Cart'}
-              </button>
-            </div>
-            {/* Description */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Description</h3>
-              <p className="text-gray-300">
-                {product.description}
-              </p>
+
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              disabled={!selectedColor || !selectedSize}
+              className={`w-full py-4 rounded-md text-lg font-medium transition-colors ${
+                selectedColor && selectedSize
+                  ? 'bg-[#9F2FFF] text-white hover:bg-[#8A2BE2]'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed'
+              }`}
+            >
+              {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+            </button>
+
+            {/* Product Description */}
+            <div className="mt-8 space-y-4">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Description</h2>
+              <p className="text-gray-300">{product.description}</p>
             </div>
           </div>
         </div>
       </div>
     </main>
   );
-} 
+}

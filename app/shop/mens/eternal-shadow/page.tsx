@@ -1,9 +1,8 @@
 'use client';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
-import LoadingScreen from '@/app/components/LoadingScreen';
 import { useSearchParams } from 'next/navigation';
 
 interface Product {
@@ -23,111 +22,79 @@ interface Product {
 }
 
 export default function EternalShadowPage() {
-  return (
-    <Suspense fallback={
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
-    }>
-      <EternalShadowContent />
-    </Suspense>
-  );
-}
-
-function EternalShadowContent() {
   const searchParams = useSearchParams();
   const source = searchParams.get('source');
   const { addItem } = useCart();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
+
+  // Color to image mapping
+  const colorToImageMap: { [key: string]: number } = {
+    'Black': 0,
+    'White': 2,
+    'Sand': 4,
+    'Dark Chocolate': 6,
+    'Charcoal': 8,
+    'Navy': 10
+  };
+
+  // Update selected image when color changes
+  useEffect(() => {
+    if (selectedColor && colorToImageMap[selectedColor] !== undefined) {
+      setSelectedImage(colorToImageMap[selectedColor]);
+    }
+  }, [selectedColor]);
+
+  // Helper function to check if a variant is in stock
+  const isVariantInStock = (color: string, size: string) => {
+    if (!product) return false;
+    return product.variants.some(v => v.color === color && v.size === size);
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        console.log('Fetching products...');
         const response = await fetch('/api/printify/products');
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
         const products = await response.json();
-        console.log('All products:', products);
-        
-        const shadow = products.find((p: any) => {
-          console.log('Checking product:', p.title);
-          return p.title.toLowerCase().includes('eternal shadow');
-        });
-        
-        console.log('Found shadow product:', shadow);
-        
-        if (!shadow) {
-          throw new Error('Product not found');
-        }
-
-        const transformedProduct = {
+        const shadow = products.find((p: any) => p.title.toLowerCase().includes('eternal shadow'));
+        if (!shadow) throw new Error('Product not found');
+        const transformedProduct: Product = {
           id: shadow.id,
           title: shadow.title,
-          description: shadow.description || 'The Eternal Shadow collection embodies the mysterious and powerful essence of darkness.',
+          description: shadow.description || 'The Eternal Shadow collection represents mystery and elegance. Each piece is crafted with premium materials and features our distinctive design elements.',
           images: shadow.images.map((img: any) => ({ src: img.src })),
           variants: shadow.variants
             .filter((variant: any) => variant.is_enabled)
             .map((variant: any) => {
-              // Handle different title formats
-              let color = 'Default';
-              let size = 'Default';
-              
-              if (variant.title) {
-                const parts = variant.title.split(' / ');
-                if (parts.length === 2) {
-                  [color, size] = parts;
-                } else if (parts.length === 1) {
-                  // If there's only one part, assume it's the size
-                  size = parts[0];
-                }
-              }
-
-              // Extract size from options if available
-              if (variant.options && variant.options.size) {
-                size = variant.options.size;
-              }
-              // Extract color from options if available
-              if (variant.options && variant.options.color) {
-                color = variant.options.color;
-              }
-
+              const parts = variant.title.split(' / ');
+              const color = parts[0]?.trim() || 'Default';
+              const size = parts[1]?.trim() || 'Default';
               return {
                 id: variant.id,
                 title: variant.title,
                 price: Number((variant.price / 100).toFixed(2)),
-                size: size.trim(),
-                color: color.trim()
+                size,
+                color
               };
             })
         };
-
-        console.log('Transformed product:', transformedProduct);
         setProduct(transformedProduct);
       } catch (err) {
-        console.error('Error fetching product:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, []);
-
-  // Helper function to check if a variant is in stock
-  const isVariantInStock = (color: string, size: string) => {
-    if (!product) return false;
-    const variant = product.variants.find(v => v.color === color && v.size === size);
-    return !!variant;
-  };
 
   const handleAddToCart = () => {
     if (!product || !selectedSize || !selectedColor) return;
@@ -164,9 +131,12 @@ function EternalShadowContent() {
   }, [product, selectedColor, selectedSize]);
 
   if (loading) {
-    return <LoadingScreen />;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      </div>
+    );
   }
-
   if (error || !product) {
     return (
       <div className="text-center text-red-600 p-4">
@@ -181,7 +151,7 @@ function EternalShadowContent() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href={source === '/shop/mens/all-products' ? '/shop/mens/all-products' : '/shop/mens'}
+            href={source || "/shop/mens"}
             className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
           >
             <svg 
@@ -232,9 +202,20 @@ function EternalShadowContent() {
               ))}
             </div>
           </div>
-          {/* Product Details */}
+
+          {/* Product Info */}
           <div className="text-white space-y-6">
-            <h1 className="text-3xl font-bold">{product.title}</h1>
+            <h1 className="text-4xl font-['Bebas_Neue'] tracking-wider">{product.title}</h1>
+            
+            {/* Price Display */}
+            <div className="text-2xl font-['Bebas_Neue'] tracking-wider">
+              {selectedColor && selectedSize ? (
+                `$${product.variants.find(v => v.color === selectedColor && v.size === selectedSize)?.price.toFixed(2)}`
+              ) : (
+                'Select a color and size'
+              )}
+            </div>
+            
             {/* Color Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
@@ -243,10 +224,10 @@ function EternalShadowContent() {
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
-                    className={`p-4 border rounded-lg transition-colors ${
+                    className={`px-4 py-2 rounded-md border-2 transition-colors ${
                       selectedColor === color
-                        ? 'border-[#9F2FFF] bg-[#9F2FFF] text-white'
-                        : 'border-gray-600 hover:border-[#9F2FFF]'
+                        ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
+                        : 'border-white text-white hover:border-[#9F2FFF]'
                     }`}
                   >
                     {color}
@@ -254,6 +235,7 @@ function EternalShadowContent() {
                 ))}
               </div>
             </div>
+
             {/* Size Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
@@ -264,46 +246,43 @@ function EternalShadowContent() {
                     <button
                       key={size}
                       onClick={() => isInStock && setSelectedSize(size)}
-                      className={`p-4 border rounded-lg transition-colors ${
+                      className={`px-4 py-2 rounded-md border-2 transition-colors ${
                         selectedSize === size
-                          ? 'border-[#9F2FFF] bg-[#9F2FFF] text-white'
+                          ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
                           : isInStock
-                            ? 'border-gray-600 hover:border-[#9F2FFF]'
-                            : 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
+                            ? 'border-white text-white hover:border-[#9F2FFF]'
+                            : 'border-gray-500 text-gray-500 cursor-not-allowed'
                       }`}
+                      disabled={!isInStock}
                     >
                       {size}
-                      {!isInStock && <span className="block text-xs mt-1">Out of Stock</span>}
                     </button>
                   );
                 })}
               </div>
             </div>
-            <div className="pt-6">
-              <p className="text-2xl font-['Bebas_Neue'] tracking-wider mb-4">
-                {selectedSize && selectedColor && isVariantInStock(selectedColor, selectedSize)
-                  ? `$${product.variants.find(v => v.size === selectedSize && v.color === selectedColor)?.price.toFixed(2)}`
-                  : 'Select a color and size'}
-              </p>
-              <button
-                onClick={handleAddToCart}
-                disabled={!selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)}
-                className={`w-full py-4 rounded-lg font-semibold transition-colors ${
-                  !selectedSize || !selectedColor || !isVariantInStock(selectedColor, selectedSize)
-                    ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-[#9F2FFF] text-white hover:bg-[#8A2BE2]'
-                }`}
-              >
-                {!selectedSize || !selectedColor
-                  ? 'Select options'
-                  : addedToCart
-                    ? 'Added to Cart!'
-                    : 'Add to Cart'}
-              </button>
+
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              disabled={!selectedColor || !selectedSize}
+              className={`w-full py-4 rounded-md text-lg font-medium transition-colors ${
+                selectedColor && selectedSize
+                  ? 'bg-[#9F2FFF] text-white hover:bg-[#8A2BE2]'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed'
+              }`}
+            >
+              {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+            </button>
+
+            {/* Product Description */}
+            <div className="mt-8 space-y-4">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Description</h2>
+              <p className="text-gray-300">{product.description}</p>
             </div>
           </div>
         </div>
       </div>
     </main>
   );
-} 
+}

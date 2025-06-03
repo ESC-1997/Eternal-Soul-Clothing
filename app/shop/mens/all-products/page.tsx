@@ -316,6 +316,18 @@ const mensProducts = [
 ];
 
 export default function AllMensProducts() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    }>
+      <AllMensProductsContent />
+    </Suspense>
+  );
+}
+
+function AllMensProductsContent() {
   const searchParams = useSearchParams();
   const source = searchParams.get('source');
   const [products, setProducts] = useState<Product[]>([]);
@@ -386,95 +398,89 @@ export default function AllMensProducts() {
   }
 
   return (
-    <Suspense fallback={
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
-    }>
-      <main className="min-h-screen bg-[#2C2F36]">
-        <div className="min-h-screen bg-[#DADBE4] p-8">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-4xl font-['Bebas_Neue'] text-[#1B1F3B] tracking-wider mb-8">
-              ALL MEN'S PRODUCTS
-            </h1>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-              {products.map((product, index) => {
-                const row = Math.floor(index / 3) + 1;
-                const col = (index % 3) + 1;
-                
-                return (
-                  <Link 
-                    href={
-                      product.title.toLowerCase().includes('eternal divide') || 
-                      product.title.toLowerCase().includes('eternal elegance') ||
-                      product.title.toLowerCase().includes('phoenix es logo') ||
-                      product.title.toLowerCase().includes('es phoenix logo')
-                        ? '/shop#customizable-collection'
-                        : product.id === "682cb629b4133fe21803df44"
-                        ? '/shop/accessories/eternal-snap-vol2w?source=/shop/mens/all-products&row=' + row
-                        : product.id === "682b9cf4a908726ca70b8a8d"
-                        ? '/shop/accessories/eternal-snap-vol2?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('eternally cozy new-gen sweatpants')
-                        ? '/shop/mens/eternally-cozy-new-gen-sweatpants?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('eternally bold')
-                        ? '/shop/mens/eternally-bold?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('eternal ascension')
-                        ? '/shop/mens/eternal-ascension?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('eternally untainted')
-                        ? '/shop/mens/eternally-untainted?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('eternal shadow')
-                        ? '/shop/mens/eternal-shadow?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('eternal swords')
-                        ? '/shop/mens/eternal-swords?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('soulful baseball')
-                        ? '/shop/mens/baseball-tee?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('eternal rebirth')
-                        ? '/shop/mens/eternal-rebirth?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('eternally cozy legacy')
-                        ? '/shop/mens/eternally-cozy-sweatpants?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('eternal snap - white')
-                        ? '/shop/accessories/eternal-snap-white?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('eternal snap - black')
-                        ? '/shop/accessories/eternal-snap-black?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('eternally woven')
-                        ? '/shop/unisex/eternally-woven?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('eternal awakening')
-                        ? '/shop/mens/eternal-awakening?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('eternal collapse')
-                        ? '/shop/mens/eternal-collapse?source=/shop/mens/all-products&row=' + row
-                        : product.title.toLowerCase().includes('vow of the eternal')
-                        ? '/shop/mens/vow-of-the-eternal?source=/shop/mens/all-products&row=' + row
-                        : `/shop/mens/${product.id}?source=/shop/mens/all-products&row=` + row
-                    }
-                    key={product.id}
-                    className="group"
-                    id={`product-${row}-${col}`}
-                  >
-                    <div className="relative aspect-square overflow-hidden bg-gray-100">
-                      {product.images && product.images[0] && (
-                        <Image
-                          src={product.images[0].src}
-                          alt={product.images[0].alt || product.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      )}
-                    </div>
-                    <div className="mt-4 text-left">
-                      <h3 className="text-[#1B1F3B] font-medium text-sm">{product.title}</h3>
-                      <p className="text-[#1B1F3B] mt-1 text-sm">
-                        ${mensProducts.find(p => p.id === product.id)?.referencePrice?.toFixed(2) || 
-                          (product.variants && product.variants[0] ? (product.variants[0].price / 100).toFixed(2) : '-')}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+    <main className="min-h-screen bg-[#2C2F36]">
+      <div className="min-h-screen bg-[#DADBE4] p-8">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl font-['Bebas_Neue'] text-[#1B1F3B] tracking-wider mb-8">
+            ALL MEN'S PRODUCTS
+          </h1>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            {products.map((product, index) => {
+              const row = Math.floor(index / 3) + 1;
+              const col = (index % 3) + 1;
+              
+              return (
+                <Link 
+                  href={
+                    product.title.toLowerCase().includes('eternal divide') || 
+                    product.title.toLowerCase().includes('eternal elegance') ||
+                    product.title.toLowerCase().includes('phoenix es logo') ||
+                    product.title.toLowerCase().includes('es phoenix logo')
+                      ? '/shop#customizable-collection'
+                      : product.id === "682cb629b4133fe21803df44"
+                      ? '/shop/accessories/eternal-snap-vol2w?source=/shop/mens/all-products&row=' + row
+                      : product.id === "682b9cf4a908726ca70b8a8d"
+                      ? '/shop/accessories/eternal-snap-vol2?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('eternally cozy new-gen sweatpants')
+                      ? '/shop/mens/eternally-cozy-new-gen-sweatpants?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('eternally bold')
+                      ? '/shop/mens/eternally-bold?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('eternal ascension')
+                      ? '/shop/mens/eternal-ascension?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('eternally untainted')
+                      ? '/shop/mens/eternally-untainted?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('eternal shadow')
+                      ? '/shop/mens/eternal-shadow?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('eternal swords')
+                      ? '/shop/mens/eternal-swords?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('soulful baseball')
+                      ? '/shop/mens/baseball-tee?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('eternal rebirth')
+                      ? '/shop/mens/eternal-rebirth?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('eternally cozy legacy')
+                      ? '/shop/mens/eternally-cozy-sweatpants?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('eternal snap - white')
+                      ? '/shop/accessories/eternal-snap-white?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('eternal snap - black')
+                      ? '/shop/accessories/eternal-snap-black?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('eternally woven')
+                      ? '/shop/unisex/eternally-woven?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('eternal awakening')
+                      ? '/shop/mens/eternal-awakening?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('eternal collapse')
+                      ? '/shop/mens/eternal-collapse?source=/shop/mens/all-products&row=' + row
+                      : product.title.toLowerCase().includes('vow of the eternal')
+                      ? '/shop/mens/vow-of-the-eternal?source=/shop/mens/all-products&row=' + row
+                      : `/shop/mens/${product.id}?source=/shop/mens/all-products&row=` + row
+                  }
+                  key={product.id}
+                  className="group"
+                  id={`product-${row}-${col}`}
+                >
+                  <div className="relative aspect-square overflow-hidden bg-gray-100">
+                    {product.images && product.images[0] && (
+                      <Image
+                        src={product.images[0].src}
+                        alt={product.images[0].alt || product.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
+                  </div>
+                  <div className="mt-4 text-left">
+                    <h3 className="text-[#1B1F3B] font-medium text-sm">{product.title}</h3>
+                    <p className="text-[#1B1F3B] mt-1 text-sm">
+                      ${mensProducts.find(p => p.id === product.id)?.referencePrice?.toFixed(2) || 
+                        (product.variants && product.variants[0] ? (product.variants[0].price / 100).toFixed(2) : '-')}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
-      </main>
-    </Suspense>
+      </div>
+    </main>
   );
 } 

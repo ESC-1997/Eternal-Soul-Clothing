@@ -45,6 +45,25 @@ function EternallyWovenContent() {
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
 
+  // Color to image mapping
+  const colorToImageMap: { [key: string]: number } = {
+    'White': 0,
+    'Sand': 3,
+    'Natural': 5,
+    'Sage': 7,
+    'Stone Blue': 9,
+    'Indigo Blue': 11,
+    'Charcoal': 13,
+    'Cardinal Red': 15
+  };
+
+  // Update selected image when color changes
+  useEffect(() => {
+    if (selectedColor && colorToImageMap[selectedColor] !== undefined) {
+      setSelectedImage(colorToImageMap[selectedColor]);
+    }
+  }, [selectedColor]);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -147,7 +166,7 @@ function EternallyWovenContent() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href={source || "/shop/women"}
+            href={source === 'women' ? "/shop/women" : "/shop/unisex"}
             className="inline-flex items-center text-white hover:text-[#9F2FFF] transition-colors duration-200"
           >
             <svg 

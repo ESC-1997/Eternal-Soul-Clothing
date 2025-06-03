@@ -47,6 +47,30 @@ function VowOfTheEternalContent() {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
+  // Helper function to check if a variant is in stock
+  const isVariantInStock = (color: string, size: string) => {
+    if (!product) return false;
+    const variant = product.variants.find(v => v.color === color && v.size === size);
+    console.log(`Checking stock for ${color} / ${size}:`, variant?.is_available);
+    return variant?.is_available ?? false;
+  };
+
+  // Color to image mapping
+  const colorToImageMap: { [key: string]: number } = {
+    'Dark Chocolate': 0,
+    'Black': 2,
+    'Sand': 4,
+    'Stone Blue': 6,
+    'Charcoal': 8
+  };
+
+  // Update selected image when color changes
+  useEffect(() => {
+    if (selectedColor && colorToImageMap[selectedColor] !== undefined) {
+      setSelectedImage(colorToImageMap[selectedColor]);
+    }
+  }, [selectedColor]);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -63,6 +87,12 @@ function VowOfTheEternalContent() {
         if (!foundProduct) {
           throw new Error('Product not found');
         }
+
+        // Log all variants before transformation
+        console.log('All variants before transformation:');
+        foundProduct.variants.forEach((v: any) => {
+          console.log(`${v.title}: is_available=${v.is_available}, is_enabled=${v.is_enabled}`);
+        });
 
         const transformedProduct: Product = {
           id: foundProduct.id,
@@ -85,6 +115,12 @@ function VowOfTheEternalContent() {
               };
             })
         };
+
+        // Log all variants after transformation
+        console.log('All variants after transformation:');
+        transformedProduct.variants.forEach(variant => {
+          console.log(`${variant.color} / ${variant.size}: is_available=${variant.is_available}, is_enabled=${variant.is_enabled}`);
+        });
 
         setProduct(transformedProduct);
         
@@ -279,33 +315,48 @@ function VowOfTheEternalContent() {
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
               <div className="grid grid-cols-4 gap-4">
-                {uniqueSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-4 py-2 rounded-md border-2 transition-colors ${
-                      selectedSize === size
-                        ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
-                        : 'border-white text-white hover:border-[#9F2FFF]'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {uniqueSizes.map((size) => {
+                  const isInStock = selectedColor ? isVariantInStock(selectedColor, size) : true;
+                  return (
+                    <button
+                      key={size}
+                      onClick={() => isInStock && setSelectedSize(size)}
+                      className={`px-4 py-2 rounded-md border-2 transition-colors ${
+                        selectedSize === size
+                          ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
+                          : isInStock
+                            ? 'border-white text-white hover:border-[#9F2FFF]'
+                            : 'border-gray-500 text-gray-500 cursor-not-allowed'
+                      }`}
+                      disabled={!isInStock}
+                    >
+                      {size}
+                      {!isInStock && <span className="block text-xs mt-1">Out of Stock</span>}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
-              disabled={!selectedColor || !selectedSize}
+              disabled={!selectedColor || !selectedSize || !isVariantAvailable}
               className={`w-full py-3 rounded-md transition-colors ${
-                !selectedColor || !selectedSize
+                !selectedColor || !selectedSize || !isVariantAvailable
                   ? 'bg-gray-500 cursor-not-allowed'
                   : 'bg-[#9F2FFF] hover:bg-[#8A2BE2]'
               }`}
             >
-              {isAddingToCart ? 'Adding...' : addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+              {!selectedColor || !selectedSize
+                ? 'Select options'
+                : !isVariantAvailable
+                  ? 'Out of Stock'
+                  : isAddingToCart 
+                    ? 'Adding...' 
+                    : addedToCart 
+                      ? 'Added to Cart!' 
+                      : 'Add to Cart'}
             </button>
 
             {/* Product Description */}

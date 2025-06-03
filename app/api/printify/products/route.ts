@@ -17,8 +17,8 @@ interface PrintifyResponse {
   data: PrintifyProduct[];
 }
 
-// Cache duration in seconds (1 hour)
-const CACHE_DURATION = 3600;
+// Cache duration in seconds (24 hours)
+const CACHE_DURATION = 86400;
 
 // In-memory cache
 let cache = {
@@ -41,7 +41,7 @@ async function fetchFreshData() {
           'Content-Type': 'application/json',
           'User-Agent': 'EternalSoulApp',
         },
-        next: { revalidate: 3600 },
+        next: { revalidate: 86400 }, // 24 hours
       });
 
       if (!response.ok) {
@@ -57,11 +57,11 @@ async function fetchFreshData() {
       page++;
     }
     
-    // Add customizable flag to products and filter out unavailable variants
+    // Add customizable flag to products and include all variants
     const products = allProducts.map((product: any) => ({
       ...product,
       customizable: product.title && product.title.includes('ES Phoenix Logo'),
-      variants: product.variants.filter((variant: any) => variant.is_available)
+      variants: product.variants // Include all variants, even unavailable ones
     }));
 
     // Update cache
@@ -78,9 +78,9 @@ async function fetchFreshData() {
   }
 }
 
-// Set up interval to fetch data every 12 hours
-const TWELVE_HOURS = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
-setInterval(fetchFreshData, TWELVE_HOURS);
+// Set up interval to fetch data every 24 hours
+const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+setInterval(fetchFreshData, TWENTY_FOUR_HOURS);
 
 export async function GET() {
   try {

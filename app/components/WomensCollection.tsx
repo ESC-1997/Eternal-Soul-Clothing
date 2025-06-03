@@ -215,7 +215,11 @@ export default function WomensCollection() {
           return {
             ...product,
             customizable: product.title && product.title.includes('ES Phoenix Logo'),
-            variants: filteredVariants
+            variants: filteredVariants.map((variant: any) => ({
+              id: variant.id,
+              title: variant.title,
+              price: Number((variant.price / 100).toFixed(2))
+            }))
           };
         });
 

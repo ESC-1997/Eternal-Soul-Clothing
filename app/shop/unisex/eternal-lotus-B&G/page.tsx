@@ -30,6 +30,22 @@ export default function EternalLotusBlackGrey() {
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
 
+  // Color to image mapping
+  const colorToImageMap: { [key: string]: number } = {
+    'Sand': 0,
+    'White': 3,
+    'Black': 5,
+    'Forest Green': 7,
+    'Light Blue': 9
+  };
+
+  // Update selected image when color changes
+  useEffect(() => {
+    if (selectedColor && colorToImageMap[selectedColor] !== undefined) {
+      setSelectedImage(colorToImageMap[selectedColor]);
+    }
+  }, [selectedColor]);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -57,16 +73,30 @@ export default function EternalLotusBlackGrey() {
           variants: eternalLotusProduct.variants
             .filter((variant: any) => variant.is_enabled)
             .map((variant: any) => {
-              const [size, color] = variant.title.split(' / ');
+              // Parse the variant title to extract size and color
+              const parts = variant.title.split(' / ');
+              const color = parts[0]?.trim();  // First part is color
+              const size = parts[1]?.trim();   // Second part is size
+              
+              // Debug logging
+              console.log('Variant:', {
+                title: variant.title,
+                parsedColor: color,
+                parsedSize: size
+              });
+              
               return {
                 id: variant.id,
                 title: variant.title,
                 price: Number((variant.price / 100).toFixed(2)),
-                size: size.trim(),
-                color: color.trim()
+                size: size || variant.title,
+                color: color || variant.title
               };
             })
         };
+
+        console.log('Available colors:', Array.from(new Set(transformedProduct.variants.map(v => v.color))));
+        console.log('Available sizes:', Array.from(new Set(transformedProduct.variants.map(v => v.size))));
 
         setProduct(transformedProduct);
       } catch (err) {
@@ -187,29 +217,9 @@ export default function EternalLotusBlackGrey() {
             <h1 className="text-3xl font-bold">{product.title}</h1>
             <p className="text-xl">${product.variants[0].price.toFixed(2)}</p>
             
-            {/* Size Selection */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
-              <div className="grid grid-cols-4 gap-4">
-                {availableSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`p-4 border rounded-lg transition-colors ${
-                      selectedSize === size
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Color Selection */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
               <div className="grid grid-cols-4 gap-4">
                 {availableColors.map((color) => (
                   <button
@@ -217,11 +227,31 @@ export default function EternalLotusBlackGrey() {
                     onClick={() => setSelectedColor(color)}
                     className={`p-4 border rounded-lg transition-colors ${
                       selectedColor === color
-                        ? 'border-white bg-white text-[#2C2F36]'
-                        : 'border-gray-600 hover:border-white'
+                        ? 'border-[#9f2fff] bg-[#9f2fff] text-white'
+                        : 'border-gray-600 hover:border-[#9f2fff]'
                     }`}
                   >
                     {color}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Size Selection */}
+            <div className="space-y-4">
+              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
+              <div className="grid grid-cols-4 gap-4">
+                {availableSizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`p-4 border rounded-lg transition-colors ${
+                      selectedSize === size
+                        ? 'border-[#9f2fff] bg-[#9f2fff] text-white'
+                        : 'border-gray-600 hover:border-[#9f2fff]'
+                    }`}
+                  >
+                    {size}
                   </button>
                 ))}
               </div>
@@ -237,7 +267,7 @@ export default function EternalLotusBlackGrey() {
                 className={`w-full py-4 rounded-lg font-semibold transition-colors ${
                   !selectedSize || !selectedColor
                     ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-white text-[#2C2F36] hover:bg-gray-100'
+                    : 'bg-[#9f2fff] text-white hover:bg-[#8a29e6]'
                 }`}
               >
                 {addedToCart ? 'Added to Cart!' : 'Add to Cart'}

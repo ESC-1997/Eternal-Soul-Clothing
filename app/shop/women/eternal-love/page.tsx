@@ -32,6 +32,21 @@ export default function EternalLovePage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
 
+  // Color to image mapping
+  const colorToImageMap: { [key: string]: number } = {
+    'Orchid': 0,
+    'White': 2,
+    'Bone': 4,
+    'Bubblegum': 6
+  };
+
+  // Update selected image when color changes
+  useEffect(() => {
+    if (selectedColor && colorToImageMap[selectedColor] !== undefined) {
+      setSelectedImage(colorToImageMap[selectedColor]);
+    }
+  }, [selectedColor]);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {

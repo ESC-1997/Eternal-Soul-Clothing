@@ -163,10 +163,10 @@ export default function Navigation() {
 
             <div className="flex items-center">
               <div className="flex items-center space-x-8">
-                <Link href="/shop" className="text-white hover:text-gray-300 transition-colors">
+                <Link href="/shop" className="text-white hover:text-gray-300 transition-colors font-['Bebas_Neue'] tracking-wider text-lg">
                   Shop
                 </Link>
-                <Link href="/resources" className="text-white hover:text-gray-300 transition-colors">
+                <Link href="/resources" className="text-white hover:text-gray-300 transition-colors font-['Bebas_Neue'] tracking-wider text-lg">
                   Resources
                 </Link>
               </div>

@@ -21,6 +21,7 @@ export default function AccessoriesShop() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -101,6 +102,20 @@ export default function AccessoriesShop() {
 
   return (
     <main className="min-h-screen bg-[#2C2F36]">
+      {/* Coming Soon Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-[#DADBE4] bg-opacity-65 backdrop-blur-md z-50 flex items-center justify-center">
+          <div className="text-center max-w-3xl mx-4">
+            <h2 className="text-5xl font-['Bebas_Neue'] text-[#1B1F3B] tracking-wider mb-6">
+              Accessories Coming Soon
+            </h2>
+            <p className="text-2xl text-[#1B1F3B]">
+              We're working on bringing you amazing accessories. Stay tuned!
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto relative">
         <ShopNavigation />
         <div className="pt-8">

@@ -47,6 +47,25 @@ function EternallyCozySweatpantsContent() {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
+  // Color to image mapping
+  const colorToImageMap: { [key: string]: number } = {
+    'Carbon Grey': 0,
+    'Dusty Rose': 2,
+    'White': 3,
+    'Charcoal Heather': 4,
+    'Navy Blazer': 5,
+    'Black': 6,
+    'Military Green': 7,
+    'Maroon': 8
+  };
+
+  // Update selected image when color changes
+  useEffect(() => {
+    if (selectedColor && colorToImageMap[selectedColor] !== undefined) {
+      setSelectedImage(colorToImageMap[selectedColor]);
+    }
+  }, [selectedColor]);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -225,19 +244,22 @@ function EternallyCozySweatpantsContent() {
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
-            {/* Thumbnail gallery */}
+            {/* Thumbnail gallery - Only show images that correspond to colors */}
             <div className="flex gap-4 overflow-x-auto pb-2">
-              {product.images.map((image, index) => (
+              {Object.entries(colorToImageMap).map(([color, imageIndex]) => (
                 <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
+                  key={color}
+                  onClick={() => {
+                    setSelectedColor(color);
+                    setSelectedImage(imageIndex);
+                  }}
                   className={`relative flex-shrink-0 w-20 aspect-square rounded-lg overflow-hidden ${
-                    selectedImage === index ? 'ring-2 ring-[#9F2FFF]' : ''
+                    selectedImage === imageIndex ? 'ring-2 ring-[#9F2FFF]' : ''
                   }`}
                 >
                   <Image
-                    src={image.src}
-                    alt={`${product.title} - View ${index + 1}`}
+                    src={product.images[imageIndex].src}
+                    alt={`${product.title} - ${color}`}
                     fill
                     className="object-cover"
                     sizes="80px"
