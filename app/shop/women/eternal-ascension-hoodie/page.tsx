@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/context/CartContext';
@@ -21,7 +21,7 @@ interface Product {
   }[];
 }
 
-export default function EternalAscensionHoodiePage() {
+function EternalAscensionHoodieContent() {
   const searchParams = useSearchParams();
   const source = searchParams.get('source');
   const { addItem } = useCart();
@@ -282,5 +282,17 @@ export default function EternalAscensionHoodiePage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function EternalAscensionHoodiePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      </div>
+    }>
+      <EternalAscensionHoodieContent />
+    </Suspense>
   );
 }
