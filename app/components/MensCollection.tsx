@@ -38,7 +38,7 @@ export default function MensCollection() {
 
         const printifyProducts = await printifyResponse.json();
 
-        // Filter for specific products by name
+        // Filter for specific products by name and ID
         const allowedProducts = [
           'Eternally Cozy Legacy Sweatpants',
           'Eternally Cozy New-Gen Sweatpants',
@@ -46,6 +46,11 @@ export default function MensCollection() {
           'Eternal Awakening',
           'Eternally Untainted',
           'Eternal Shadow'
+        ];
+
+        const allowedProductIds = [
+          '68405a7ca94757b4a400b896', // New-Gen Fleece Shorts
+          '68406b93a94757b4a400bc4f'  // Legacy Fleece Shorts
         ];
 
         const radarProducts = [
@@ -61,23 +66,48 @@ export default function MensCollection() {
         const filteredPrintifyProducts = printifyProducts.filter((product: any) => {
           const isAllowed = allowedProducts.some(name => 
             product.title.toLowerCase().includes(name.toLowerCase())
-          );
-          console.log('Product:', product.title, 'Is Allowed:', isAllowed); // Debug log
+          ) || allowedProductIds.includes(product.id);
+          console.log('Product:', product.title, 'ID:', product.id, 'Is Allowed:', isAllowed); // Debug log
           return isAllowed;
         });
 
         // Transform Printify products
-        const transformedPrintifyProducts = filteredPrintifyProducts.map((product: any) => ({
-          id: product.id,
-          title: product.title,
-          images: product.images.map((img: any) => ({ src: img.src })),
-          variants: product.variants.map((variant: any) => ({
-            id: variant.id,
-            title: variant.title,
-            price: (variant.price / 100).toFixed(2)
-          })),
-          source: 'printify' as const
-        }));
+        const transformedPrintifyProducts = filteredPrintifyProducts.map((product: any) => {
+          // Special handling for fleece shorts images
+          let images = product.images.map((img: any) => ({ src: img.src }));
+          
+          if (product.id === '68405a7ca94757b4a400b896') { // New-Gen Fleece Shorts
+            images = [
+              { src: '/images/fleece_shorts_new_gen/fleece_shorts_pepper.png' }, // Display image
+              { src: '/images/fleece_shorts_new_gen/fleece_shorts_hydrangea.png' }, // Hover image
+              { src: '/images/fleece_shorts_new_gen/fleece_shorts_ivory.png' },
+              { src: '/images/fleece_shorts_new_gen/fleece_shorts_blue_jean.png' },
+              { src: '/images/fleece_shorts_new_gen/fleece_shorts_neon_ivory.png' },
+              { src: '/images/fleece_shorts_new_gen/fleece_shorts_peachy.png' }
+            ];
+          } else if (product.id === '68406b93a94757b4a400bc4f') { // Legacy Fleece Shorts
+            images = [
+              { src: '/images/fleece_shorts_legacy/fleece_shorts_hydrangea.png' }, // Display image
+              { src: '/images/fleece_shorts_legacy/fleece_shorts_pepper.png' }, // Hover image
+              { src: '/images/fleece_shorts_legacy/fleece_shorts_ivory.png' },
+              { src: '/images/fleece_shorts_legacy/fleece_shorts_blue_jean.png' },
+              { src: '/images/fleece_shorts_legacy/fleece_shorts_neon_ivory.png' },
+              { src: '/images/fleece_shorts_legacy/fleece_shorts_peachy.png' }
+            ];
+          }
+
+          return {
+            id: product.id,
+            title: product.title,
+            images: images,
+            variants: product.variants.map((variant: any) => ({
+              id: variant.id,
+              title: variant.title,
+              price: (variant.price / 100).toFixed(2)
+            })),
+            source: 'printify' as const
+          };
+        });
 
         // Sort products
         const allProducts = transformedPrintifyProducts
@@ -86,11 +116,35 @@ export default function MensCollection() {
             const order = [
               'Eternal Rebirth',
               'Eternally Untainted',
-              'Eternally Cozy Legacy Sweatpants',
+              'Eternally Cozy Fleece Shorts (New-Gen)',
+              'Eternally Cozy Fleece Shorts (Legacy)',
               'Eternally Cozy New-Gen Sweatpants',
+              'Eternally Cozy Legacy Sweatpants',
               'Eternal Shadow',
               'Eternal Awakening'
             ];
+            
+            // Special handling for fleece shorts by ID
+            if (a.id === '68406b93a94757b4a400bc4f') { // Legacy shorts
+              const indexA = order.findIndex(name => name === 'Eternally Cozy Fleece Shorts (Legacy)');
+              const indexB = order.findIndex(name => b.title.toLowerCase().includes(name.toLowerCase()));
+              return indexA - indexB;
+            }
+            if (b.id === '68406b93a94757b4a400bc4f') { // Legacy shorts
+              const indexA = order.findIndex(name => a.title.toLowerCase().includes(name.toLowerCase()));
+              const indexB = order.findIndex(name => name === 'Eternally Cozy Fleece Shorts (Legacy)');
+              return indexA - indexB;
+            }
+            if (a.id === '68405a7ca94757b4a400b896') { // New-Gen shorts
+              const indexA = order.findIndex(name => name === 'Eternally Cozy Fleece Shorts (New-Gen)');
+              const indexB = order.findIndex(name => b.title.toLowerCase().includes(name.toLowerCase()));
+              return indexA - indexB;
+            }
+            if (b.id === '68405a7ca94757b4a400b896') { // New-Gen shorts
+              const indexA = order.findIndex(name => a.title.toLowerCase().includes(name.toLowerCase()));
+              const indexB = order.findIndex(name => name === 'Eternally Cozy Fleece Shorts (New-Gen)');
+              return indexA - indexB;
+            }
             
             const indexA = order.findIndex(name => a.title.toLowerCase().includes(name.toLowerCase()));
             const indexB = order.findIndex(name => b.title.toLowerCase().includes(name.toLowerCase()));
@@ -222,7 +276,11 @@ export default function MensCollection() {
                 <div className="bg-white overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 h-[450px]">
                   <Link 
                     href={
-                      product.title.toLowerCase().includes('eternally cozy legacy sweatpants')
+                      product.id === '68406b93a94757b4a400bc4f'
+                        ? '/shop/mens/eternally-cozy-fleece-shorts-legacy'
+                        : product.id === '68405a7ca94757b4a400b896'
+                        ? '/shop/mens/eternally-cozy-fleece-shorts-new-gen'
+                        : product.title.toLowerCase().includes('eternally cozy legacy sweatpants')
                         ? '/shop/mens/eternally-cozy-sweatpants'
                         : product.title.toLowerCase().includes('eternally cozy new-gen sweatpants')
                         ? '/shop/mens/eternally-cozy-new-gen-sweatpants'
@@ -234,12 +292,6 @@ export default function MensCollection() {
                         ? '/shop/mens/eternally-untainted'
                         : product.title.toLowerCase().includes('eternal shadow')
                         ? '/shop/mens/eternal-shadow'
-                        : product.title.toLowerCase().includes('eternal cut')
-                        ? '/shop/mens/eternal-cut'
-                        : product.title.toLowerCase().includes('vow of the eternal')
-                        ? '/shop/mens/vow-of-the-eternal'
-                        : product.title.toLowerCase().includes('eternally bold')
-                        ? '/shop/mens/eternally-bold'
                         : `/shop/mens/${product.id}`
                     }
                     className="group"

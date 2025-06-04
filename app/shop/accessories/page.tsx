@@ -34,12 +34,7 @@ export default function AccessoriesShop() {
         const printifyProducts = await response.json();
         
         // Filter for specific products by name
-        const allowedProducts = [
-          'Gothic Tough Phone Cases for Eternal Soul',
-          'The Eternal Snap (Vol.2)',
-          'The Eternal Snap (Vol. 2) - White',
-          'Eternal Lotus Plush Throw Blanket'
-        ];
+        const allowedProducts: string[] = [];
 
         console.log('Filtering products...');
         console.log('Looking for products:', allowedProducts);
@@ -146,20 +141,7 @@ export default function AccessoriesShop() {
                   <div key={product.id} className="flex-none w-[300px] group">
                     <div className="bg-white overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 h-[450px]">
                       <Link 
-                        href={(() => {
-                          const normalizedTitle = product.title.toLowerCase().replace(/\s+/g, '');
-                          if (normalizedTitle.includes('gothictoughphonecases')) {
-                            return '/shop/accessories/phone-cases';
-                          } else if (normalizedTitle === 'theeternalsnap(vol.2)') {
-                            return '/shop/accessories/eternal-snap-vol2';
-                          } else if (normalizedTitle === 'theeternalsnap(vol.2)-white') {
-                            return '/shop/accessories/eternal-snap-vol2w';
-                          } else if (normalizedTitle.includes('eternallotusplushthrowblanket')) {
-                            return '/shop/accessories/eternal-lotus-blanket';
-                          } else {
-                            return `/shop/accessories/${product.id}`;
-                          }
-                        })()}
+                        href={`/shop/accessories/${product.id}`}
                         className="group"
                       >
                         <div className="relative h-[350px]">

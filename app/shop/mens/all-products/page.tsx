@@ -82,6 +82,22 @@ const mensProducts = [
     referencePrice: 45.00
   },
   {
+    id: "68406b93a94757b4a400bc4f",
+    title: "Eternally Cozy Fleece Shorts (Legacy)",
+    tags: ["mens", "shorts", "bottoms"],
+    category: "Shorts",
+    gender: "Mens",
+    referencePrice: 45.00
+  },
+  {
+    id: "68405a7ca94757b4a400b896",
+    title: "Eternally Cozy Fleece Shorts (New-Gen)",
+    tags: ["mens", "shorts", "bottoms"],
+    category: "Shorts",
+    gender: "Mens",
+    referencePrice: 45.00
+  },
+  {
     id: "6828ede2465b246fe50cc776",
     title: "The Eternal Snap - Black",
     tags: ["accessory", "hat", "headwear"],
@@ -353,15 +369,40 @@ function AllMensProductsContent() {
             }
             return isIncluded;
           })
-          .map((product: any) => ({
-            id: product.id,
-            title: product.title,
-            tags: product.tags,
-            category: product.category,
-            gender: product.gender,
-            images: product.images,
-            variants: product.variants
-          }));
+          .map((product: any) => {
+            // Special handling for fleece shorts images
+            let images = product.images.map((img: any) => ({ src: img.src }));
+            
+            if (product.id === '68405a7ca94757b4a400b896') { // New-Gen Fleece Shorts
+              images = [
+                { src: '/images/fleece_shorts_new_gen/fleece_shorts_pepper.png' }, // Display image
+                { src: '/images/fleece_shorts_new_gen/fleece_shorts_hydrangea.png' }, // Hover image
+                { src: '/images/fleece_shorts_new_gen/fleece_shorts_ivory.png' },
+                { src: '/images/fleece_shorts_new_gen/fleece_shorts_blue_jean.png' },
+                { src: '/images/fleece_shorts_new_gen/fleece_shorts_neon_ivory.png' },
+                { src: '/images/fleece_shorts_new_gen/fleece_shorts_peachy.png' }
+              ];
+            } else if (product.id === '68406b93a94757b4a400bc4f') { // Legacy Fleece Shorts
+              images = [
+                { src: '/images/fleece_shorts_legacy/fleece_shorts_hydrangea.png' }, // Display image
+                { src: '/images/fleece_shorts_legacy/fleece_shorts_pepper.png' }, // Hover image
+                { src: '/images/fleece_shorts_legacy/fleece_shorts_ivory.png' },
+                { src: '/images/fleece_shorts_legacy/fleece_shorts_blue_jean.png' },
+                { src: '/images/fleece_shorts_legacy/fleece_shorts_neon_ivory.png' },
+                { src: '/images/fleece_shorts_legacy/fleece_shorts_peachy.png' }
+              ];
+            }
+
+            return {
+              id: product.id,
+              title: product.title,
+              tags: product.tags,
+              category: product.category,
+              gender: product.gender,
+              images: images,
+              variants: product.variants
+            };
+          });
 
         setProducts(filteredProducts);
       } catch (err) {
@@ -412,48 +453,20 @@ function AllMensProductsContent() {
               
               return (
                 <Link 
-                  href={
-                    product.title.toLowerCase().includes('eternal divide') || 
-                    product.title.toLowerCase().includes('eternal elegance') ||
-                    product.title.toLowerCase().includes('phoenix es logo') ||
-                    product.title.toLowerCase().includes('es phoenix logo')
-                      ? '/shop#customizable-collection'
-                      : product.id === "682cb629b4133fe21803df44"
-                      ? '/shop/accessories/eternal-snap-vol2w?source=/shop/mens/all-products&row=' + row
-                      : product.id === "682b9cf4a908726ca70b8a8d"
-                      ? '/shop/accessories/eternal-snap-vol2?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('eternally cozy new-gen sweatpants')
-                      ? '/shop/mens/eternally-cozy-new-gen-sweatpants?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('eternally bold')
-                      ? '/shop/mens/eternally-bold?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('eternal ascension')
-                      ? '/shop/mens/eternal-ascension?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('eternally untainted')
-                      ? '/shop/mens/eternally-untainted?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('eternal shadow')
-                      ? '/shop/mens/eternal-shadow?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('eternal swords')
-                      ? '/shop/mens/eternal-swords?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('soulful baseball')
-                      ? '/shop/mens/baseball-tee?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('eternal rebirth')
-                      ? '/shop/mens/eternal-rebirth?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('eternally cozy legacy')
-                      ? '/shop/mens/eternally-cozy-sweatpants?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('eternal snap - white')
-                      ? '/shop/accessories/eternal-snap-white?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('eternal snap - black')
-                      ? '/shop/accessories/eternal-snap-black?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('eternally woven')
-                      ? '/shop/unisex/eternally-woven?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('eternal awakening')
-                      ? '/shop/mens/eternal-awakening?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('eternal collapse')
-                      ? '/shop/mens/eternal-collapse?source=/shop/mens/all-products&row=' + row
-                      : product.title.toLowerCase().includes('vow of the eternal')
-                      ? '/shop/mens/vow-of-the-eternal?source=/shop/mens/all-products&row=' + row
-                      : `/shop/mens/${product.id}?source=/shop/mens/all-products&row=` + row
-                  }
+                  href={(() => {
+                    if (product.id === '68406b93a94757b4a400bc4f') {
+                      return '/shop/mens/eternally-cozy-fleece-shorts-legacy?source=/shop/mens/all-products&row=' + row;
+                    } else if (product.id === '68405a7ca94757b4a400b896') {
+                      return '/shop/mens/eternally-cozy-fleece-shorts-new-gen?source=/shop/mens/all-products&row=' + row;
+                    } else {
+                      const normalizedTitle = product.title.toLowerCase().replace(/\s+/g, '');
+                      if (normalizedTitle.includes('gothictoughphonecases')) {
+                        return '/shop/accessories/phone-cases?source=/shop/mens/all-products&row=' + row;
+                      } else {
+                        return `/shop/mens/${product.id}?source=/shop/mens/all-products&row=${row}`;
+                      }
+                    }
+                  })()}
                   key={product.id}
                   className="group"
                   id={`product-${row}-${col}`}

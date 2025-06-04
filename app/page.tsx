@@ -235,9 +235,10 @@ export default function Home() {
             scrollSnapType: 'x mandatory',
             scrollBehavior: 'smooth',
             WebkitOverflowScrolling: 'touch',
+            scrollPadding: '0 24px',
           }}>
             {/* Service Card 1 */}
-            <div style={{ flex: '0 0 auto', width: '320px', scrollSnapAlign: 'start' }}>
+            <div style={{ flex: '0 0 auto', width: '320px', scrollSnapAlign: 'center' }}>
               <Link href="/shop/mens/eternal-shadow" className="block">
                 <div style={{ width: '100%', height: 'auto', background: '#fff', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
                   <div style={{ width: '100%', height: '35px', background: 'linear-gradient(to right, #000000, #9F2FFF)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -293,7 +294,7 @@ export default function Home() {
             </div>
 
             {/* Service Card 2 */}
-            <div style={{ flex: '0 0 auto', width: '320px', scrollSnapAlign: 'start' }}>
+            <div style={{ flex: '0 0 auto', width: '320px', scrollSnapAlign: 'center' }}>
               <Link href="/shop/mens/eternally-untainted" className="block">
                 <div style={{ width: '100%', height: 'auto', background: '#fff', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
                   <div style={{ width: '100%', height: '35px', background: 'linear-gradient(to right, #000000, #9F2FFF)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -349,7 +350,7 @@ export default function Home() {
             </div>
 
             {/* Service Card 3 */}
-            <div style={{ flex: '0 0 auto', width: '320px', scrollSnapAlign: 'start' }}>
+            <div style={{ flex: '0 0 auto', width: '320px', scrollSnapAlign: 'center' }}>
               <Link href="/shop/mens/eternal-rebirth" className="block">
                 <div style={{ width: '100%', height: 'auto', background: '#fff', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
                   <div style={{ width: '100%', height: '35px', background: 'linear-gradient(to right, #000000, #9F2FFF)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -405,7 +406,7 @@ export default function Home() {
             </div>
 
             {/* Service Card 4 */}
-            <div style={{ flex: '0 0 auto', width: '320px', scrollSnapAlign: 'start' }}>
+            <div style={{ flex: '0 0 auto', width: '320px', scrollSnapAlign: 'center' }}>
               <Link href="/shop/women/eternal-glow" className="block">
                 <div style={{ width: '100%', height: 'auto', background: '#fff', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
                   <div style={{ width: '100%', height: '35px', background: 'linear-gradient(to right, #000000, #9F2FFF)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -461,7 +462,7 @@ export default function Home() {
             </div>
 
             {/* Service Card 5 */}
-            <div style={{ flex: '0 0 auto', width: '320px', scrollSnapAlign: 'start' }}>
+            <div style={{ flex: '0 0 auto', width: '320px', scrollSnapAlign: 'center' }}>
               <Link href="/shop/mens/eternally-cozy-sweatpants" className="block">
                 <div style={{ width: '100%', height: 'auto', background: '#fff', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
                   <div style={{ width: '100%', height: '35px', background: 'linear-gradient(to right, #000000, #9F2FFF)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -517,7 +518,7 @@ export default function Home() {
             </div>
 
             {/* Service Card 6 */}
-            <div style={{ flex: '0 0 auto', width: '320px', scrollSnapAlign: 'start' }}>
+            <div style={{ flex: '0 0 auto', width: '320px', scrollSnapAlign: 'center' }}>
               <Link href="/shop/unisex/eternal-ascension" className="block">
                 <div style={{ width: '100%', height: 'auto', background: '#fff', boxShadow: '0 4px 10px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
                   <div style={{ width: '100%', height: '35px', background: 'linear-gradient(to right, #000000, #9F2FFF)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
