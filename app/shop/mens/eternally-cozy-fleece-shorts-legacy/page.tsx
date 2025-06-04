@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import { useCart } from '../../../context/CartContext';
 import ShopNavigation from '../../../components/ShopNavigation';
@@ -22,7 +22,7 @@ interface Product {
   }[];
 }
 
-export default function EternallyCozyFleeceShortsLegacyPage() {
+function EternallyCozyFleeceShortsLegacyContent() {
   const { addItem } = useCart();
   const searchParams = useSearchParams();
   const source = searchParams.get('source');
@@ -311,5 +311,17 @@ export default function EternallyCozyFleeceShortsLegacyPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function EternallyCozyFleeceShortsLegacyPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      </div>
+    }>
+      <EternallyCozyFleeceShortsLegacyContent />
+    </Suspense>
   );
 } 

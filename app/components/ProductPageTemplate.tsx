@@ -1,8 +1,9 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import { useCart } from '../context/CartContext';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 /**
  * IMPORTANT: Printify Variant Format
@@ -27,8 +28,10 @@ interface Product {
   }[];
 }
 
-export default function ProductPageTemplate() {
+function ProductPageContent() {
   const { addItem } = useCart();
+  const searchParams = useSearchParams();
+  const source = searchParams.get('source');
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
@@ -178,7 +181,7 @@ export default function ProductPageTemplate() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href="/shop/your-category"
+            href={source === '/shop/mens/all-products' ? '/shop/mens/all-products' : '/shop/your-category'}
             className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200"
           >
             <svg 
@@ -308,5 +311,17 @@ export default function ProductPageTemplate() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ProductPageTemplate() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      </div>
+    }>
+      <ProductPageContent />
+    </Suspense>
   );
 } 
