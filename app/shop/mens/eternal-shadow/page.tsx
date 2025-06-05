@@ -74,15 +74,14 @@ function EternalShadowContent() {
           variants: shadow.variants
             .filter((variant: any) => variant.is_enabled)
             .map((variant: any) => {
-              const parts = variant.title.split(' / ');
-              const color = parts[0]?.trim() || 'Default';
-              const size = parts[1]?.trim() || 'Default';
+              // The variant title is just the size
+              const size = variant.title.trim();
               return {
                 id: variant.id,
                 title: variant.title,
                 price: Number((variant.price / 100).toFixed(2)),
                 size,
-                color
+                color: 'Default' // Single color option
               };
             })
         };
@@ -209,65 +208,39 @@ function EternalShadowContent() {
             
             {/* Price Display */}
             <div className="text-2xl font-['Bebas_Neue'] tracking-wider">
-              {selectedColor && selectedSize ? (
-                `$${product.variants.find(v => v.color === selectedColor && v.size === selectedSize)?.price.toFixed(2)}`
+              {selectedSize ? (
+                `$${product.variants.find(v => v.size === selectedSize)?.price.toFixed(2)}`
               ) : (
-                'Select a color and size'
+                'Select a size'
               )}
             </div>
             
-            {/* Color Selection */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Color</h2>
-              <div className="grid grid-cols-4 gap-4">
-                {availableColors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`px-4 py-2 rounded-md border-2 transition-colors ${
-                      selectedColor === color
-                        ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
-                        : 'border-white text-white hover:border-[#9F2FFF]'
-                    }`}
-                  >
-                    {color}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Size Selection */}
             <div className="space-y-4">
               <h2 className="text-2xl font-['Bebas_Neue'] tracking-wider">Select Size</h2>
               <div className="grid grid-cols-4 gap-4">
-                {availableSizes.map((size) => {
-                  const isInStock = selectedColor ? isVariantInStock(selectedColor, size) : true;
-                  return (
-                    <button
-                      key={size}
-                      onClick={() => isInStock && setSelectedSize(size)}
-                      className={`px-4 py-2 rounded-md border-2 transition-colors ${
-                        selectedSize === size
-                          ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
-                          : isInStock
-                            ? 'border-white text-white hover:border-[#9F2FFF]'
-                            : 'border-gray-500 text-gray-500 cursor-not-allowed'
-                      }`}
-                      disabled={!isInStock}
-                    >
-                      {size}
-                    </button>
-                  );
-                })}
+                {availableSizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`px-4 py-2 rounded-md border-2 transition-colors ${
+                      selectedSize === size
+                        ? 'bg-[#9F2FFF] text-white border-[#9F2FFF]'
+                        : 'border-white text-white hover:border-[#9F2FFF]'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
-              disabled={!selectedColor || !selectedSize}
+              disabled={!selectedSize}
               className={`w-full py-4 rounded-md text-lg font-medium transition-colors ${
-                selectedColor && selectedSize
+                selectedSize
                   ? 'bg-[#9F2FFF] text-white hover:bg-[#8A2BE2]'
                   : 'bg-gray-500 text-gray-300 cursor-not-allowed'
               }`}

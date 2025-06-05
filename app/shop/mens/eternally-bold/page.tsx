@@ -84,15 +84,24 @@ function EternallyBoldContent() {
           images: eternallyBold.images.map((img: any) => ({ src: img.src })),
           variants: eternallyBold.variants
             .filter((variant: any) => variant.is_enabled)
-            .map((variant: any) => ({
-              id: variant.id,
-              title: variant.title,
-              price: (variant.price / 100).toFixed(2),
-              size: variant.title.split(' / ')[0],
-              color: variant.title.split(' / ')[1],
-              is_enabled: variant.is_enabled,
-              is_available: variant.is_available
-            }))
+            .map((variant: any) => {
+              // Debug logging for variant titles
+              console.log('Variant title:', variant.title);
+              const parts = variant.title.split(' / ');
+              console.log('Split parts:', parts);
+              const color = parts[0]?.trim() || 'Default';  // First part is color
+              const size = parts[1]?.trim() || 'Default';   // Second part is size
+              console.log('Parsed color:', color, 'size:', size);
+              return {
+                id: variant.id,
+                title: variant.title,
+                price: (variant.price / 100).toFixed(2),
+                size,
+                color,
+                is_enabled: variant.is_enabled,
+                is_available: variant.is_available
+              };
+            })
         };
 
         setProduct(transformedProduct);
